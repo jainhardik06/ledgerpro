@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { getSessionUser } from '@/lib/auth';
-import { getUserByUsername, createUser } from '@/lib/db';
+import { getUserByUsername, createUser, createLog } from '@/lib/db';
 
 export async function POST(req: NextRequest) {
   try {
@@ -47,6 +47,8 @@ export async function POST(req: NextRequest) {
 
     const passwordHash = await bcrypt.hash(password, 10);
     const newUser = await createUser(username, passwordHash);
+    
+    await createLog(session.username, 'Create User', `Created user account: ${username}`);
 
     return NextResponse.json({
       success: true,

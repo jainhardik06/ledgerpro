@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import bcrypt from 'bcryptjs';
-import { getUserByUsername } from '@/lib/db';
+import { getUserByUsername, createLog } from '@/lib/db';
 import { generateToken } from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
@@ -17,6 +17,7 @@ export async function POST(req: NextRequest) {
 
     const user = await getUserByUsername(username);
     if (!user) {
+      await createLog(username, 'Login Failed', 'User not found');
       return NextResponse.json(
         { error: 'Invalid username or password' },
         { status: 401 }
@@ -25,6 +26,7 @@ export async function POST(req: NextRequest) {
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
+      await createLog(user.username, 'Login Failed', 'Incorrect password entered');
       return NextResponse.json(
         { error: 'Invalid username or password' },
         { status: 401 }
@@ -46,6 +48,8 @@ export async function POST(req: NextRequest) {
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',
     });
+
+    await createLog(user.username, 'Login', 'User successfully logged in');
 
     return NextResponse.json({
       success: true,

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
-import { updateTransaction, deleteTransaction } from '@/lib/db';
+import { updateTransaction, deleteTransaction, createLog } from '@/lib/db';
 
 export async function PUT(
   req: NextRequest,
@@ -13,7 +13,7 @@ export async function PUT(
     }
 
     const { id } = await params;
-    const { type, description, amount, date } = await req.json();
+    const { type, description, amount, date, category } = await req.json();
 
     const updates: any = {};
     if (type) {
@@ -45,6 +45,10 @@ export async function PUT(
       updates.date = date;
     }
 
+    if (category !== undefined) {
+      updates.category = category;
+    }
+
     const success = await updateTransaction(id, session.userId, updates);
     if (!success) {
       return NextResponse.json(
@@ -52,6 +56,8 @@ export async function PUT(
         { status: 404 }
       );
     }
+
+    await createLog(session.username, 'Edit Record', `Updated transaction (ID: ${id})`);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
@@ -82,6 +88,8 @@ export async function DELETE(
         { status: 404 }
       );
     }
+
+    await createLog(session.username, 'Delete Record', `Deleted transaction (ID: ${id})`);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

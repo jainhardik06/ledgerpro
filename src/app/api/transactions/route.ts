@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
-import { getTransactions, createTransaction } from '@/lib/db';
+import { getTransactions, createTransaction, createLog } from '@/lib/db';
 
 export async function GET() {
   try {
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { type, description, amount, date } = await req.json();
+    const { type, description, amount, date, category } = await req.json();
 
     if (!type || !description || amount === undefined || !date) {
       return NextResponse.json(
@@ -60,7 +60,10 @@ export async function POST(req: NextRequest) {
       description,
       amount: parsedAmount,
       date,
+      category: category || '',
     });
+
+    await createLog(session.username, 'Add Record', `Added ${type} record: ${description} (₹${parsedAmount})`);
 
     return NextResponse.json({ success: true, transaction: newTx });
   } catch (error: any) {

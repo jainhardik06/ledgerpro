@@ -19,7 +19,25 @@ export interface Transaction {
   description: string;
   amount: number;
   date: string; // YYYY-MM-DD
+  category?: string;
   createdAt: Date;
+}
+
+export interface Category {
+  id?: string;
+  _id?: any;
+  userId: string;
+  name: string;
+  createdAt: Date;
+}
+
+export interface SystemLog {
+  id?: string;
+  _id?: any;
+  username: string;
+  action: string;
+  details: string;
+  timestamp: Date;
 }
 
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -33,6 +51,8 @@ const DB_FILE = path.join(DATA_DIR, 'local_db.json');
 interface LocalDbSchema {
   users: User[];
   transactions: Transaction[];
+  categories: Category[];
+  logs: SystemLog[];
 }
 
 function initLocalDb(): LocalDbSchema {
@@ -40,15 +60,22 @@ function initLocalDb(): LocalDbSchema {
     fs.mkdirSync(DATA_DIR, { recursive: true });
   }
   if (!fs.existsSync(DB_FILE)) {
-    const defaultData: LocalDbSchema = { users: [], transactions: [] };
+    const defaultData: LocalDbSchema = { users: [], transactions: [], categories: [], logs: [] };
     fs.writeFileSync(DB_FILE, JSON.stringify(defaultData, null, 2), 'utf-8');
     return defaultData;
   }
   try {
     const content = fs.readFileSync(DB_FILE, 'utf-8');
-    return JSON.parse(content);
+    const parsed = JSON.parse(content);
+    if (!parsed.categories) {
+      parsed.categories = [];
+    }
+    if (!parsed.logs) {
+      parsed.logs = [];
+    }
+    return parsed;
   } catch (e) {
-    const defaultData: LocalDbSchema = { users: [], transactions: [] };
+    const defaultData: LocalDbSchema = { users: [], transactions: [], categories: [], logs: [] };
     fs.writeFileSync(DB_FILE, JSON.stringify(defaultData, null, 2), 'utf-8');
     return defaultData;
   }
@@ -180,6 +207,7 @@ export async function getTransactions(userId: string): Promise<Transaction[]> {
         description: t.description,
         amount: Number(t.amount),
         date: t.date,
+        category: t.category,
         createdAt: t.createdAt,
       }));
     } catch (e) {
@@ -199,6 +227,7 @@ export async function createTransaction(tx: Omit<Transaction, 'createdAt'>): Pro
     description: tx.description,
     amount: Number(tx.amount),
     date: tx.date,
+    category: tx.category,
     createdAt: new Date(),
   };
 
@@ -232,6 +261,7 @@ export async function updateTransaction(id: string, userId: string, tx: Partial<
   if (tx.description) updateFields.description = tx.description;
   if (tx.amount !== undefined) updateFields.amount = Number(tx.amount);
   if (tx.date) updateFields.date = tx.date;
+  if (tx.category !== undefined) updateFields.category = tx.category;
 
   if (db) {
     try {
@@ -308,3 +338,131 @@ export async function seedDefaultUser() {
 
 // Perform initial seeding
 seedDefaultUser();
+
+export async function getCategories(userId: string): Promise<Category[]> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const cats = await db.collection('categories').find({ userId }).toArray();
+      return cats.map(c => ({
+        id: c._id.toString(),
+        userId: c.userId,
+        name: c.name,
+        createdAt: c.createdAt,
+      }));
+    } catch (e) {
+      // Silenced error
+    }
+  }
+
+  const data = initLocalDb();
+  return data.categories.filter(c => c.userId === userId);
+}
+
+export async function createCategory(userId: string, name: string): Promise<Category> {
+  const { db } = await connectDb();
+  const newCat = {
+    userId,
+    name,
+    createdAt: new Date(),
+  };
+
+  if (db) {
+    try {
+      const result = await db.collection('categories').insertOne(newCat);
+      return {
+        id: result.insertedId.toString(),
+        ...newCat,
+      };
+    } catch (e) {
+      // Silenced error
+    }
+  }
+
+  const data = initLocalDb();
+  const id = Math.random().toString(36).substring(2, 11);
+  const localCat: Category = {
+    id,
+    ...newCat,
+  };
+  data.categories.push(localCat);
+  writeLocalDb(data);
+  return localCat;
+}
+
+export async function deleteCategory(id: string, userId: string): Promise<boolean> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const result = await db.collection('categories').deleteOne({
+        _id: new ObjectId(id),
+        userId,
+      });
+      return result.deletedCount > 0;
+    } catch (e) {
+      // Silenced error
+    }
+  }
+
+  const data = initLocalDb();
+  const len = data.categories.length;
+  data.categories = data.categories.filter(c => !(c.id === id && c.userId === userId));
+  if (data.categories.length < len) {
+    writeLocalDb(data);
+    return true;
+  }
+  return false;
+}
+
+export async function createLog(username: string, action: string, details: string): Promise<SystemLog> {
+  const { db } = await connectDb();
+  const newLog = {
+    username,
+    action,
+    details,
+    timestamp: new Date(),
+  };
+
+  if (db) {
+    try {
+      const result = await db.collection('logs').insertOne(newLog);
+      return {
+        id: result.insertedId.toString(),
+        ...newLog,
+      };
+    } catch (e) {
+      // Silenced error
+    }
+  }
+
+  const data = initLocalDb();
+  const id = Math.random().toString(36).substring(2, 11);
+  const localLog: SystemLog = {
+    id,
+    ...newLog,
+  };
+  data.logs.push(localLog);
+  writeLocalDb(data);
+  return localLog;
+}
+
+export async function getLogs(): Promise<SystemLog[]> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const logs = await db.collection('logs').find({}).sort({ timestamp: -1 }).toArray();
+      return logs.map(l => ({
+        id: l._id.toString(),
+        username: l.username,
+        action: l.action,
+        details: l.details,
+        timestamp: l.timestamp,
+      }));
+    } catch (e) {
+      // Silenced error
+    }
+  }
+
+  const data = initLocalDb();
+  return [...data.logs].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+}

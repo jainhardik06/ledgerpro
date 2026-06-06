@@ -1,8 +1,15 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { getSessionUser } from '@/lib/auth';
+import { createLog } from '@/lib/db';
 
 export async function POST() {
   try {
+    const session = await getSessionUser();
+    if (session) {
+      await createLog(session.username, 'Logout', 'User successfully signed out');
+    }
+    
     const cookieStore = await cookies();
     cookieStore.delete('token');
     return NextResponse.json({ success: true });
