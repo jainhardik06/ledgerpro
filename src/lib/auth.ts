@@ -7,6 +7,8 @@ const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_business_money_tracke
 export interface TokenPayload {
   userId: string;
   username: string;
+  role: 'SUPER_ADMIN' | 'TENANT_ADMIN' | 'USER';
+  tenantId?: string;
 }
 
 export function generateToken(payload: TokenPayload): string {

@@ -2,11 +2,13 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import * as XLSX from 'xlsx';
+import SuperAdminDashboard from '@/components/SuperAdminDashboard';
+import TenantUsersManager from '@/components/TenantUsersManager';
 import { 
   Plus, Search, ArrowUpRight, ArrowDownRight, LogOut, LogIn,
   Trash2, Edit3, Calendar, Wallet, User, Lock, 
   AlertCircle, RefreshCw, FileSpreadsheet, FileText, 
-  X, Moon, Sun, TrendingUp, TrendingDown, UserPlus, Info, CheckCircle2
+  X, Moon, Sun, TrendingUp, TrendingDown, UserPlus, Info, CheckCircle2, Users
 } from 'lucide-react';
 
 interface ClientTransaction {
@@ -37,6 +39,8 @@ interface SystemLog {
 interface UserSession {
   id: string;
   username: string;
+  role: 'SUPER_ADMIN' | 'TENANT_ADMIN' | 'USER';
+  tenantId?: string;
 }
 
 interface ToastMessage {
@@ -84,7 +88,7 @@ export default function Home() {
   const [categoryFormLoading, setCategoryFormLoading] = useState(false);
 
   // --- Logs State ---
-  const [currentView, setCurrentView] = useState<'dashboard' | 'logs'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'logs' | 'users'>('dashboard');
   const [logs, setLogs] = useState<SystemLog[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
   const [logsSearchQuery, setLogsSearchQuery] = useState('');
@@ -280,7 +284,7 @@ export default function Home() {
     }
   };
 
-  const handleViewChange = (view: 'dashboard' | 'logs') => {
+  const handleViewChange = (view: 'dashboard' | 'logs' | 'users') => {
     setCurrentView(view);
     if (view === 'logs') {
       fetchLogs();
@@ -598,6 +602,10 @@ export default function Home() {
   };
 
   // --- Rendering Check ---
+  if (isAuthenticated && user?.role === 'SUPER_ADMIN') {
+    return <SuperAdminDashboard user={user} onLogout={handleLogout} darkMode={darkMode} setDarkMode={setDarkMode} />;
+  }
+
   if (isAuthenticated === null) {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center">
@@ -798,18 +806,20 @@ export default function Home() {
             </button>
 
             {/* Add User Button (Securely available inside dashboard) */}
-            <button 
-              onClick={() => setIsAddUserModalOpen(true)}
-              className={`p-2 rounded-xl border transition-all duration-200 flex items-center gap-1.5 text-xs font-bold cursor-pointer ${
-                darkMode 
-                  ? 'border-slate-800 bg-slate-900/40 text-slate-300 hover:bg-slate-800 hover:text-white' 
-                  : 'border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200'
-              }`}
-              title="Add New User Member"
-            >
-              <UserPlus className="w-4 h-4" />
-              <span className="hidden md:inline">Add User</span>
-            </button>
+            {user?.role === 'TENANT_ADMIN' && (
+              <button 
+                onClick={() => handleViewChange(currentView === 'users' ? 'dashboard' : 'users')}
+                className={`p-2 rounded-xl border transition-all duration-200 flex items-center gap-1.5 text-xs font-bold cursor-pointer ${
+                  darkMode 
+                    ? 'border-slate-800 bg-slate-900/40 text-slate-300 hover:bg-slate-800 hover:text-white' 
+                    : 'border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+                title="Manage Users"
+              >
+                <Users className="w-4 h-4" />
+                <span className="hidden md:inline">Users</span>
+              </button>
+            )}
 
             {/* User Info Badge */}
             <div className={`hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-xs font-semibold ${
@@ -839,7 +849,9 @@ export default function Home() {
 
       {/* Main Container */}
       <main className="flex-1 max-w-6xl w-full mx-auto p-4 md:py-8 space-y-6 md:space-y-8">
-        {currentView === 'dashboard' ? (
+        {currentView === 'users' && user?.role === 'TENANT_ADMIN' ? (
+          <TenantUsersManager darkMode={darkMode} showToast={showToast} />
+        ) : currentView === 'dashboard' ? (
           <>
             {/* Statistics section */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

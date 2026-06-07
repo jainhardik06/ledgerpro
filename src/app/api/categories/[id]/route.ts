@@ -8,12 +8,12 @@ export async function DELETE(
 ) {
   try {
     const session = await getSessionUser();
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session || !session.tenantId) {
+      return NextResponse.json({ error: 'Unauthorized or missing tenant' }, { status: 401 });
     }
 
     const { id } = await params;
-    const success = await deleteCategory(id, session.userId);
+    const success = await deleteCategory(id, session.tenantId);
 
     if (!success) {
       return NextResponse.json(
@@ -22,7 +22,7 @@ export async function DELETE(
       );
     }
 
-    await createLog(session.username, 'Delete Category', `Deleted category (ID: ${id})`);
+    await createLog(session.username, 'Delete Category', `Deleted category (ID: ${id})`, session.tenantId);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

@@ -5,11 +5,11 @@ import { getTransactions, createTransaction, createLog } from '@/lib/db';
 export async function GET() {
   try {
     const session = await getSessionUser();
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session || !session.tenantId) {
+      return NextResponse.json({ error: 'Unauthorized or missing tenant' }, { status: 401 });
     }
 
-    const transactions = await getTransactions(session.userId);
+    const transactions = await getTransactions(session.tenantId);
     
     // Sort transactions by date ascending for sequential operations (running balance)
     // then we return them to the client
@@ -26,8 +26,8 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const session = await getSessionUser();
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session || !session.tenantId) {
+      return NextResponse.json({ error: 'Unauthorized or missing tenant' }, { status: 401 });
     }
 
     const { type, description, amount, date, category } = await req.json();
@@ -55,6 +55,7 @@ export async function POST(req: NextRequest) {
     }
 
     const newTx = await createTransaction({
+      tenantId: session.tenantId,
       userId: session.userId,
       type,
       description,
@@ -63,7 +64,7 @@ export async function POST(req: NextRequest) {
       category: category || '',
     });
 
-    await createLog(session.username, 'Add Record', `Added ${type} record: ${description} (₹${parsedAmount})`);
+    await createLog(session.username, 'Add Record', `Added ${type} record: ${description} (₹${parsedAmount})`, session.tenantId);
 
     return NextResponse.json({ success: true, transaction: newTx });
   } catch (error: any) {

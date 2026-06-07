@@ -15,6 +15,43 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const SUPER_ADMIN_USERNAME = process.env.SUPER_ADMIN_USERNAME;
+    const SUPER_ADMIN_PASSWORD = process.env.SUPER_ADMIN_PASSWORD;
+
+    if (
+      SUPER_ADMIN_USERNAME &&
+      SUPER_ADMIN_PASSWORD &&
+      username === SUPER_ADMIN_USERNAME &&
+      password === SUPER_ADMIN_PASSWORD
+    ) {
+      const token = generateToken({
+        userId: 'super_admin',
+        username: SUPER_ADMIN_USERNAME,
+        role: 'SUPER_ADMIN',
+      });
+
+      const cookieStore = await cookies();
+      cookieStore.set({
+        name: 'token',
+        value: token,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        path: '/',
+      });
+
+      await createLog(username, 'Login', 'Super Admin successfully logged in');
+
+      return NextResponse.json({
+        success: true,
+        user: {
+          username: SUPER_ADMIN_USERNAME,
+          role: 'SUPER_ADMIN',
+        },
+      });
+    }
+
     const user = await getUserByUsername(username);
     if (!user) {
       await createLog(username, 'Login Failed', 'User not found');
@@ -26,7 +63,7 @@ export async function POST(req: NextRequest) {
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
-      await createLog(user.username, 'Login Failed', 'Incorrect password entered');
+      await createLog(user.username, 'Login Failed', 'Incorrect password entered', user.tenantId);
       return NextResponse.json(
         { error: 'Invalid username or password' },
         { status: 401 }
@@ -36,6 +73,8 @@ export async function POST(req: NextRequest) {
     const token = generateToken({
       userId: user.id || user._id.toString(),
       username: user.username,
+      role: user.role,
+      tenantId: user.tenantId,
     });
 
     const cookieStore = await cookies();
@@ -49,12 +88,14 @@ export async function POST(req: NextRequest) {
       path: '/',
     });
 
-    await createLog(user.username, 'Login', 'User successfully logged in');
+    await createLog(user.username, 'Login', 'User successfully logged in', user.tenantId);
 
     return NextResponse.json({
       success: true,
       user: {
         username: user.username,
+        role: user.role,
+        tenantId: user.tenantId,
       },
     });
   } catch (error: any) {

@@ -9,7 +9,14 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const logs = await getLogs();
+    let logs;
+    if (session.role === 'SUPER_ADMIN') {
+      logs = await getLogs(); // gets all logs globally
+    } else if (session.tenantId) {
+      logs = await getLogs(session.tenantId);
+    } else {
+      return NextResponse.json({ error: 'Missing tenant' }, { status: 401 });
+    }
 
     return NextResponse.json({ success: true, logs });
   } catch (error: any) {

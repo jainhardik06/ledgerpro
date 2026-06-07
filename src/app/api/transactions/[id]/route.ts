@@ -8,8 +8,8 @@ export async function PUT(
 ) {
   try {
     const session = await getSessionUser();
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session || !session.tenantId) {
+      return NextResponse.json({ error: 'Unauthorized or missing tenant' }, { status: 401 });
     }
 
     const { id } = await params;
@@ -49,7 +49,7 @@ export async function PUT(
       updates.category = category;
     }
 
-    const success = await updateTransaction(id, session.userId, updates);
+    const success = await updateTransaction(id, session.tenantId, updates);
     if (!success) {
       return NextResponse.json(
         { error: 'Transaction not found or unauthorized' },
@@ -57,7 +57,7 @@ export async function PUT(
       );
     }
 
-    await createLog(session.username, 'Edit Record', `Updated transaction (ID: ${id})`);
+    await createLog(session.username, 'Edit Record', `Updated transaction (ID: ${id})`, session.tenantId);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
@@ -75,12 +75,12 @@ export async function DELETE(
 ) {
   try {
     const session = await getSessionUser();
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session || !session.tenantId) {
+      return NextResponse.json({ error: 'Unauthorized or missing tenant' }, { status: 401 });
     }
 
     const { id } = await params;
-    const success = await deleteTransaction(id, session.userId);
+    const success = await deleteTransaction(id, session.tenantId);
 
     if (!success) {
       return NextResponse.json(
@@ -89,7 +89,7 @@ export async function DELETE(
       );
     }
 
-    await createLog(session.username, 'Delete Record', `Deleted transaction (ID: ${id})`);
+    await createLog(session.username, 'Delete Record', `Deleted transaction (ID: ${id})`, session.tenantId);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
