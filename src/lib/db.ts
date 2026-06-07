@@ -1,4 +1,9 @@
 import { MongoClient, ObjectId } from 'mongodb';
+
+export function safeObjectId(id: string): any {
+  try { return new ObjectId(id); } catch(e) { return "invalid-id"; }
+}
+
 import fs from 'fs';
 import path from 'path';
 
@@ -15,6 +20,7 @@ export interface Tenant {
   limits: {
     maxUsers: number;
   };
+  appMode?: 'Standard' | 'Student_Club' | 'Agency';
   createdAt: Date;
 }
 
@@ -34,11 +40,24 @@ export interface Transaction {
   _id?: any;
   tenantId: string;
   userId: string;
+  username?: string;
+  accountId?: string;
+  clientId?: string;
   type: 'Credit' | 'Debit';
   description: string;
   amount: number;
   date: string; // YYYY-MM-DD
   category?: string;
+  notes?: string;
+  createdAt: Date;
+}
+
+export interface Client {
+  id?: string;
+  _id?: any;
+  tenantId: string;
+  name: string;
+  email?: string;
   createdAt: Date;
 }
 
@@ -48,6 +67,43 @@ export interface Category {
   tenantId: string;
   userId: string;
   name: string;
+  createdAt: Date;
+}
+
+export interface Account {
+  id?: string;
+  _id?: any;
+  tenantId: string;
+  name: string;
+  type: string;
+  initialBalance: number;
+  createdAt: Date;
+}
+
+export interface Budget {
+  id?: string;
+  _id?: any;
+  tenantId: string;
+  category: string;
+  limitAmount: number;
+  month: string; // YYYY-MM
+  createdAt: Date;
+}
+
+export interface RecurringTransaction {
+  id?: string;
+  _id?: any;
+  tenantId: string;
+  userId: string;
+  username?: string;
+  accountId: string;
+  type: 'Credit' | 'Debit';
+  description: string;
+  amount: number;
+  category?: string;
+  interval: 'Daily' | 'Weekly' | 'Monthly';
+  lastRunDate?: string; // YYYY-MM-DD
+  nextRunDate: string; // YYYY-MM-DD
   createdAt: Date;
 }
 
@@ -73,17 +129,21 @@ const DB_FILE = path.join(DATA_DIR, 'local_db.json');
 interface LocalDbSchema {
   tenants: Tenant[];
   users: User[];
+  accounts: Account[];
   transactions: Transaction[];
   categories: Category[];
+  budgets: Budget[];
+  recurring: RecurringTransaction[];
+  clients: Client[];
   logs: SystemLog[];
 }
 
-function initLocalDb(): LocalDbSchema {
+export function initLocalDb(): LocalDbSchema {
   if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true });
   }
   if (!fs.existsSync(DB_FILE)) {
-    const defaultData: LocalDbSchema = { tenants: [], users: [], transactions: [], categories: [], logs: [] };
+    const defaultData: LocalDbSchema = { tenants: [], users: [], accounts: [], transactions: [], categories: [], budgets: [], recurring: [], clients: [], logs: [] };
     fs.writeFileSync(DB_FILE, JSON.stringify(defaultData, null, 2), 'utf-8');
     return defaultData;
   }
@@ -92,12 +152,16 @@ function initLocalDb(): LocalDbSchema {
     const parsed = JSON.parse(content);
     if (!parsed.tenants) parsed.tenants = [];
     if (!parsed.users) parsed.users = [];
+    if (!parsed.accounts) parsed.accounts = [];
     if (!parsed.transactions) parsed.transactions = [];
     if (!parsed.categories) parsed.categories = [];
+    if (!parsed.budgets) parsed.budgets = [];
+    if (!parsed.recurring) parsed.recurring = [];
+    if (!parsed.clients) parsed.clients = [];
     if (!parsed.logs) parsed.logs = [];
     return parsed;
   } catch (e) {
-    const defaultData: LocalDbSchema = { tenants: [], users: [], transactions: [], categories: [], logs: [] };
+    const defaultData: LocalDbSchema = { tenants: [], users: [], accounts: [], transactions: [], categories: [], budgets: [], recurring: [], clients: [], logs: [] };
     fs.writeFileSync(DB_FILE, JSON.stringify(defaultData, null, 2), 'utf-8');
     return defaultData;
   }
@@ -168,7 +232,7 @@ export async function getTenantById(id: string): Promise<Tenant | null> {
   const { db } = await connectDb();
   if (db) {
     try {
-      const t = await db.collection('tenants').findOne({ _id: new ObjectId(id) });
+      const t = await db.collection('tenants').findOne({ _id: safeObjectId(id) });
       if (t) {
         return {
           id: t._id.toString(),
@@ -227,7 +291,7 @@ export async function updateTenant(id: string, updates: Partial<Omit<Tenant, 'id
   if (db) {
     try {
       const result = await db.collection('tenants').updateOne(
-        { _id: new ObjectId(id) },
+        { _id: safeObjectId(id) },
         { $set: updates }
       );
       return result.modifiedCount > 0;
@@ -237,6 +301,30 @@ export async function updateTenant(id: string, updates: Partial<Omit<Tenant, 'id
   const idx = data.tenants.findIndex(t => t.id === id);
   if (idx >= 0) {
     data.tenants[idx] = { ...data.tenants[idx], ...updates };
+    writeLocalDb(data);
+    return true;
+  }
+  return false;
+}
+
+export async function updateTenantAppMode(id: string, mode: 'Standard' | 'Student_Club' | 'Agency') {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      await db.collection('tenants').updateOne(
+        { _id: safeObjectId(id) },
+        { $set: { appMode: mode } }
+      );
+      return true;
+    } catch (e) {
+      console.error(e);
+      return false;
+    }
+  }
+  const data = initLocalDb();
+  const idx = data.tenants.findIndex(t => t.id === id);
+  if (idx >= 0) {
+    data.tenants[idx].appMode = mode;
     writeLocalDb(data);
     return true;
   }
@@ -276,7 +364,7 @@ export async function getUserById(id: string): Promise<User | null> {
   const { db } = await connectDb();
   if (db) {
     try {
-      const user = await db.collection('users').findOne({ _id: new ObjectId(id) });
+      const user = await db.collection('users').findOne({ _id: safeObjectId(id) });
       if (user) {
         return {
           id: user._id.toString(),
@@ -361,7 +449,7 @@ export async function updateUserStatus(id: string, status: 'ACTIVE' | 'LOCKED'):
   if (db) {
     try {
       const result = await db.collection('users').updateOne(
-        { _id: new ObjectId(id) },
+        { _id: safeObjectId(id) },
         { $set: { status } }
       );
       return result.modifiedCount > 0;
@@ -430,7 +518,7 @@ export async function updateTransaction(id: string, tenantId: string, tx: Partia
   if (db) {
     try {
       const result = await db.collection('transactions').updateOne(
-        { _id: new ObjectId(id), tenantId },
+        { _id: safeObjectId(id), tenantId },
         { $set: updateFields }
       );
       return result.modifiedCount > 0;
@@ -450,7 +538,7 @@ export async function deleteTransaction(id: string, tenantId: string): Promise<b
   const { db } = await connectDb();
   if (db) {
     try {
-      const result = await db.collection('transactions').deleteOne({ _id: new ObjectId(id), tenantId });
+      const result = await db.collection('transactions').deleteOne({ _id: safeObjectId(id), tenantId });
       return result.deletedCount > 0;
     } catch (e) {}
   }
@@ -458,6 +546,62 @@ export async function deleteTransaction(id: string, tenantId: string): Promise<b
   const len = data.transactions.length;
   data.transactions = data.transactions.filter(t => !(t.id === id && t.tenantId === tenantId));
   if (data.transactions.length < len) {
+    writeLocalDb(data);
+    return true;
+  }
+  return false;
+}
+
+// ---- ACCOUNTS ----
+
+export async function getAccounts(tenantId: string): Promise<Account[]> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const accounts = await db.collection('accounts').find({ tenantId }).toArray();
+      return accounts.map(a => ({
+        id: a._id.toString(),
+        tenantId: a.tenantId,
+        name: a.name,
+        type: a.type,
+        initialBalance: Number(a.initialBalance),
+        createdAt: a.createdAt,
+      }));
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  return data.accounts.filter(a => a.tenantId === tenantId);
+}
+
+export async function createAccount(tenantId: string, name: string, type: string, initialBalance: number): Promise<Account> {
+  const { db } = await connectDb();
+  const newAccount = { tenantId, name, type, initialBalance: Number(initialBalance), createdAt: new Date() };
+  if (db) {
+    try {
+      const result = await db.collection('accounts').insertOne(newAccount);
+      return { id: result.insertedId.toString(), ...newAccount };
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  const id = Math.random().toString(36).substring(2, 11);
+  const localAccount: Account = { id, ...newAccount };
+  data.accounts.push(localAccount);
+  writeLocalDb(data);
+  return localAccount;
+}
+
+export async function deleteAccount(id: string, tenantId: string): Promise<boolean> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const result = await db.collection('accounts').deleteOne({ _id: safeObjectId(id), tenantId });
+      return result.deletedCount > 0;
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  const len = data.accounts.length;
+  data.accounts = data.accounts.filter(a => !(a.id === id && a.tenantId === tenantId));
+  if (data.accounts.length < len) {
     writeLocalDb(data);
     return true;
   }
@@ -505,7 +649,7 @@ export async function deleteCategory(id: string, tenantId: string): Promise<bool
   const { db } = await connectDb();
   if (db) {
     try {
-      const result = await db.collection('categories').deleteOne({ _id: new ObjectId(id), tenantId });
+      const result = await db.collection('categories').deleteOne({ _id: safeObjectId(id), tenantId });
       return result.deletedCount > 0;
     } catch (e) {}
   }
@@ -563,6 +707,191 @@ export async function getLogs(tenantId?: string): Promise<SystemLog[]> {
   return [...logs].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 }
 
+// ---- BUDGETS ----
+
+export async function getBudgets(tenantId: string): Promise<Budget[]> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const budgets = await db.collection('budgets').find({ tenantId }).toArray();
+      return budgets.map(b => ({
+        id: b._id.toString(),
+        tenantId: b.tenantId,
+        category: b.category,
+        limitAmount: Number(b.limitAmount),
+        month: b.month,
+        createdAt: b.createdAt,
+      }));
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  return data.budgets.filter(b => b.tenantId === tenantId);
+}
+
+export async function createBudget(tenantId: string, category: string, limitAmount: number, month: string): Promise<Budget> {
+  const { db } = await connectDb();
+  const newBudget = { tenantId, category, limitAmount: Number(limitAmount), month, createdAt: new Date() };
+  if (db) {
+    try {
+      const result = await db.collection('budgets').insertOne(newBudget);
+      return { id: result.insertedId.toString(), ...newBudget };
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  const id = Math.random().toString(36).substring(2, 11);
+  const localBudget: Budget = { id, ...newBudget };
+  
+  // Replace existing budget for this category/month
+  const existingIdx = data.budgets.findIndex(b => b.tenantId === tenantId && b.category === category && b.month === month);
+  if (existingIdx >= 0) {
+    data.budgets[existingIdx] = localBudget;
+  } else {
+    data.budgets.push(localBudget);
+  }
+  
+  writeLocalDb(data);
+  return localBudget;
+}
+
+// ---- RECURRING TRANSACTIONS ----
+
+export async function getRecurringTransactions(tenantId: string): Promise<RecurringTransaction[]> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const rts = await db.collection('recurring').find({ tenantId }).toArray();
+      return rts.map(r => ({
+        id: r._id.toString(),
+        tenantId: r.tenantId,
+        userId: r.userId,
+        username: r.username,
+        accountId: r.accountId,
+        type: r.type,
+        description: r.description,
+        amount: Number(r.amount),
+        category: r.category,
+        interval: r.interval,
+        lastRunDate: r.lastRunDate,
+        nextRunDate: r.nextRunDate,
+        createdAt: r.createdAt,
+      }));
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  return data.recurring.filter(r => r.tenantId === tenantId);
+}
+
+export async function createRecurringTransaction(data: Omit<RecurringTransaction, 'id' | '_id' | 'createdAt'>): Promise<RecurringTransaction> {
+  const { db } = await connectDb();
+  const newRT = { ...data, amount: Number(data.amount), createdAt: new Date() };
+  if (db) {
+    try {
+      const result = await db.collection('recurring').insertOne(newRT);
+      return { id: result.insertedId.toString(), ...newRT };
+    } catch (e) {}
+  }
+  const localData = initLocalDb();
+  const id = Math.random().toString(36).substring(2, 11);
+  const localRT: RecurringTransaction = { id, ...newRT };
+  localData.recurring.push(localRT);
+  writeLocalDb(localData);
+  return localRT;
+}
+
+export async function updateRecurringTransaction(id: string, tenantId: string, updateFields: Partial<RecurringTransaction>): Promise<boolean> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const result = await db.collection('recurring').updateOne(
+        { _id: safeObjectId(id), tenantId },
+        { $set: updateFields }
+      );
+      return result.modifiedCount > 0;
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  const idx = data.recurring.findIndex(r => r.id === id && r.tenantId === tenantId);
+  if (idx >= 0) {
+    data.recurring[idx] = { ...data.recurring[idx], ...updateFields };
+    writeLocalDb(data);
+    return true;
+  }
+  return false;
+}
+
+export async function deleteRecurringTransaction(id: string, tenantId: string): Promise<boolean> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const result = await db.collection('recurring').deleteOne({ _id: safeObjectId(id), tenantId });
+      return result.deletedCount > 0;
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  const len = data.recurring.length;
+  data.recurring = data.recurring.filter(r => !(r.id === id && r.tenantId === tenantId));
+  if (data.recurring.length < len) {
+    writeLocalDb(data);
+    return true;
+  }
+  return false;
+}
+
+// ---- CLIENTS ----
+
+export async function getClients(tenantId: string): Promise<Client[]> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const clients = await db.collection('clients').find({ tenantId }).toArray();
+      return clients.map(c => ({
+        id: c._id.toString(),
+        tenantId: c.tenantId,
+        name: c.name,
+        email: c.email,
+        createdAt: c.createdAt,
+      }));
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  return data.clients.filter(c => c.tenantId === tenantId);
+}
+
+export async function createClient(tenantId: string, name: string, email?: string): Promise<Client> {
+  const { db } = await connectDb();
+  const newClient = { tenantId, name, email, createdAt: new Date() };
+  if (db) {
+    try {
+      const result = await db.collection('clients').insertOne(newClient);
+      return { id: result.insertedId.toString(), ...newClient };
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  const id = Math.random().toString(36).substring(2, 11);
+  const localClient: Client = { id, ...newClient };
+  data.clients.push(localClient);
+  writeLocalDb(data);
+  return localClient;
+}
+
+export async function deleteClient(id: string, tenantId: string): Promise<boolean> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const result = await db.collection('clients').deleteOne({ _id: safeObjectId(id), tenantId });
+      return result.deletedCount > 0;
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  const len = data.clients.length;
+  data.clients = data.clients.filter(c => !(c.id === id && c.tenantId === tenantId));
+  if (data.clients.length < len) {
+    writeLocalDb(data);
+    return true;
+  }
+  return false;
+}
+
 // ---- GLOBAL ANALYTICS ----
 
 export async function getGlobalAnalytics() {
@@ -585,3 +914,95 @@ export async function getGlobalAnalytics() {
     failedLogins: data.logs.filter(l => l.action === 'FAILED_LOGIN').length,
   };
 }
+
+
+export async function updateAccount(id: string, tenantId: string, updates: Partial<Account>): Promise<boolean> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const result = await db.collection('accounts').updateOne({ _id: safeObjectId(id), tenantId }, { $set: updates });
+      return result.modifiedCount > 0;
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  const idx = data.accounts.findIndex(a => a.id === id && a.tenantId === tenantId);
+  if (idx >= 0) {
+    data.accounts[idx] = { ...data.accounts[idx], ...updates };
+    writeLocalDb(data);
+    return true;
+  }
+  return false;
+}
+
+export async function updateCategory(id: string, tenantId: string, name: string): Promise<boolean> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const result = await db.collection('categories').updateOne({ _id: safeObjectId(id), tenantId }, { $set: { name } });
+      return result.modifiedCount > 0;
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  const idx = data.categories.findIndex(c => c.id === id && c.tenantId === tenantId);
+  if (idx >= 0) {
+    data.categories[idx].name = name;
+    writeLocalDb(data);
+    return true;
+  }
+  return false;
+}
+
+export async function updateBudget(id: string, tenantId: string, limitAmount: number): Promise<boolean> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const result = await db.collection('budgets').updateOne({ _id: safeObjectId(id), tenantId }, { $set: { limitAmount: Number(limitAmount) } });
+      return result.modifiedCount > 0;
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  const idx = data.budgets.findIndex(b => b.id === id && b.tenantId === tenantId);
+  if (idx >= 0) {
+    data.budgets[idx].limitAmount = Number(limitAmount);
+    writeLocalDb(data);
+    return true;
+  }
+  return false;
+}
+
+export async function deleteBudget(id: string, tenantId: string): Promise<boolean> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const result = await db.collection('budgets').deleteOne({ _id: safeObjectId(id), tenantId });
+      return result.deletedCount > 0;
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  const len = data.budgets.length;
+  data.budgets = data.budgets.filter(b => !(b.id === id && b.tenantId === tenantId));
+  if (data.budgets.length < len) {
+    writeLocalDb(data);
+    return true;
+  }
+  return false;
+}
+
+export async function updateClient(id: string, tenantId: string, updates: any): Promise<boolean> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const result = await db.collection('clients').updateOne({ _id: safeObjectId(id), tenantId }, { $set: updates });
+      return result.modifiedCount > 0;
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  const idx = data.clients.findIndex(c => c.id === id && c.tenantId === tenantId);
+  if (idx >= 0) {
+    data.clients[idx] = { ...data.clients[idx], ...updates };
+    writeLocalDb(data);
+    return true;
+  }
+  return false;
+}
+

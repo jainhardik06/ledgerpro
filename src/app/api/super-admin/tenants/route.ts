@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
-import { getTenants, createTenant, createUser, createLog, getUserByUsername } from '@/lib/db';
+import { getTenants, createTenant, createUser, createLog, getUserByUsername, createAccount, createCategory } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 
 export async function GET() {
@@ -48,6 +48,16 @@ export async function POST(req: NextRequest) {
     // Create the tenant admin
     const passwordHash = await bcrypt.hash(adminPassword, 10);
     const newAdmin = await createUser(adminUsername, passwordHash, 'TENANT_ADMIN', newTenant.id!);
+
+    // Pre-seed Accounts
+    await createAccount(newTenant.id!, 'Cash', 'CASH', 0);
+    await createAccount(newTenant.id!, 'Bank', 'BANK', 0);
+    
+    // Pre-seed Smart Categories
+    const defaultCategories = ['Food', 'Travel', 'Shopping', 'Bills', 'Entertainment', 'Salary', 'Marketing', 'Rent', 'Software', 'Client Revenue', 'Tax'];
+    for (const cat of defaultCategories) {
+      await createCategory(newTenant.id!, newAdmin.id || newAdmin._id.toString(), cat);
+    }
 
     await createLog(session.username, 'Add Tenant', `Created tenant: ${name} with admin: ${adminUsername}`);
 

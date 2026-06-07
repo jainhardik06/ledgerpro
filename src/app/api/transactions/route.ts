@@ -30,11 +30,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized or missing tenant' }, { status: 401 });
     }
 
-    const { type, description, amount, date, category } = await req.json();
+    const { type, description, amount, date, category, accountId, clientId, notes } = await req.json();
 
-    if (!type || !description || amount === undefined || !date) {
+    if (!type || !description || amount === undefined || !date || !accountId) {
       return NextResponse.json(
-        { error: 'All fields (type, description, amount, date) are required' },
+        { error: 'All fields (type, description, amount, date, account) are required' },
         { status: 400 }
       );
     }
@@ -57,11 +57,15 @@ export async function POST(req: NextRequest) {
     const newTx = await createTransaction({
       tenantId: session.tenantId,
       userId: session.userId,
+      username: session.username,
+      accountId,
       type,
       description,
       amount: parsedAmount,
       date,
       category: category || '',
+      clientId: clientId || undefined,
+      notes: notes || '',
     });
 
     await createLog(session.username, 'Add Record', `Added ${type} record: ${description} (₹${parsedAmount})`, session.tenantId);

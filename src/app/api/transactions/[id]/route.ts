@@ -13,7 +13,7 @@ export async function PUT(
     }
 
     const { id } = await params;
-    const { type, description, amount, date, category } = await req.json();
+    const { type, description, amount, date, category, accountId, clientId, notes } = await req.json();
 
     const updates: any = {};
     if (type) {
@@ -48,6 +48,9 @@ export async function PUT(
     if (category !== undefined) {
       updates.category = category;
     }
+    if (accountId !== undefined) updates.accountId = accountId;
+    if (clientId !== undefined) updates.clientId = clientId;
+    if (notes !== undefined) updates.notes = notes;
 
     const success = await updateTransaction(id, session.tenantId, updates);
     if (!success) {

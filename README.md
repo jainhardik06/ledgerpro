@@ -1,7 +1,7 @@
 <div align="center">
 
-# 💼 LedgerPro (SaaS Edition)
-### *The Premium, Secure, Multi-Tenant Ledger Workspace for Modern Enterprise*
+# 💼 Money OS (LedgerPro SaaS Edition)
+### *The Premium, Zero-Cost Financial Command Center for Modern Teams*
 
 [![GitHub Release](https://img.shields.io/github/v/release/jainhardik06/ledgerpro?color=6366f1&style=for-the-badge)](https://github.com/jainhardik06/ledgerpro)
 [![Build Status](https://img.shields.io/badge/Build-Passing-emerald?style=for-the-badge)](https://github.com/jainhardik06/ledgerpro)
@@ -12,6 +12,7 @@
 <br>
 
 <p align="center">
+  <a href="#-the-money-os-concept">Concept</a> •
   <a href="#-features">Key Features</a> •
   <a href="#%EF%B8%8F-architecture">System Architecture</a> •
   <a href="#-tech-stack">Tech Stack</a> •
@@ -23,10 +24,12 @@
 
 </div>
 
-## 🌌 The LedgerPro Concept
-LedgerPro transforms accounting from a simple chore into an **audit-proof, high-resiliency multi-tenant SaaS financial command center**. Built upon React 19, Next.js 16 (App Router), and Tailwind CSS v4, LedgerPro guarantees continuous uptime, complete data isolation between organizations, and cryptographic account integrity.
+## 🌌 The Money OS Concept
+Most people don't want an accounting software—they want answers. "How much money do I have?", "Where did it go?", and "Am I profitable?". **Money OS** answers these instantly.
 
-> **Why LedgerPro?** Traditional trackers mix data or require separate deployments for different organizations. LedgerPro is built as a complete SaaS solution featuring strict Data Isolation by `tenantId`, role-based access control (RBAC), and immutable audit logging.
+Money OS transforms accounting from a simple chore into an **audit-proof, high-resiliency multi-tenant SaaS financial command center**. Built upon React 19, Next.js 16 (App Router), and Tailwind CSS v4, it features premium aesthetics, dynamic application modes (Standard, Student Club, Agency), and complete multi-tenant data isolation.
+
+It is designed specifically for **Small Businesses, Freelancers, Student Clubs, and Agencies** who need enterprise-grade tracking at **$0 operational cost**.
 
 ---
 
@@ -34,34 +37,49 @@ LedgerPro transforms accounting from a simple chore into an **audit-proof, high-
 
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0;">
   <div style="border: 1px solid #38b2ac30; padding: 15px; border-radius: 12px; background: rgba(56, 178, 172, 0.05);">
-    <h3>🏢 Multi-Tenant Architecture</h3>
-    <p>A true SaaS solution. A Super Admin creates completely isolated Organizations (Tenants) and provisions Tenant Admins. Data never leaks across boundaries.</p>
+    <h3>📊 Premium Glassmorphism Dashboard</h3>
+    <p>A beautifully designed, premium UI featuring real-time Cash Flow charts, Top Spending breakdowns, and rich metric cards powered by Recharts, encased in subtle gradients and floating elements.</p>
   </div>
   <div style="border: 1px solid #6366f130; padding: 15px; border-radius: 12px; background: rgba(99, 102, 241, 0.05);">
+    <h3>🏗️ Complete CRUD Management</h3>
+    <p>Full suite of data management tools. Create, edit, and delete transactions, budgets, clients, and recurring payments inline. Manage Accounts and Categories completely via a dedicated Settings UI.</p>
+  </div>
+  <div style="border: 1px solid #ec489930; padding: 15px; border-radius: 12px; background: rgba(236, 72, 153, 0.05);">
+    <h3>🔄 Zero-Cost Recurring Engine</h3>
+    <p>Automate your fixed expenses. Uses a brilliant "Login-Evaluated Trigger" system to back-post missed transactions seamlessly without paying for a 24/7 backend cron server.</p>
+  </div>
+  <div style="border: 1px solid #eab30830; padding: 15px; border-radius: 12px; background: rgba(234, 179, 8, 0.05);">
+    <h3>🏢 Multi-Tenant & Self-Serve Onboarding</h3>
+    <p>A true SaaS solution. Users can autonomously sign up and instantly provision their own isolated Tenant. Organizations can toggle their "App Mode" to instantly switch terminology (e.g., Student Club mode).</p>
+  </div>
+  <div style="border: 1px solid #8b5cf630; padding: 15px; border-radius: 12px; background: rgba(139, 92, 246, 0.05);">
     <h3>🔒 Immutable Audit System</h3>
     <p>Every login, transaction modification, and category update creates an un-deletable log entry tied to the active user session and their specific tenant.</p>
   </div>
-  <div style="border: 1px solid #ec489930; padding: 15px; border-radius: 12px; background: rgba(236, 72, 153, 0.05);">
+  <div style="border: 1px solid #f43f5e30; padding: 15px; border-radius: 12px; background: rgba(244, 63, 94, 0.05);">
     <h3>👥 Role-Based Access Control</h3>
-    <p>Hierarchical access model: Super Admin (Global Management) > Tenant Admin (Organization Management) > User (Ledger Operations).</p>
-  </div>
-  <div style="border: 1px solid #eab30830; padding: 15px; border-radius: 12px; background: rgba(234, 179, 8, 0.05);">
-    <h3>💾 Zero-Downtime Adaptability</h3>
-    <p>Automatically routes traffic to a local filesystem JSON database if your primary MongoDB Atlas cluster goes offline.</p>
+    <p>Hierarchical access model: Super Admin (Global Management) > Tenant Admin (Organization Management) > User (Ledger Operations). Usernames are strictly guaranteed to be globally unique.</p>
   </div>
 </div>
+
+### More Superpowers
+* **Accounts Abstraction**: Track money across Bank, Cash, UPI, Paytm, and Petty Cash individually.
+* **Smart Pre-Seeding**: New organizations are automatically initialized with Core Accounts and Smart Categories.
+* **Zero-Cost Receipts**: Attach Google Drive links or receipt notes directly to transactions to avoid expensive S3 bucket hosting.
+* **Team Leaderboards**: Track exactly who spent what within an organization.
+* **Excel Exports**: Generate one-click CSV/Excel backups using SheetJS.
 
 ---
 
 ## ⚙️ Architecture
 
-LedgerPro enforces strict data separation logic before hitting the database adapter.
+Money OS enforces strict data separation logic before hitting the database adapter.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#6366f1', 'edgeLabelBackground':'#1e1b4b', 'tertiaryColor': '#0f172a'}}}%%
 graph TD
     %% Clients
-    Client([💻 LedgerPro SPA Client]) -- "HTTP API Requests (HttpOnly JWT Cookie)" --> API[⚙️ Next.js Router & API Middleware]
+    Client([💻 Money OS Dashboard]) -- "HTTP API Requests (HttpOnly JWT Cookie)" --> API[⚙️ Next.js Router & API Middleware]
     
     %% Routing logic
     API -- "Authentication & Security Verification" --> Auth{Valid Session?}
@@ -91,6 +109,7 @@ graph TD
 ```
 
 * **Client**: React 19, Next.js 16 (App Router), Lucide React
+* **Data Visualization**: Recharts, d3-color
 * **Styling**: Tailwind CSS v4, custom glassmorphism, responsive grid layout
 * **Persistence**: MongoDB Native Driver, Node File System (`fs`) adapter
 * **Authentication**: Signed HTTP-Only session cookies (HMAC SHA-256)
@@ -101,15 +120,15 @@ graph TD
 
 ## 🔒 Security
 
-LedgerPro mitigates modern security risks using these strategies:
+Money OS mitigates modern security risks using these strategies:
 
 | Threat Vector | Security Strategy | Implementation Detail |
 | :--- | :--- | :--- |
 | **Data Leakage** | Tenant ID Isolation | Every DB query explicitly requires and filters by `tenantId`. Users absolutely cannot query outside their organization. |
+| **BSON Exceptions** | Safe Object Mapping | All API endpoints use resilient `safeObjectId` wrappers to prevent invalid ID inputs from crashing the node environment. |
 | **XSS & Cookie Stealing** | Token Confidentiality | Session JWTs are saved inside `HttpOnly` cookies, preventing client JavaScript access. |
 | **Cross-Origin CSRF** | Domain Locking | Session cookies carry `SameSite=Strict`, blocking unauthorized cross-origin requests. |
 | **Database Tampering** | Immutable Audit Trail | Audit logs have no update (PUT) or delete (DELETE) routes, establishing a permanent log. |
-| **Credential Harvesting** | Admin-Only Onboarding | Public user self-registration is closed. Super Admins invite Tenant Admins, who in turn invite Users. |
 | **Password Theft** | Cryptographic Hashing | Client passwords are salted and hashed using `bcryptjs` before storage. |
 
 ---
@@ -163,10 +182,21 @@ npm run start
 
 ## 🔑 Initial Setup Flow
 
+### Option A: Self-Serve Registration
+1. Navigate to the Login screen.
+2. Click **"Don't have an account? Sign up"**.
+3. Create your Organization, and the backend will automatically pre-seed your accounts and log you into your new isolated Money OS instance.
+
+### Option B: Super Admin Deployment
 1. Log in with your **Super Admin** credentials (from `.env.local`).
-2. You will be routed to the Super Admin Dashboard.
-3. Click "Add Tenant" to create your first Organization and its primary Tenant Admin.
-4. Log out and log back in as the new Tenant Admin to access the Organization and invite internal users.
+2. You will be routed to the Global Super Admin Dashboard.
+3. Click "Add Tenant" to forcefully provision a new Organization and its primary Tenant Admin.
+4. Distribute the generated credentials to the client.
+
+### Next Steps (For Tenant Admins)
+* In the **Settings Tab**, configure your **App Mode** (Standard, Student Club, or Agency) to dynamically update terminology.
+* In the **Settings Tab**, add more asset Accounts (e.g., Paytm, Petty Cash) and modify Categories.
+* In the **Team Tab**, securely invite internal users.
 
 ---
 
@@ -181,6 +211,7 @@ interface Tenant {
   id?: string;
   _id?: any;
   name: string;
+  appMode?: 'Standard' | 'Student_Club' | 'Agency';
   createdAt: Date;
 }
 ```
@@ -210,23 +241,59 @@ interface Transaction {
   amount: number;
   date: string; // YYYY-MM-DD
   category?: string;
+  accountId?: string;
+  clientId?: string;
+  notes?: string;
   createdAt: Date;
 }
 ```
 
-### 4. Category Interface
+### 4. Category, Account & Client Interfaces
 ```typescript
 interface Category {
   id?: string;
-  _id?: any;
   tenantId: string;
-  userId: string;
   name: string;
-  createdAt: Date;
+}
+
+interface Account {
+  id?: string;
+  tenantId: string;
+  name: string;
+  initialBalance: number;
+}
+
+interface Client {
+  id?: string;
+  tenantId: string;
+  name: string;
+  email?: string;
 }
 ```
 
-### 5. System Activity Log Interface
+### 5. Budget & Recurring Interfaces
+```typescript
+interface Budget {
+  id?: string;
+  tenantId: string;
+  category: string;
+  limitAmount: number;
+  month: string; // YYYY-MM
+}
+
+interface RecurringTransaction {
+  id?: string;
+  tenantId: string;
+  accountId: string;
+  type: 'Credit' | 'Debit';
+  description: string;
+  amount: number;
+  interval: 'Daily' | 'Weekly' | 'Monthly';
+  nextRunDate: string; // YYYY-MM-DD
+}
+```
+
+### 6. System Activity Log Interface
 ```typescript
 interface SystemLog {
   id?: string;
@@ -251,25 +318,26 @@ ledger/
 │   │   │   ├── auth/
 │   │   │   │   ├── login/route.ts        # Authenticates SuperAdmin & Users
 │   │   │   │   ├── logout/route.ts       # Deletes session cookie
+│   │   │   │   ├── signup/route.ts       # Public self-serve tenant onboarding
 │   │   │   │   └── me/route.ts           # Checks session and returns active role
 │   │   │   ├── super-admin/
 │   │   │   │   └── tenants/route.ts      # Super Admin route to create organizations
-│   │   │   ├── tenant/
+│   │   │   ├── tenant/               
 │   │   │   │   └── users/route.ts        # Tenant Admin route to manage isolated users
-│   │   │   ├── categories/
-│   │   │   │   ├── route.ts              # GET list / POST custom categories (isolated)
-│   │   │   │   └── [id]/route.ts         # DELETE custom category
-│   │   │   ├── dashboard/route.ts        # Computes isolated tenant statistics
-│   │   │   ├── logs/route.ts             # Retrieves audit trail logs
-│   │   │   └── transactions/
-│   │   │       ├── route.ts              # GET list / POST transactions (isolated)
-│   │   │       └── [id]/route.ts         # PUT updates / DELETE transactions
+│   │   │   ├── transactions/             # Unified transaction logic & zero-cost notes
+│   │   │   ├── categories/               # Dynamic categories
+│   │   │   ├── accounts/                 # Asset ledger accounts logic
+│   │   │   ├── budgets/                  # Spending alerts and limits logic
+│   │   │   ├── recurring/                # Zero-cost login-evaluated cron engine
+│   │   │   ├── clients/                  # Client and Sponsor tracking
+│   │   │   ├── settings/                 # Dynamic App Mode configurations
+│   │   │   └── logs/route.ts             # Retrieves audit trail logs
 │   │   ├── globals.css                   # Custom global animations & Tailwind config
 │   │   ├── layout.tsx                    # SEO headers, font assets, and layout wrappers
-│   │   └── page.tsx                      # Dashboard Orchestrator based on User Role
+│   │   └── page.tsx                      # Main Entry, Auth Gateway & Theme Orchestrator
 │   ├── components/
 │   │   ├── SuperAdminDashboard.tsx       # Global organization management view
-│   │   └── TenantUsersManager.tsx        # Localized user management for Tenant Admins
+│   │   └── MoneyOSDashboard.tsx          # Single-Page App Dashboard (Tabs: Overview, Settings, etc.)
 │   ├── data/
 │   │   └── local_db.json                 # local JSON DB file fallback
 │   └── lib/
