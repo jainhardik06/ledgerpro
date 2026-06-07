@@ -7,7 +7,7 @@
 [![Build Status](https://img.shields.io/badge/Build-Passing-emerald?style=for-the-badge)](https://github.com/jainhardik06/ledgerpro)
 [![License](https://img.shields.io/badge/License-MIT-violet?style=for-the-badge)](https://github.com/jainhardik06/ledgerpro)
 [![Security Log](https://img.shields.io/badge/Audit--Logs-Immutable-indigo?style=for-the-badge)](https://github.com/jainhardik06/ledgerpro)
-[![Architecture](https://img.shields.io/badge/Architecture-Multi--Tenant-blue?style=for-the-badge)](https://github.com/jainhardik06/ledgerpro)
+[![Architecture](https://img.shields.io/badge/Architecture-App--Router-blue?style=for-the-badge)](https://github.com/jainhardik06/ledgerpro)
 
 <br>
 
@@ -27,7 +27,7 @@
 ## 🌌 The Money OS Concept
 Most people don't want an accounting software—they want answers. "How much money do I have?", "Where did it go?", and "Am I profitable?". **Money OS** answers these instantly.
 
-Money OS transforms accounting from a simple chore into an **audit-proof, high-resiliency multi-tenant SaaS financial command center**. Built upon React 19, Next.js 16 (App Router), and Tailwind CSS v4, it features premium aesthetics, dynamic application modes (Standard, Student Club, Agency), and complete multi-tenant data isolation.
+Money OS transforms accounting from a simple chore into an **audit-proof, high-resiliency multi-tenant SaaS financial command center**. Completely re-architected on **Next.js App Router** with an obsession for premium aesthetics (Emil Kowalski / Linear inspired), it features dynamic application modes (Standard, Student Club, Agency), slide-over Drawers, universal Command Palette navigation, and complete multi-tenant data isolation.
 
 It is designed specifically for **Small Businesses, Freelancers, Student Clubs, and Agencies** who need enterprise-grade tracking at **$0 operational cost**.
 
@@ -41,8 +41,8 @@ It is designed specifically for **Small Businesses, Freelancers, Student Clubs, 
     <p>A beautifully designed, premium UI featuring real-time Cash Flow charts, Top Spending breakdowns, and rich metric cards powered by Recharts, encased in subtle gradients and floating elements.</p>
   </div>
   <div style="border: 1px solid #6366f130; padding: 15px; border-radius: 12px; background: rgba(99, 102, 241, 0.05);">
-    <h3>🏗️ Complete CRUD Management</h3>
-    <p>Full suite of data management tools. Create, edit, and delete transactions, budgets, clients, and recurring payments inline. Manage Accounts and Categories completely via a dedicated Settings UI.</p>
+    <h3>⌨️ Universal Command Palette</h3>
+    <p>Hit Cmd+K from anywhere in the application to instantly search, navigate, and take actions. Full keyboard navigation built natively into the core layout.</p>
   </div>
   <div style="border: 1px solid #ec489930; padding: 15px; border-radius: 12px; background: rgba(236, 72, 153, 0.05);">
     <h3>🔄 Zero-Cost Recurring Engine</h3>
@@ -54,32 +54,33 @@ It is designed specifically for **Small Businesses, Freelancers, Student Clubs, 
   </div>
   <div style="border: 1px solid #8b5cf630; padding: 15px; border-radius: 12px; background: rgba(139, 92, 246, 0.05);">
     <h3>🔒 Immutable Audit System</h3>
-    <p>Every login, transaction modification, and category update creates an un-deletable log entry tied to the active user session and their specific tenant.</p>
+    <p>Every login, transaction modification, and category update creates an un-deletable log entry tied to the active user session and their specific tenant. Viewable inside the Audit Center.</p>
   </div>
   <div style="border: 1px solid #f43f5e30; padding: 15px; border-radius: 12px; background: rgba(244, 63, 94, 0.05);">
     <h3>👥 Role-Based Access Control</h3>
-    <p>Hierarchical access model: Super Admin (Global Management) > Tenant Admin (Organization Management) > User (Ledger Operations). Usernames are strictly guaranteed to be globally unique.</p>
+    <p>Hierarchical access model: Super Admin (Global Mission Control) > Tenant Admin (Organization Management) > User (Ledger Operations). Usernames are strictly guaranteed to be globally unique.</p>
   </div>
 </div>
 
 ### More Superpowers
+* **Edge-to-Edge Drawers**: Say goodbye to clunky center modals. All data entry is handled via smooth right-side sliding Drawers.
 * **Accounts Abstraction**: Track money across Bank, Cash, UPI, Paytm, and Petty Cash individually.
 * **Smart Pre-Seeding**: New organizations are automatically initialized with Core Accounts and Smart Categories.
 * **Zero-Cost Receipts**: Attach Google Drive links or receipt notes directly to transactions to avoid expensive S3 bucket hosting.
 * **Team Leaderboards**: Track exactly who spent what within an organization.
-* **Excel Exports**: Generate one-click CSV/Excel backups using SheetJS.
+* **Dynamic Intelligence**: Actively forecasts upcoming cash flow obligations and alerts you before they hit.
 
 ---
 
 ## ⚙️ Architecture
 
-Money OS enforces strict data separation logic before hitting the database adapter.
+Money OS enforces strict data separation logic before hitting the database adapter, now operating entirely on Next.js App Router.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#6366f1', 'edgeLabelBackground':'#1e1b4b', 'tertiaryColor': '#0f172a'}}}%%
 graph TD
     %% Clients
-    Client([💻 Money OS Dashboard]) -- "HTTP API Requests (HttpOnly JWT Cookie)" --> API[⚙️ Next.js Router & API Middleware]
+    Client([💻 Money OS Dashboard]) -- "HTTP API Requests (HttpOnly JWT Cookie)" --> API[⚙️ Next.js App Router API]
     
     %% Routing logic
     API -- "Authentication & Security Verification" --> Auth{Valid Session?}
@@ -114,7 +115,6 @@ graph TD
 * **Persistence**: MongoDB Native Driver, Node File System (`fs`) adapter
 * **Authentication**: Signed HTTP-Only session cookies (HMAC SHA-256)
 * **Encryption**: BCrypt password hashing (10 salt rounds)
-* **Serialization**: SheetJS (`xlsx`) spreadsheet engine
 
 ---
 
@@ -189,14 +189,14 @@ npm run start
 
 ### Option B: Super Admin Deployment
 1. Log in with your **Super Admin** credentials (from `.env.local`).
-2. You will be routed to the Global Super Admin Dashboard.
-3. Click "Add Tenant" to forcefully provision a new Organization and its primary Tenant Admin.
+2. You will be routed to the Global Super Admin Mission Control `/super-admin`.
+3. Click "Provision Organization" to forcefully provision a new Organization and its primary Tenant Admin.
 4. Distribute the generated credentials to the client.
 
 ### Next Steps (For Tenant Admins)
-* In the **Settings Tab**, configure your **App Mode** (Standard, Student Club, or Agency) to dynamically update terminology.
-* In the **Settings Tab**, add more asset Accounts (e.g., Paytm, Petty Cash) and modify Categories.
-* In the **Team Tab**, securely invite internal users.
+* In the **Settings Center**, configure your **App Mode** (Standard, Student Club, or Agency) to dynamically update terminology.
+* In the **Accounts Center**, add more asset Accounts (e.g., Paytm, Petty Cash).
+* In the **Team Workspace**, securely invite internal users.
 
 ---
 
@@ -308,40 +308,53 @@ interface SystemLog {
 </details>
 
 <details>
-<summary><b>📂 Show Directory Layout</b></summary>
+<summary><b>📂 Show Directory Layout (Next.js App Router)</b></summary>
 
 ```text
 ledger/
 ├── src/
 │   ├── app/
 │   │   ├── api/
-│   │   │   ├── auth/
-│   │   │   │   ├── login/route.ts        # Authenticates SuperAdmin & Users
-│   │   │   │   ├── logout/route.ts       # Deletes session cookie
-│   │   │   │   ├── signup/route.ts       # Public self-serve tenant onboarding
-│   │   │   │   └── me/route.ts           # Checks session and returns active role
-│   │   │   ├── super-admin/
-│   │   │   │   └── tenants/route.ts      # Super Admin route to create organizations
-│   │   │   ├── tenant/               
-│   │   │   │   └── users/route.ts        # Tenant Admin route to manage isolated users
-│   │   │   ├── transactions/             # Unified transaction logic & zero-cost notes
-│   │   │   ├── categories/               # Dynamic categories
-│   │   │   ├── accounts/                 # Asset ledger accounts logic
-│   │   │   ├── budgets/                  # Spending alerts and limits logic
-│   │   │   ├── recurring/                # Zero-cost login-evaluated cron engine
-│   │   │   ├── clients/                  # Client and Sponsor tracking
-│   │   │   ├── settings/                 # Dynamic App Mode configurations
-│   │   │   └── logs/route.ts             # Retrieves audit trail logs
-│   │   ├── globals.css                   # Custom global animations & Tailwind config
-│   │   ├── layout.tsx                    # SEO headers, font assets, and layout wrappers
-│   │   └── page.tsx                      # Main Entry, Auth Gateway & Theme Orchestrator
+│   │   │   ├── auth/                 # Auth Gateway
+│   │   │   ├── super-admin/          # Super Admin API Routes
+│   │   │   ├── tenant/               # Organization API Routes
+│   │   │   ├── transactions/         # Live ledger API
+│   │   │   ├── accounts/             # Bank/Asset endpoints
+│   │   │   ├── budgets/              # Limit controls
+│   │   │   ├── recurring/            # Zero-cost cron logic
+│   │   │   ├── clients/              # CRM API
+│   │   │   ├── settings/             # Dynamic app state
+│   │   │   └── logs/                 # Immutable audit trail
+│   │   │
+│   │   ├── dashboard/                # Main Post-Login Experience
+│   │   │   ├── layout.tsx            # Nested sidebar + context provider
+│   │   │   ├── page.tsx              # Command Center Snapshot
+│   │   │   ├── transactions/         # Data table & Drawer
+│   │   │   ├── accounts/             # Visual account tracking
+│   │   │   ├── budgets/              # Progress bars & limits
+│   │   │   ├── recurring/            # Obligations tracker
+│   │   │   ├── clients/              # Directory
+│   │   │   ├── reports/              # Advanced charts
+│   │   │   ├── team/                 # RBAC directory
+│   │   │   ├── audit/                # Log viewing
+│   │   │   └── settings/             # Tenant global settings
+│   │   │
+│   │   └── super-admin/              # Super Admin Global Experience
+│   │       ├── layout.tsx            # Global admin layout
+│   │       ├── page.tsx              # Mission Control Dashboard
+│   │       ├── tenants/              # Tenant provisioner
+│   │       ├── usage/                # Global resource consumption
+│   │       └── ...
+│   │
 │   ├── components/
-│   │   ├── SuperAdminDashboard.tsx       # Global organization management view
-│   │   └── MoneyOSDashboard.tsx          # Single-Page App Dashboard (Tabs: Overview, Settings, etc.)
-│   ├── data/
-│   │   └── local_db.json                 # local JSON DB file fallback
+│   │   ├── ui/                       # Reusable primitives
+│   │   │   ├── Drawer.tsx            # Slide-over overlay
+│   │   │   └── CommandPalette.tsx    # Cmd+K fuzzy search navigator
+│   │   └── dashboard/
+│   │       └── DashboardProvider.tsx # Global state orchestrator
+│   │
 │   └── lib/
-│       ├── auth.ts                       # JWT helper library
-│       └── db.ts                         # Resilient DB connection & Multi-Tenant logic
+│       ├── auth.ts                   # JWT & Encryption
+│       └── db.ts                     # MongoDB + Fallback File DB
 ```
 </details>
