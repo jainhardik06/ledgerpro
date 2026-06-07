@@ -3,7 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import SuperAdminDashboard from '@/components/SuperAdminDashboard';
 import MoneyOSDashboard from '@/components/MoneyOSDashboard';
-import { LogIn, RefreshCw, AlertCircle } from 'lucide-react';
+import { LogIn, RefreshCw, AlertCircle, Triangle } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 interface UserSession {
   id: string;
@@ -28,7 +30,7 @@ export default function Home() {
   const [authUsername, setAuthUsername] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState(true); // Default to true as per SaaS trend
   
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
@@ -73,12 +75,12 @@ export default function Home() {
       if (res.ok && data.success) {
         setUser(data.user);
         setIsAuthenticated(true);
-        if (isSignup) showToast('Account created successfully!', 'success');
+        if (isSignup) showToast('Account created successfully.', 'success');
       } else {
-        showToast(data.error || 'Authentication failed', 'error');
+        showToast(data.error || 'Authentication failed.', 'error');
       }
     } catch (err) {
-      showToast('Connection error occurred', 'error');
+      showToast('Connection error occurred.', 'error');
     } finally {
       setAuthLoading(false);
     }
@@ -93,53 +95,82 @@ export default function Home() {
 
   if (isAuthenticated === null) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center">
-        <RefreshCw className="w-10 h-10 text-indigo-500 animate-spin" />
+      <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-[#000000]' : 'bg-white'}`}>
+        <RefreshCw className={`w-5 h-5 animate-spin ${darkMode ? 'text-neutral-500' : 'text-neutral-400'}`} />
       </div>
     );
   }
 
   if (!isAuthenticated) {
     return (
-      <div className={`min-h-screen flex items-center justify-center p-4 transition-colors duration-500 ${darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
+      <div className={`min-h-screen flex items-center justify-center p-4 transition-colors duration-150 ${darkMode ? 'bg-[#000000] text-[#ededed]' : 'bg-[#fcfcfc] text-[#171717]'}`}>
+        
+        {/* Crisp Toasts */}
         <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
           {toasts.map(t => (
-            <div key={t.id} className="flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-xl border backdrop-blur-md text-sm bg-rose-500/15 border-rose-500/35 text-rose-400">
+            <div key={t.id} className="flex items-center gap-2.5 px-4 py-3 rounded-md shadow-lg border text-[13px] font-medium animate-in bg-rose-500/10 border-rose-500/20 text-rose-500">
               <AlertCircle className="w-4 h-4" /> <span>{t.text}</span>
             </div>
           ))}
         </div>
         
-        <div className={`w-full max-w-md rounded-[2rem] p-8 shadow-2xl border ${darkMode ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-slate-200'}`}>
+        <div className={`w-full max-w-[360px] rounded-xl p-8 border ${darkMode ? 'bg-[#0a0a0a] border-neutral-800' : 'bg-white border-neutral-200'} shadow-sm`}>
           <div className="flex justify-center mb-6">
-            <div className="bg-gradient-to-tr from-indigo-600 to-violet-500 p-3 rounded-2xl text-white shadow-lg">
-              <RefreshCw className="w-8 h-8" />
+            <div className={`p-2 rounded-md ${darkMode ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
+              <Triangle className={`w-6 h-6 ${darkMode ? 'text-neutral-200' : 'text-neutral-800'} fill-current`} />
             </div>
           </div>
-          <h2 className="text-3xl font-black text-center mb-8">Money OS</h2>
+          <h2 className="text-xl font-semibold text-center mb-8 tracking-tight">
+            {isSignup ? 'Create your workspace' : 'Log in to Money OS'}
+          </h2>
           
-          <form onSubmit={handleAuthSubmit} className="space-y-5">
+          <form onSubmit={handleAuthSubmit} className="space-y-4">
             {isSignup && (
-              <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                <label className="block text-sm font-semibold mb-2">Organization / Company Name</label>
-                <input type="text" value={authTenantName} onChange={e => setAuthTenantName(e.target.value)} className={`w-full px-4 py-3.5 rounded-xl border outline-none font-medium transition ${darkMode ? 'bg-slate-950 border-slate-800 focus:border-indigo-500 text-white' : 'bg-slate-50 border-slate-300 focus:border-indigo-500 text-black'}`} required={isSignup} />
+              <div className="animate-in">
+                <label className="block text-[12px] font-medium mb-1.5 text-neutral-500">Organization Name</label>
+                <Input 
+                  type="text" 
+                  value={authTenantName} 
+                  onChange={e => setAuthTenantName(e.target.value)} 
+                  required={isSignup} 
+                  autoFocus
+                />
               </div>
             )}
             <div>
-              <label className="block text-sm font-semibold mb-2">{isSignup ? 'Admin Username' : 'Username'}</label>
-              <input type="text" value={authUsername} onChange={e => setAuthUsername(e.target.value)} className={`w-full px-4 py-3.5 rounded-xl border outline-none font-medium transition ${darkMode ? 'bg-slate-950 border-slate-800 focus:border-indigo-500 text-white' : 'bg-slate-50 border-slate-300 focus:border-indigo-500 text-black'}`} required />
+              <label className="block text-[12px] font-medium mb-1.5 text-neutral-500">
+                {isSignup ? 'Admin Username' : 'Username'}
+              </label>
+              <Input 
+                type="text" 
+                value={authUsername} 
+                onChange={e => setAuthUsername(e.target.value)} 
+                required 
+                autoFocus={!isSignup}
+              />
             </div>
             <div>
-              <label className="block text-sm font-semibold mb-2">Password</label>
-              <input type="password" value={authPassword} onChange={e => setAuthPassword(e.target.value)} className={`w-full px-4 py-3.5 rounded-xl border outline-none font-medium transition ${darkMode ? 'bg-slate-950 border-slate-800 focus:border-indigo-500 text-white' : 'bg-slate-50 border-slate-300 focus:border-indigo-500 text-black'}`} required />
+              <label className="block text-[12px] font-medium mb-1.5 text-neutral-500">Password</label>
+              <Input 
+                type="password" 
+                value={authPassword} 
+                onChange={e => setAuthPassword(e.target.value)} 
+                required 
+              />
             </div>
-            <button type="submit" disabled={authLoading} className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-[0.99] transition-all flex justify-center items-center gap-2 mt-4 cursor-pointer">
-              {authLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <><LogIn className="w-4 h-4" /> {isSignup ? 'Create Account' : 'Sign In'}</>}
-            </button>
+            <div className="pt-2">
+              <Button type="submit" disabled={authLoading} className="w-full">
+                {authLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : (isSignup ? 'Create Workspace' : 'Continue')}
+              </Button>
+            </div>
 
-            <div className="text-center mt-6 pt-4 border-t border-slate-800/30">
-              <button type="button" onClick={() => { setIsSignup(!isSignup); setAuthTenantName(''); setAuthUsername(''); setAuthPassword(''); }} className="text-sm font-semibold text-indigo-500 hover:text-indigo-400 transition-colors">
-                {isSignup ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
+            <div className="text-center mt-6 pt-6">
+              <button 
+                type="button" 
+                onClick={() => { setIsSignup(!isSignup); setAuthTenantName(''); setAuthUsername(''); setAuthPassword(''); }} 
+                className="text-[13px] text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300 transition-colors"
+              >
+                {isSignup ? 'Already have an account? Log in' : "Don't have an account? Sign up"}
               </button>
             </div>
           </form>
