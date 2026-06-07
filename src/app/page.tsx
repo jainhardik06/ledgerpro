@@ -41,6 +41,7 @@ interface UserSession {
   username: string;
   role: 'SUPER_ADMIN' | 'TENANT_ADMIN' | 'USER';
   tenantId?: string;
+  impersonatedBy?: string;
 }
 
 interface ToastMessage {
@@ -737,6 +738,14 @@ export default function Home() {
   return (
     <div className={`min-h-screen flex flex-col transition-colors duration-500 ${darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
       
+      {/* Impersonation Banner */}
+      {user?.impersonatedBy && (
+        <div className="bg-rose-500 text-white text-center py-2 px-4 text-sm font-bold flex justify-center items-center gap-4 z-[100] sticky top-0 shadow-md">
+          <span>⚠️ You are impersonating {user.username}.</span>
+          <button onClick={handleLogout} className="bg-white/20 hover:bg-white/30 px-3 py-1 rounded-md text-xs transition-colors cursor-pointer border border-white/20">Exit Impersonation</button>
+        </div>
+      )}
+
       {/* Floating Toasts */}
       <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
         {toasts.map(t => (

@@ -9,6 +9,7 @@ export interface TokenPayload {
   username: string;
   role: 'SUPER_ADMIN' | 'TENANT_ADMIN' | 'USER';
   tenantId?: string;
+  impersonatedBy?: string;
 }
 
 export function generateToken(payload: TokenPayload): string {

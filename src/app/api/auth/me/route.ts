@@ -32,6 +32,7 @@ export async function GET() {
         username: user.username,
         role: user.role,
         tenantId: user.tenantId,
+        impersonatedBy: session.impersonatedBy,
       },
     });
   } catch (error) {

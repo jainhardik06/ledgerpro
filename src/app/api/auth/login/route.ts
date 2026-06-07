@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import bcrypt from 'bcryptjs';
-import { getUserByUsername, createLog } from '@/lib/db';
+import { getUserByUsername, createLog, getTenantById } from '@/lib/db';
 import { generateToken } from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
@@ -14,6 +14,8 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
+    const ipAddress = req.headers.get('x-forwarded-for') || req.headers.get('remote-addr') || 'unknown';
 
     const SUPER_ADMIN_USERNAME = process.env.SUPER_ADMIN_USERNAME;
     const SUPER_ADMIN_PASSWORD = process.env.SUPER_ADMIN_PASSWORD;
@@ -41,7 +43,7 @@ export async function POST(req: NextRequest) {
         path: '/',
       });
 
-      await createLog(username, 'Login', 'Super Admin successfully logged in');
+      await createLog(username, 'Login', 'Super Admin successfully logged in', undefined, ipAddress);
 
       return NextResponse.json({
         success: true,
@@ -54,16 +56,34 @@ export async function POST(req: NextRequest) {
 
     const user = await getUserByUsername(username);
     if (!user) {
-      await createLog(username, 'Login Failed', 'User not found');
+      await createLog(username, 'FAILED_LOGIN', 'User not found', undefined, ipAddress);
       return NextResponse.json(
         { error: 'Invalid username or password' },
         { status: 401 }
       );
     }
 
+    if (user.status === 'LOCKED') {
+      await createLog(username, 'FAILED_LOGIN', 'Account is locked', user.tenantId, ipAddress);
+      return NextResponse.json(
+        { error: 'Account is locked. Contact administrator.' },
+        { status: 403 }
+      );
+    }
+
+    const tenant = await getTenantById(user.tenantId);
+    if (tenant && tenant.status === 'SUSPENDED') {
+      await createLog(username, 'FAILED_LOGIN', 'Tenant is suspended', user.tenantId, ipAddress);
+      return NextResponse.json(
+        { error: 'Organization account is suspended. Contact support.' },
+        { status: 403 }
+      );
+    }
+
+
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
-      await createLog(user.username, 'Login Failed', 'Incorrect password entered', user.tenantId);
+      await createLog(user.username, 'FAILED_LOGIN', 'Incorrect password entered', user.tenantId, ipAddress);
       return NextResponse.json(
         { error: 'Invalid username or password' },
         { status: 401 }
@@ -88,7 +108,7 @@ export async function POST(req: NextRequest) {
       path: '/',
     });
 
-    await createLog(user.username, 'Login', 'User successfully logged in', user.tenantId);
+    await createLog(user.username, 'Login', 'User successfully logged in', user.tenantId, ipAddress);
 
     return NextResponse.json({
       success: true,

@@ -1,12 +1,20 @@
 import { MongoClient, ObjectId } from 'mongodb';
 import fs from 'fs';
 import path from 'path';
-import bcrypt from 'bcryptjs';
 
 export interface Tenant {
   id?: string;
   _id?: any;
   name: string;
+  status: 'ACTIVE' | 'SUSPENDED';
+  plan: 'FREE' | 'STARTER' | 'ENTERPRISE';
+  settings: {
+    appName?: string;
+    themeColor?: string;
+  };
+  limits: {
+    maxUsers: number;
+  };
   createdAt: Date;
 }
 
@@ -17,6 +25,7 @@ export interface User {
   passwordHash: string;
   role: 'TENANT_ADMIN' | 'USER';
   tenantId: string;
+  status: 'ACTIVE' | 'LOCKED';
   createdAt: Date;
 }
 
@@ -49,6 +58,7 @@ export interface SystemLog {
   username: string;
   action: string;
   details: string;
+  ipAddress?: string;
   timestamp: Date;
 }
 
@@ -117,10 +127,8 @@ export async function connectDb() {
       serverSelectionTimeoutMS: 10000,
     });
     await mongoClient.connect();
-    console.log('[Database] Connected successfully to MongoDB.');
     return { client: mongoClient, db: mongoClient.db() };
   } catch (error) {
-    console.error('[Database] Failed to connect to MongoDB. Falling back to local file database.', error);
     mongoClient = null;
     useLocalDb = true;
     initLocalDb();
@@ -138,17 +146,68 @@ export async function getTenants(): Promise<Tenant[]> {
       return tenants.map(t => ({
         id: t._id.toString(),
         name: t.name,
+        status: t.status || 'ACTIVE',
+        plan: t.plan || 'FREE',
+        settings: t.settings || {},
+        limits: t.limits || { maxUsers: 5 },
         createdAt: t.createdAt,
       }));
     } catch (e) {}
   }
   const data = initLocalDb();
-  return data.tenants;
+  return data.tenants.map(t => ({
+    ...t,
+    status: t.status || 'ACTIVE',
+    plan: t.plan || 'FREE',
+    settings: t.settings || {},
+    limits: t.limits || { maxUsers: 5 },
+  }));
+}
+
+export async function getTenantById(id: string): Promise<Tenant | null> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const t = await db.collection('tenants').findOne({ _id: new ObjectId(id) });
+      if (t) {
+        return {
+          id: t._id.toString(),
+          name: t.name,
+          status: t.status || 'ACTIVE',
+          plan: t.plan || 'FREE',
+          settings: t.settings || {},
+          limits: t.limits || { maxUsers: 5 },
+          createdAt: t.createdAt,
+        };
+      }
+      return null;
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  const t = data.tenants.find(t => t.id === id);
+  if (t) {
+    return {
+      ...t,
+      status: t.status || 'ACTIVE',
+      plan: t.plan || 'FREE',
+      settings: t.settings || {},
+      limits: t.limits || { maxUsers: 5 },
+    };
+  }
+  return null;
 }
 
 export async function createTenant(name: string): Promise<Tenant> {
   const { db } = await connectDb();
-  const newTenant = { name, createdAt: new Date() };
+  const newTenant = { 
+    name, 
+    status: 'ACTIVE' as const,
+    plan: 'FREE' as const,
+    settings: {},
+    limits: { maxUsers: 5 },
+    createdAt: new Date() 
+  };
+  
   if (db) {
     try {
       const result = await db.collection('tenants').insertOne(newTenant);
@@ -163,13 +222,34 @@ export async function createTenant(name: string): Promise<Tenant> {
   return localTenant;
 }
 
+export async function updateTenant(id: string, updates: Partial<Omit<Tenant, 'id' | '_id' | 'createdAt'>>): Promise<boolean> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const result = await db.collection('tenants').updateOne(
+        { _id: new ObjectId(id) },
+        { $set: updates }
+      );
+      return result.modifiedCount > 0;
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  const idx = data.tenants.findIndex(t => t.id === id);
+  if (idx >= 0) {
+    data.tenants[idx] = { ...data.tenants[idx], ...updates };
+    writeLocalDb(data);
+    return true;
+  }
+  return false;
+}
+
 // ---- USERS ----
 
 export async function getUserByUsername(username: string): Promise<User | null> {
   const { db } = await connectDb();
   if (db) {
     try {
-      const user = await db.collection('users').findOne({ username });
+      const user = await db.collection('users').findOne({ username: new RegExp(`^${username}$`, 'i') });
       if (user) {
         return {
           id: user._id.toString(),
@@ -177,6 +257,7 @@ export async function getUserByUsername(username: string): Promise<User | null> 
           passwordHash: user.passwordHash,
           role: user.role,
           tenantId: user.tenantId,
+          status: user.status || 'ACTIVE',
           createdAt: user.createdAt,
         };
       }
@@ -185,7 +266,37 @@ export async function getUserByUsername(username: string): Promise<User | null> 
   }
   const data = initLocalDb();
   const user = data.users.find(u => u.username.toLowerCase() === username.toLowerCase());
-  return user || null;
+  if (user) {
+    return { ...user, status: user.status || 'ACTIVE' };
+  }
+  return null;
+}
+
+export async function getUserById(id: string): Promise<User | null> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const user = await db.collection('users').findOne({ _id: new ObjectId(id) });
+      if (user) {
+        return {
+          id: user._id.toString(),
+          username: user.username,
+          passwordHash: user.passwordHash,
+          role: user.role,
+          tenantId: user.tenantId,
+          status: user.status || 'ACTIVE',
+          createdAt: user.createdAt,
+        };
+      }
+      return null;
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  const user = data.users.find(u => u.id === id);
+  if (user) {
+    return { ...user, status: user.status || 'ACTIVE' };
+  }
+  return null;
 }
 
 export async function getUsersByTenant(tenantId: string): Promise<User[]> {
@@ -199,17 +310,38 @@ export async function getUsersByTenant(tenantId: string): Promise<User[]> {
         passwordHash: u.passwordHash,
         role: u.role,
         tenantId: u.tenantId,
+        status: u.status || 'ACTIVE',
         createdAt: u.createdAt,
       }));
     } catch (e) {}
   }
   const data = initLocalDb();
-  return data.users.filter(u => u.tenantId === tenantId);
+  return data.users.filter(u => u.tenantId === tenantId).map(u => ({ ...u, status: u.status || 'ACTIVE' }));
+}
+
+export async function getAllUsers(): Promise<User[]> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const users = await db.collection('users').find({}).toArray();
+      return users.map(u => ({
+        id: u._id.toString(),
+        username: u.username,
+        passwordHash: u.passwordHash,
+        role: u.role,
+        tenantId: u.tenantId,
+        status: u.status || 'ACTIVE',
+        createdAt: u.createdAt,
+      }));
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  return data.users.map(u => ({ ...u, status: u.status || 'ACTIVE' }));
 }
 
 export async function createUser(username: string, passwordHash: string, role: 'TENANT_ADMIN' | 'USER', tenantId: string): Promise<User> {
   const { db } = await connectDb();
-  const newUser = { username, passwordHash, role, tenantId, createdAt: new Date() };
+  const newUser = { username, passwordHash, role, tenantId, status: 'ACTIVE' as const, createdAt: new Date() };
   if (db) {
     try {
       const result = await db.collection('users').insertOne(newUser);
@@ -222,6 +354,27 @@ export async function createUser(username: string, passwordHash: string, role: '
   data.users.push(localUser);
   writeLocalDb(data);
   return localUser;
+}
+
+export async function updateUserStatus(id: string, status: 'ACTIVE' | 'LOCKED'): Promise<boolean> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const result = await db.collection('users').updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { status } }
+      );
+      return result.modifiedCount > 0;
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  const idx = data.users.findIndex(u => u.id === id);
+  if (idx >= 0) {
+    data.users[idx].status = status;
+    writeLocalDb(data);
+    return true;
+  }
+  return false;
 }
 
 // ---- TRANSACTIONS ----
@@ -368,9 +521,9 @@ export async function deleteCategory(id: string, tenantId: string): Promise<bool
 
 // ---- LOGS ----
 
-export async function createLog(username: string, action: string, details: string, tenantId?: string): Promise<SystemLog> {
+export async function createLog(username: string, action: string, details: string, tenantId?: string, ipAddress?: string): Promise<SystemLog> {
   const { db } = await connectDb();
-  const newLog = { username, action, details, tenantId, timestamp: new Date() };
+  const newLog = { username, action, details, tenantId, ipAddress, timestamp: new Date() };
   if (db) {
     try {
       const result = await db.collection('logs').insertOne(newLog);
@@ -397,6 +550,7 @@ export async function getLogs(tenantId?: string): Promise<SystemLog[]> {
         username: l.username,
         action: l.action,
         details: l.details,
+        ipAddress: l.ipAddress,
         timestamp: l.timestamp,
       }));
     } catch (e) {}
@@ -407,4 +561,27 @@ export async function getLogs(tenantId?: string): Promise<SystemLog[]> {
     logs = logs.filter(l => l.tenantId === tenantId);
   }
   return [...logs].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+}
+
+// ---- GLOBAL ANALYTICS ----
+
+export async function getGlobalAnalytics() {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const totalTenants = await db.collection('tenants').countDocuments();
+      const totalUsers = await db.collection('users').countDocuments();
+      const totalTransactions = await db.collection('transactions').countDocuments();
+      const failedLogins = await db.collection('logs').countDocuments({ action: 'FAILED_LOGIN' });
+      
+      return { totalTenants, totalUsers, totalTransactions, failedLogins };
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  return {
+    totalTenants: data.tenants.length,
+    totalUsers: data.users.length,
+    totalTransactions: data.transactions.length,
+    failedLogins: data.logs.filter(l => l.action === 'FAILED_LOGIN').length,
+  };
 }
