@@ -106,7 +106,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
         </div>
 
         <div className="p-4 border-t border-white/[0.05] shrink-0">
-          <Link href="/dashboard" className="flex items-center gap-2 text-[12px] font-medium text-neutral-500 hover:text-white transition-colors">
+          <Link href="/" className="flex items-center gap-2 text-[12px] font-medium text-neutral-500 hover:text-white transition-colors">
             <ArrowLeft className="w-3.5 h-3.5" /> Exit Console
           </Link>
         </div>

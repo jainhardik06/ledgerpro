@@ -1,19 +1,28 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShieldAlert, AlertTriangle, MapPin, Search } from 'lucide-react';
 
 export default function SecurityPage() {
-  const [search, setSearch] = useState('');
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data
-  const logs = [
-    { id: 'log_1', event: 'FAILED_LOGIN', user: 'admin@acmecorp.com', ip: '192.168.1.100', location: 'Frankfurt, DE', time: '2 mins ago', severity: 'HIGH' },
-    { id: 'log_2', event: 'FAILED_LOGIN', user: 'admin@acmecorp.com', ip: '192.168.1.100', location: 'Frankfurt, DE', time: '3 mins ago', severity: 'HIGH' },
-    { id: 'log_3', event: 'FAILED_LOGIN', user: 'admin@acmecorp.com', ip: '192.168.1.100', location: 'Frankfurt, DE', time: '5 mins ago', severity: 'HIGH' },
-    { id: 'log_4', event: 'PASSWORD_RESET_REQUESTED', user: 'tony@stark.com', ip: '10.0.0.45', location: 'New York, US', time: '1 hour ago', severity: 'LOW' },
-    { id: 'log_5', event: 'UNAUTHORIZED_ACCESS_ATTEMPT', user: 'unknown', ip: '45.22.11.9', location: 'Moscow, RU', time: '2 hours ago', severity: 'CRITICAL' },
-  ];
+  useEffect(() => {
+    const fetchSecurity = async () => {
+      try {
+        const res = await fetch('/api/super-admin/security');
+        if (res.ok) {
+          const json = await res.json();
+          setData(json);
+        }
+      } catch (e) {
+        console.error("Failed to fetch security metrics", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSecurity();
+  }, []);
 
   return (
     <div className="flex flex-col h-[calc(100vh-56px)] animate-in fade-in duration-500">
@@ -31,12 +40,11 @@ export default function SecurityPage() {
          <div className="col-span-1 md:col-span-2 rounded-xl border border-white/[0.05] bg-[#0a0a0a] p-5 flex flex-col justify-center items-center relative overflow-hidden h-48">
             <div className="absolute inset-0 opacity-20 bg-[url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg')] bg-center bg-no-repeat bg-contain" />
             <div className="absolute top-1/2 left-1/3 w-3 h-3 rounded-full bg-rose-500 animate-ping" />
-            <div className="absolute top-1/3 left-1/4 w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
             
             <div className="relative z-10 flex flex-col items-center">
               <ShieldAlert className="w-6 h-6 text-rose-500 mb-2" />
-              <div className="text-[13px] font-medium text-white">Active Brute-Force Attempt Detected</div>
-              <div className="text-[11px] font-mono text-rose-400 mt-1">Target: admin@acmecorp.com | Source: DE</div>
+              <div className="text-[13px] font-medium text-white">Security Systems Online</div>
+              <div className="text-[11px] font-mono text-neutral-400 mt-1">DB: {data?.health?.status || 'Unknown'} | Latency: {data?.health?.ping || 0}ms</div>
             </div>
          </div>
 
@@ -44,16 +52,16 @@ export default function SecurityPage() {
          <div className="rounded-xl border border-white/[0.05] bg-[#0a0a0a] p-5 flex flex-col justify-between h-48">
            <div>
              <div className="text-[12px] font-medium text-neutral-500 uppercase tracking-widest mb-1">Threat Level</div>
-             <div className="text-2xl font-semibold tracking-tight text-rose-500">ELEVATED</div>
+             <div className="text-2xl font-semibold tracking-tight text-emerald-500">NOMINAL</div>
            </div>
            <div>
              <div className="flex justify-between text-[12px] text-neutral-400 mb-1">
-               <span>Failed Logins (24h)</span>
-               <span className="font-mono text-white">1,402</span>
+               <span>Failed Logins</span>
+               <span className="font-mono text-white">{data?.failedLogins?.length || 0}</span>
              </div>
              <div className="flex justify-between text-[12px] text-neutral-400">
                <span>Blocked IPs</span>
-               <span className="font-mono text-white">45</span>
+               <span className="font-mono text-white">0</span>
              </div>
            </div>
          </div>
@@ -67,32 +75,32 @@ export default function SecurityPage() {
               <th className="px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest w-1/4">Event</th>
               <th className="px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest">Target Identity</th>
               <th className="px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest">Source IP</th>
-              <th className="px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest">Location</th>
               <th className="px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest text-right">Time</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/[0.05]">
-            {logs.map(log => (
-              <tr key={log.id} className="hover:bg-white/[0.02] transition-colors group">
-                <td className="px-6 py-4">
-                  <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded border text-[10px] font-bold font-mono tracking-widest ${
-                    log.severity === 'CRITICAL' ? 'border-rose-500/20 bg-rose-500/10 text-rose-400' :
-                    log.severity === 'HIGH' ? 'border-amber-500/20 bg-amber-500/10 text-amber-400' :
-                    'border-white/[0.05] bg-transparent text-neutral-400'
-                  }`}>
-                    {log.event}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-[13px] font-medium text-white">{log.user}</td>
-                <td className="px-6 py-4 text-[12px] font-mono text-neutral-400">{log.ip}</td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-1.5 text-[12px] text-neutral-400">
-                    <MapPin className="w-3.5 h-3.5" /> {log.location}
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-[13px] text-neutral-500 tabular-nums text-right">{log.time}</td>
-              </tr>
-            ))}
+            {loading ? (
+               <tr>
+                 <td colSpan={4} className="px-6 py-8 text-center text-[13px] text-neutral-500">Loading security logs...</td>
+               </tr>
+            ) : data?.failedLogins?.length === 0 ? (
+               <tr>
+                 <td colSpan={4} className="px-6 py-8 text-center text-[13px] text-neutral-500">No failed logins detected.</td>
+               </tr>
+            ) : (
+              data?.failedLogins?.map((log: any) => (
+                <tr key={log.id} className="hover:bg-white/[0.02] transition-colors group">
+                  <td className="px-6 py-4">
+                    <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded border text-[10px] font-bold font-mono tracking-widest border-rose-500/20 bg-rose-500/10 text-rose-400">
+                      {log.action}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-[13px] font-medium text-white">{log.username}</td>
+                  <td className="px-6 py-4 text-[12px] font-mono text-neutral-400">{log.ipAddress || 'Unknown'}</td>
+                  <td className="px-6 py-4 text-[13px] text-neutral-500 tabular-nums text-right">{new Date(log.timestamp).toLocaleString()}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

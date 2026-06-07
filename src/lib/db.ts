@@ -115,7 +115,38 @@ export interface SystemLog {
   action: string;
   details: string;
   ipAddress?: string;
+  severity?: 'INFO' | 'WARN' | 'CRITICAL';
   timestamp: Date;
+}
+
+export interface FeatureFlag {
+  id?: string;
+  _id?: any;
+  name: string;
+  desc: string;
+  status: boolean;
+  rollout: string;
+  target: string;
+  createdAt: Date;
+}
+
+export interface SupportTicket {
+  id?: string;
+  _id?: any;
+  subject: string;
+  tenantId: string;
+  status: 'OPEN' | 'RESOLVED';
+  priority: 'LOW' | 'MEDIUM' | 'HIGH';
+  createdAt: Date;
+}
+
+export interface Broadcast {
+  id?: string;
+  _id?: any;
+  type: string;
+  message: string;
+  target: string;
+  createdAt: Date;
 }
 
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -136,6 +167,9 @@ interface LocalDbSchema {
   recurring: RecurringTransaction[];
   clients: Client[];
   logs: SystemLog[];
+  flags: FeatureFlag[];
+  tickets: SupportTicket[];
+  broadcasts: Broadcast[];
 }
 
 export function initLocalDb(): LocalDbSchema {
@@ -143,7 +177,7 @@ export function initLocalDb(): LocalDbSchema {
     fs.mkdirSync(DATA_DIR, { recursive: true });
   }
   if (!fs.existsSync(DB_FILE)) {
-    const defaultData: LocalDbSchema = { tenants: [], users: [], accounts: [], transactions: [], categories: [], budgets: [], recurring: [], clients: [], logs: [] };
+    const defaultData: LocalDbSchema = { tenants: [], users: [], accounts: [], transactions: [], categories: [], budgets: [], recurring: [], clients: [], logs: [], flags: [], tickets: [], broadcasts: [] };
     fs.writeFileSync(DB_FILE, JSON.stringify(defaultData, null, 2), 'utf-8');
     return defaultData;
   }
@@ -159,9 +193,12 @@ export function initLocalDb(): LocalDbSchema {
     if (!parsed.recurring) parsed.recurring = [];
     if (!parsed.clients) parsed.clients = [];
     if (!parsed.logs) parsed.logs = [];
+    if (!parsed.flags) parsed.flags = [];
+    if (!parsed.tickets) parsed.tickets = [];
+    if (!parsed.broadcasts) parsed.broadcasts = [];
     return parsed;
   } catch (e) {
-    const defaultData: LocalDbSchema = { tenants: [], users: [], accounts: [], transactions: [], categories: [], budgets: [], recurring: [], clients: [], logs: [] };
+    const defaultData: LocalDbSchema = { tenants: [], users: [], accounts: [], transactions: [], categories: [], budgets: [], recurring: [], clients: [], logs: [], flags: [], tickets: [], broadcasts: [] };
     fs.writeFileSync(DB_FILE, JSON.stringify(defaultData, null, 2), 'utf-8');
     return defaultData;
   }
@@ -902,8 +939,9 @@ export async function getGlobalAnalytics() {
       const totalUsers = await db.collection('users').countDocuments();
       const totalTransactions = await db.collection('transactions').countDocuments();
       const failedLogins = await db.collection('logs').countDocuments({ action: 'FAILED_LOGIN' });
+      const recentLogs = await db.collection('logs').find().sort({ timestamp: -1 }).limit(10).toArray();
       
-      return { totalTenants, totalUsers, totalTransactions, failedLogins };
+      return { totalTenants, totalUsers, totalTransactions, failedLogins, recentLogs: recentLogs.map(l => ({...l, _id: l._id.toString()})) };
     } catch (e) {}
   }
   const data = initLocalDb();
@@ -912,6 +950,7 @@ export async function getGlobalAnalytics() {
     totalUsers: data.users.length,
     totalTransactions: data.transactions.length,
     failedLogins: data.logs.filter(l => l.action === 'FAILED_LOGIN').length,
+    recentLogs: data.logs.sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 10),
   };
 }
 
@@ -1006,3 +1045,135 @@ export async function updateClient(id: string, tenantId: string, updates: any): 
   return false;
 }
 
+// ---- FEATURE FLAGS ----
+export async function getFeatureFlags(): Promise<FeatureFlag[]> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const flags = await db.collection('flags').find({}).toArray();
+      return flags.map(f => ({
+        id: f._id.toString(),
+        name: f.name,
+        desc: f.desc,
+        status: f.status,
+        rollout: f.rollout,
+        target: f.target,
+        createdAt: f.createdAt,
+      }));
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  return data.flags;
+}
+
+export async function toggleFeatureFlag(id: string): Promise<boolean> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const flag = await db.collection('flags').findOne({ _id: safeObjectId(id) });
+      if (flag) {
+        const result = await db.collection('flags').updateOne({ _id: safeObjectId(id) }, { $set: { status: !flag.status } });
+        return result.modifiedCount > 0;
+      }
+      return false;
+    } catch (e) { return false; }
+  }
+  const data = initLocalDb();
+  const idx = data.flags.findIndex(f => f.id === id);
+  if (idx >= 0) {
+    data.flags[idx].status = !data.flags[idx].status;
+    writeLocalDb(data);
+    return true;
+  }
+  return false;
+}
+
+export async function createFeatureFlag(flag: Omit<FeatureFlag, 'id' | '_id' | 'createdAt'>): Promise<FeatureFlag> {
+  const { db } = await connectDb();
+  const newFlag = { ...flag, createdAt: new Date() };
+  if (db) {
+    try {
+      const result = await db.collection('flags').insertOne(newFlag);
+      return { id: result.insertedId.toString(), ...newFlag };
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  const id = 'ff_' + Math.random().toString(36).substring(2, 9);
+  const localFlag: FeatureFlag = { id, ...newFlag };
+  data.flags.push(localFlag);
+  writeLocalDb(data);
+  return localFlag;
+}
+
+// ---- SUPPORT TICKETS ----
+export async function getSupportTickets(): Promise<SupportTicket[]> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const tickets = await db.collection('tickets').find({}).sort({ createdAt: -1 }).toArray();
+      return tickets.map(t => ({
+        id: t._id.toString(),
+        subject: t.subject,
+        tenantId: t.tenantId,
+        status: t.status,
+        priority: t.priority,
+        createdAt: t.createdAt,
+      }));
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  return data.tickets.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
+export async function createSupportTicket(ticket: Omit<SupportTicket, 'id' | '_id' | 'createdAt'>): Promise<SupportTicket> {
+  const { db } = await connectDb();
+  const newTicket = { ...ticket, createdAt: new Date() };
+  if (db) {
+    try {
+      const result = await db.collection('tickets').insertOne(newTicket);
+      return { id: result.insertedId.toString(), ...newTicket };
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  const id = 'T-' + Math.floor(Math.random() * 10000);
+  const localTicket: SupportTicket = { id, ...newTicket };
+  data.tickets.push(localTicket);
+  writeLocalDb(data);
+  return localTicket;
+}
+
+// ---- BROADCASTS ----
+export async function getBroadcasts(): Promise<Broadcast[]> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const broadcasts = await db.collection('broadcasts').find({}).sort({ createdAt: -1 }).toArray();
+      return broadcasts.map(b => ({
+        id: b._id.toString(),
+        type: b.type,
+        message: b.message,
+        target: b.target,
+        createdAt: b.createdAt,
+      }));
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  return data.broadcasts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
+export async function createBroadcast(broadcast: Omit<Broadcast, 'id' | '_id' | 'createdAt'>): Promise<Broadcast> {
+  const { db } = await connectDb();
+  const newBroadcast = { ...broadcast, createdAt: new Date() };
+  if (db) {
+    try {
+      const result = await db.collection('broadcasts').insertOne(newBroadcast);
+      return { id: result.insertedId.toString(), ...newBroadcast };
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  const id = 'b_' + Math.random().toString(36).substring(2, 9);
+  const localBroadcast: Broadcast = { id, ...newBroadcast };
+  data.broadcasts.push(localBroadcast);
+  writeLocalDb(data);
+  return localBroadcast;
+}

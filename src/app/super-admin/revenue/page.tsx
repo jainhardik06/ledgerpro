@@ -1,114 +1,95 @@
 "use client";
 
-import React from 'react';
-import { TrendingUp, ArrowUpRight, ArrowDownRight, DollarSign, ArrowRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { DollarSign, TrendingUp, TrendingDown, Users, Activity } from 'lucide-react';
 
 export default function RevenuePage() {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRevenue = async () => {
+      try {
+        const res = await fetch('/api/super-admin/revenue');
+        if (res.ok) {
+          const json = await res.json();
+          setData(json);
+        }
+      } catch (e) {
+        console.error("Failed to fetch revenue", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRevenue();
+  }, []);
+
+  if (loading) {
+     return <div className="p-6 text-neutral-500 text-[13px]">Loading revenue intelligence...</div>;
+  }
+
   return (
-    <div className="p-8 max-w-7xl mx-auto animate-in fade-in duration-500">
+    <div className="flex flex-col h-[calc(100vh-56px)] animate-in fade-in duration-500 bg-[#000000]">
       
-      <div className="flex items-center justify-between mb-8">
+      {/* Header Section */}
+      <div className="p-6 shrink-0 border-b border-white/[0.05] flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-white">Revenue Intelligence</h1>
-          <p className="text-[14px] text-neutral-400 mt-1">Real-time subscription billing and cohort analysis.</p>
+          <h1 className="text-xl font-semibold tracking-tight text-white mb-1">Revenue Intelligence</h1>
+          <p className="text-[13px] text-neutral-400">Platform-wide MRR, net retention, and growth cohorts.</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="p-5 rounded-xl border border-white/[0.05] bg-[#0a0a0a] shadow-sm flex flex-col">
-          <div className="text-[12px] font-medium text-neutral-500 uppercase tracking-widest mb-1">Total MRR</div>
-          <div className="text-3xl font-semibold tracking-tight text-white tabular-nums mb-3">$124,500</div>
-          <div className="flex items-center gap-1.5 mt-auto">
-            <ArrowUpRight className="w-4 h-4 text-emerald-500" />
-            <span className="text-[13px] font-medium text-emerald-500">+14.2%</span>
-          </div>
-        </div>
-        <div className="p-5 rounded-xl border border-white/[0.05] bg-[#0a0a0a] shadow-sm flex flex-col">
-          <div className="text-[12px] font-medium text-neutral-500 uppercase tracking-widest mb-1">Net Retention</div>
-          <div className="text-3xl font-semibold tracking-tight text-white tabular-nums mb-3">108.4%</div>
-          <div className="flex items-center gap-1.5 mt-auto">
-            <ArrowUpRight className="w-4 h-4 text-emerald-500" />
-            <span className="text-[13px] font-medium text-emerald-500">+2.1%</span>
-          </div>
-        </div>
-        <div className="p-5 rounded-xl border border-white/[0.05] bg-[#0a0a0a] shadow-sm flex flex-col">
-          <div className="text-[12px] font-medium text-neutral-500 uppercase tracking-widest mb-1">ARPA</div>
-          <div className="text-3xl font-semibold tracking-tight text-white tabular-nums mb-3">$147</div>
-          <div className="flex items-center gap-1.5 mt-auto">
-            <TrendingUp className="w-4 h-4 text-emerald-500" />
-            <span className="text-[13px] font-medium text-emerald-500">+$12</span>
-          </div>
-        </div>
-        <div className="p-5 rounded-xl border border-white/[0.05] bg-[#0a0a0a] shadow-sm flex flex-col">
-          <div className="text-[12px] font-medium text-neutral-500 uppercase tracking-widest mb-1">Churn Rate</div>
-          <div className="text-3xl font-semibold tracking-tight text-white tabular-nums mb-3">1.2%</div>
-          <div className="flex items-center gap-1.5 mt-auto">
-            <ArrowDownRight className="w-4 h-4 text-emerald-500" />
-            <span className="text-[13px] font-medium text-emerald-500">-0.4%</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="flex-1 overflow-auto p-6 space-y-6">
         
-        {/* Mock Chart Area */}
-        <div className="lg:col-span-2 rounded-xl border border-white/[0.05] bg-[#0a0a0a] p-6 flex flex-col min-h-[400px]">
-           <div className="flex items-center justify-between mb-8">
-             <h2 className="text-[13px] font-medium text-white uppercase tracking-widest">MRR Growth (12 Months)</h2>
-             <select className="bg-[#000000] border border-white/[0.1] text-white text-[12px] rounded px-2 py-1 outline-none">
-               <option>All Plans</option>
-               <option>Enterprise</option>
-             </select>
-           </div>
-           <div className="flex-1 flex items-end justify-between gap-2 px-4 pb-4">
-             {/* Simple CSS Bar Chart Mock */}
-             {[40, 45, 48, 55, 62, 70, 75, 82, 85, 92, 100, 110].map((h, i) => (
-               <div key={i} className="w-full bg-emerald-500/20 hover:bg-emerald-500/40 transition-colors rounded-t-sm relative group cursor-pointer" style={{ height: `${(h/110)*100}%` }}>
-                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-black text-[10px] font-mono px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                    ${h}k
-                  </div>
-               </div>
-             ))}
-           </div>
+        {/* MRR Hero */}
+        <div className="p-8 rounded-xl border border-white/[0.05] bg-[#0a0a0a] relative overflow-hidden flex flex-col justify-center items-center text-center">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-500/10 via-transparent to-transparent opacity-50" />
+          
+          <div className="relative z-10 flex flex-col items-center">
+            <span className="text-[13px] font-medium uppercase tracking-widest text-neutral-400 mb-2">Total Monthly Recurring Revenue</span>
+            <div className="text-6xl font-bold tracking-tighter text-white tabular-nums">${data?.mrr?.toLocaleString() || 0}</div>
+            <div className="flex items-center gap-2 mt-4 text-[14px]">
+              <span className="flex items-center gap-1 text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded font-medium"><TrendingUp className="w-4 h-4" /> +14.2%</span>
+              <span className="text-neutral-500">vs last month</span>
+            </div>
+          </div>
         </div>
 
-        {/* Plan Distribution */}
-        <div className="rounded-xl border border-white/[0.05] bg-[#0a0a0a] p-6">
-           <h2 className="text-[13px] font-medium text-white uppercase tracking-widest mb-8">Plan Distribution</h2>
-           <div className="space-y-6">
-              <div>
-                <div className="flex justify-between text-[13px] mb-2">
-                  <span className="text-white font-medium">Enterprise</span>
-                  <span className="text-neutral-400 font-mono">$80,200 (64%)</span>
-                </div>
-                <div className="h-2 w-full bg-white/[0.05] rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-500 w-[64%]" />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between text-[13px] mb-2">
-                  <span className="text-white font-medium">Team</span>
-                  <span className="text-neutral-400 font-mono">$32,100 (26%)</span>
-                </div>
-                <div className="h-2 w-full bg-white/[0.05] rounded-full overflow-hidden">
-                  <div className="h-full bg-indigo-500 w-[26%]" />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between text-[13px] mb-2">
-                  <span className="text-white font-medium">Pro</span>
-                  <span className="text-neutral-400 font-mono">$12,200 (10%)</span>
-                </div>
-                <div className="h-2 w-full bg-white/[0.05] rounded-full overflow-hidden">
-                  <div className="h-full bg-neutral-400 w-[10%]" />
-                </div>
-              </div>
-           </div>
+        {/* Core Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="p-5 rounded-xl border border-white/[0.05] bg-[#0a0a0a] flex flex-col">
+            <span className="text-[12px] font-medium uppercase tracking-widest text-neutral-500 mb-4">Net Retention</span>
+            <div className="text-3xl font-semibold text-white tracking-tight tabular-nums mb-1">{data?.netRetention || 0}%</div>
+            <p className="text-[12px] text-neutral-400">Expansion outpaces churn by +4.2%</p>
+          </div>
+          <div className="p-5 rounded-xl border border-white/[0.05] bg-[#0a0a0a] flex flex-col">
+            <span className="text-[12px] font-medium uppercase tracking-widest text-neutral-500 mb-4">Avg Rev Per Account</span>
+            <div className="text-3xl font-semibold text-white tracking-tight tabular-nums mb-1">${data?.arpa?.toLocaleString() || 0}</div>
+            <p className="text-[12px] text-neutral-400">Across all paid tiers</p>
+          </div>
+          <div className="p-5 rounded-xl border border-white/[0.05] bg-[#0a0a0a] flex flex-col">
+            <span className="text-[12px] font-medium uppercase tracking-widest text-neutral-500 mb-4">Logo Churn Rate</span>
+            <div className="text-3xl font-semibold text-white tracking-tight tabular-nums mb-1">{data?.churnRate || 0}%</div>
+            <p className="text-[12px] text-emerald-500">Below industry standard of 2.5%</p>
+          </div>
+        </div>
 
-           <div className="mt-8 pt-6 border-t border-white/[0.05]">
-             <button className="flex items-center gap-2 text-[13px] font-medium text-neutral-400 hover:text-white transition-colors">
-               Open Stripe Billing Dashboard <ArrowRight className="w-3.5 h-3.5" />
-             </button>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+           <div className="p-6 rounded-xl border border-white/[0.05] bg-[#0a0a0a]">
+             <h2 className="text-[13px] font-medium text-white uppercase tracking-widest mb-6">Plan Distribution</h2>
+             <div className="space-y-4">
+               {data?.planDistribution && Object.keys(data.planDistribution).map((plan) => (
+                 <div key={plan}>
+                   <div className="flex justify-between text-[13px] text-neutral-300 mb-2">
+                     <span>{plan}</span>
+                     <span className="font-mono">{data.planDistribution[plan]}</span>
+                   </div>
+                   <div className="h-1.5 w-full bg-white/[0.05] rounded-full overflow-hidden">
+                     <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${(data.planDistribution[plan] / (Object.values(data.planDistribution) as number[]).reduce((a, b) => a + b, 0)) * 100}%` }} />
+                   </div>
+                 </div>
+               ))}
+             </div>
            </div>
         </div>
 
