@@ -507,7 +507,7 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-300 w-full overflow-hidden">
       
       {/* CSS style injection for printing formatting */}
       <style jsx global>{`
@@ -531,29 +531,29 @@ export default function ReportsPage() {
       `}</style>
 
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/[0.05] pb-5 no-print">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.05] pb-5 no-print">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-white mb-1">Financial Intelligence Center</h1>
-          <p className="text-[13px] text-neutral-400">Advanced aggregations, comparisons, and audit-level insight logs.</p>
+          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-white mb-1">Financial Intelligence Center</h1>
+          <p className="text-[12px] sm:text-[13px] text-neutral-400">Advanced aggregations, comparisons, and audit-level insight logs.</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <button 
             onClick={handlePrintPDF} 
-            className="h-9 px-3 border border-white/[0.1] text-white rounded-md text-[13px] font-medium hover:bg-white/[0.05] flex items-center gap-2 transition-colors"
+            className="h-9 px-3 border border-white/[0.1] text-white rounded-md text-[13px] font-medium hover:bg-white/[0.05] flex items-center justify-center flex-1 sm:flex-none gap-2 transition-colors"
           >
-            <FileText className="w-4 h-4" /> Print PDF Summary
+            <FileText className="w-4 h-4 shrink-0" /> <span className="hidden sm:inline">Print PDF Summary</span>
           </button>
           <button 
             onClick={handleExportCSV} 
-            className="h-9 px-3 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 flex items-center gap-2 transition-colors"
+            className="h-9 px-3 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 flex items-center justify-center flex-1 sm:flex-none gap-2 transition-colors"
           >
-            <Download className="w-4 h-4" /> Export CSV
+            <Download className="w-4 h-4 shrink-0" /> Export CSV
           </button>
         </div>
       </div>
 
       {/* Advanced Filter and Comparison Row */}
-      <div className="p-4 bg-white/[0.02] border border-white/[0.05] rounded-xl grid grid-cols-2 md:grid-cols-6 gap-3 no-print">
+      <div className="p-4 bg-white/[0.02] border border-white/[0.05] rounded-xl grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3 no-print">
         
         {/* Date Ranges */}
         <div className="space-y-1">
@@ -561,7 +561,7 @@ export default function ReportsPage() {
           <select 
             value={dateRange} 
             onChange={e => setDateRange(e.target.value as any)} 
-            className="w-full h-8 bg-black border border-white/[0.1] rounded px-2 text-[12px] text-white outline-none"
+            className="w-full h-9 bg-black border border-white/[0.1] rounded px-2 text-[12px] sm:text-[13px] text-white outline-none"
           >
             <option value="7d">Last 7 Days</option>
             <option value="30d">Last 30 Days</option>
@@ -580,7 +580,7 @@ export default function ReportsPage() {
                 type="date" 
                 value={customStart} 
                 onChange={e => setCustomStart(e.target.value)} 
-                className="w-full h-8 bg-black border border-white/[0.1] rounded px-2 text-[12px] text-white outline-none" 
+                className="w-full h-9 bg-black border border-white/[0.1] rounded px-2 text-[12px] sm:text-[13px] text-white outline-none" 
               />
             </div>
             <div className="space-y-1">
@@ -589,7 +589,7 @@ export default function ReportsPage() {
                 type="date" 
                 value={customEnd} 
                 onChange={e => setCustomEnd(e.target.value)} 
-                className="w-full h-8 bg-black border border-white/[0.1] rounded px-2 text-[12px] text-white outline-none" 
+                className="w-full h-9 bg-black border border-white/[0.1] rounded px-2 text-[12px] sm:text-[13px] text-white outline-none" 
               />
             </div>
           </>
@@ -601,7 +601,7 @@ export default function ReportsPage() {
           <select 
             value={filterAccount} 
             onChange={e => setFilterAccount(e.target.value)} 
-            className="w-full h-8 bg-black border border-white/[0.1] rounded px-2 text-[12px] text-white outline-none"
+            className="w-full h-9 bg-black border border-white/[0.1] rounded px-2 text-[12px] sm:text-[13px] text-white outline-none"
           >
             <option value="all">All Accounts</option>
             {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
@@ -614,7 +614,7 @@ export default function ReportsPage() {
           <select 
             value={filterCategory} 
             onChange={e => setFilterCategory(e.target.value)} 
-            className="w-full h-8 bg-black border border-white/[0.1] rounded px-2 text-[12px] text-white outline-none"
+            className="w-full h-9 bg-black border border-white/[0.1] rounded px-2 text-[12px] sm:text-[13px] text-white outline-none"
           >
             <option value="all">All Categories</option>
             {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
@@ -627,7 +627,7 @@ export default function ReportsPage() {
           <select 
             value={filterClient} 
             onChange={e => setFilterClient(e.target.value)} 
-            className="w-full h-8 bg-black border border-white/[0.1] rounded px-2 text-[12px] text-white outline-none"
+            className="w-full h-9 bg-black border border-white/[0.1] rounded px-2 text-[12px] sm:text-[13px] text-white outline-none"
           >
             <option value="all">All Clients</option>
             {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -640,7 +640,7 @@ export default function ReportsPage() {
           <select 
             value={filterTeam} 
             onChange={e => setFilterTeam(e.target.value)} 
-            className="w-full h-8 bg-black border border-white/[0.1] rounded px-2 text-[12px] text-white outline-none"
+            className="w-full h-9 bg-black border border-white/[0.1] rounded px-2 text-[12px] sm:text-[13px] text-white outline-none"
           >
             <option value="all">All Team</option>
             {team.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
@@ -654,7 +654,7 @@ export default function ReportsPage() {
             id="compareCheck" 
             checked={compareEnabled} 
             onChange={e => setCompareEnabled(e.target.checked)} 
-            className="accent-white cursor-pointer w-4 h-4"
+            className="accent-white cursor-pointer w-4 h-4 shrink-0"
           />
           <label htmlFor="compareCheck" className="text-[12px] font-medium text-white cursor-pointer select-none">Period Compare</label>
         </div>
@@ -662,34 +662,34 @@ export default function ReportsPage() {
       </div>
 
       {/* Tabs Switcher Row */}
-      <div className="flex border-b border-white/[0.05] gap-2 pb-px no-print">
+      <div className="flex border-b border-white/[0.05] gap-2 pb-px overflow-x-auto no-scrollbar no-print whitespace-nowrap">
         <button 
           onClick={() => setActiveTab('overview')} 
-          className={`px-4 py-2 text-[13px] font-semibold border-b-2 transition-colors ${activeTab === 'overview' ? 'border-white text-white' : 'border-transparent text-neutral-500 hover:text-neutral-300'}`}
+          className={`px-4 py-2 text-[13px] font-semibold border-b-2 transition-colors shrink-0 ${activeTab === 'overview' ? 'border-white text-white' : 'border-transparent text-neutral-500 hover:text-neutral-300'}`}
         >
           Overview & Flow
         </button>
         <button 
           onClick={() => setActiveTab('breakdowns')} 
-          className={`px-4 py-2 text-[13px] font-semibold border-b-2 transition-colors ${activeTab === 'breakdowns' ? 'border-white text-white' : 'border-transparent text-neutral-500 hover:text-neutral-300'}`}
+          className={`px-4 py-2 text-[13px] font-semibold border-b-2 transition-colors shrink-0 ${activeTab === 'breakdowns' ? 'border-white text-white' : 'border-transparent text-neutral-500 hover:text-neutral-300'}`}
         >
           Breakdowns & Budgets
         </button>
         <button 
           onClick={() => setActiveTab('team')} 
-          className={`px-4 py-2 text-[13px] font-semibold border-b-2 transition-colors ${activeTab === 'team' ? 'border-white text-white' : 'border-transparent text-neutral-500 hover:text-neutral-300'}`}
+          className={`px-4 py-2 text-[13px] font-semibold border-b-2 transition-colors shrink-0 ${activeTab === 'team' ? 'border-white text-white' : 'border-transparent text-neutral-500 hover:text-neutral-300'}`}
         >
           Team & Clients
         </button>
         <button 
           onClick={() => setActiveTab('obligations')} 
-          className={`px-4 py-2 text-[13px] font-semibold border-b-2 transition-colors ${activeTab === 'obligations' ? 'border-white text-white' : 'border-transparent text-neutral-500 hover:text-neutral-300'}`}
+          className={`px-4 py-2 text-[13px] font-semibold border-b-2 transition-colors shrink-0 ${activeTab === 'obligations' ? 'border-white text-white' : 'border-transparent text-neutral-500 hover:text-neutral-300'}`}
         >
           Obligations & Logs
         </button>
         <button 
           onClick={() => setActiveTab('export')} 
-          className={`px-4 py-2 text-[13px] font-semibold border-b-2 transition-colors ${activeTab === 'export' ? 'border-white text-white' : 'border-transparent text-neutral-500 hover:text-neutral-300'}`}
+          className={`px-4 py-2 text-[13px] font-semibold border-b-2 transition-colors shrink-0 ${activeTab === 'export' ? 'border-white text-white' : 'border-transparent text-neutral-500 hover:text-neutral-300'}`}
         >
           Export Center
         </button>
@@ -700,7 +700,7 @@ export default function ReportsPage() {
         <div className="space-y-6">
           
           {/* Section 1: Financial Overview Metric Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             
             {/* Total Balance Card */}
             <div className="p-5 rounded-xl border border-white/[0.05] bg-[#0a0a0a] print-card">
@@ -881,19 +881,24 @@ export default function ReportsPage() {
               <table className="w-full text-left text-[13px] border-collapse">
                 <thead>
                   <tr className="border-b border-white/[0.05]">
-                    <th className="py-2 text-[11px] font-semibold text-neutral-500 uppercase tracking-widest">Username</th>
-                    <th className="py-2 text-[11px] font-semibold text-neutral-500 uppercase tracking-widest text-center">Tx Count</th>
-                    <th className="py-2 text-[11px] font-semibold text-neutral-500 uppercase tracking-widest text-right">Debit Total</th>
-                    <th className="py-2 text-[11px] font-semibold text-neutral-500 uppercase tracking-widest text-right">Last Action</th>
+                    <th className="py-2 text-[11px] font-semibold text-neutral-500 uppercase tracking-widest w-full sm:w-auto">Username</th>
+                    <th className="hidden sm:table-cell py-2 text-[11px] font-semibold text-neutral-500 uppercase tracking-widest text-center">Tx Count</th>
+                    <th className="py-2 text-[11px] font-semibold text-neutral-500 uppercase tracking-widest text-right shrink-0">Debit Total</th>
+                    <th className="hidden md:table-cell py-2 text-[11px] font-semibold text-neutral-500 uppercase tracking-widest text-right">Last Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/[0.02]">
                   {teamIntelligence.map((member, idx) => (
                     <tr key={idx} className="hover:bg-white/[0.01]">
-                      <td className="py-3 font-medium text-white">{member.username}</td>
-                      <td className="py-3 text-center tabular-nums text-neutral-400">{member.txCount}</td>
-                      <td className="py-3 text-right tabular-nums text-white font-medium">{formatCurrency(member.totalSpent)}</td>
-                      <td className="py-3 text-right text-[11px] text-neutral-500">{member.lastActive}</td>
+                      <td className="py-3 font-medium text-white align-middle min-w-0">
+                         <div className="flex flex-col min-w-0">
+                           <span className="truncate">{member.username}</span>
+                           <span className="sm:hidden text-[10px] text-neutral-500 mt-0.5 truncate">{member.txCount} txs • Last: {member.lastActive}</span>
+                         </div>
+                      </td>
+                      <td className="hidden sm:table-cell py-3 text-center tabular-nums text-neutral-400 align-middle">{member.txCount}</td>
+                      <td className="py-3 text-right tabular-nums text-white font-medium align-middle shrink-0">{formatCurrency(member.totalSpent)}</td>
+                      <td className="hidden md:table-cell py-3 text-right text-[11px] text-neutral-500 align-middle">{member.lastActive}</td>
                     </tr>
                   ))}
                 </tbody>

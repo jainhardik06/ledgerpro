@@ -81,35 +81,35 @@ export default function ClientsPage() {
   const formatCurrency = (val: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8 animate-in fade-in duration-500 w-full overflow-hidden">
       
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-white mb-1">{clientTerm}s Directory</h1>
-          <p className="text-[13px] text-neutral-400">Manage relationships and track historical revenue per entity.</p>
+          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-white mb-1">{clientTerm}s Directory</h1>
+          <p className="text-[12px] sm:text-[13px] text-neutral-400">Manage relationships and track historical revenue per entity.</p>
         </div>
-        <button onClick={openNew} className="h-9 px-4 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 flex items-center gap-2">
+        <button onClick={openNew} className="h-9 px-4 shrink-0 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 flex items-center justify-center gap-2">
           <Plus className="w-4 h-4" /> Add {clientTerm}
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {clients.map(cli => {
           const revenue = transactions.filter(t => t.clientId === cli.id && t.type === 'Credit').reduce((s, t) => s + t.amount, 0);
 
           return (
-            <div key={cli.id} onClick={() => openEdit(cli)} className="p-5 rounded-xl border border-white/[0.05] bg-[#0a0a0a] hover:bg-white/[0.02] transition-colors cursor-pointer group flex flex-col justify-between h-40">
-               <div>
-                 <div className="text-[15px] font-semibold text-white mb-1">{cli.name}</div>
-                 <div className="text-[12px] font-medium text-neutral-500 flex items-center gap-1.5"><Mail className="w-3.5 h-3.5" /> {cli.email || 'No email provided'}</div>
+            <div key={cli.id} onClick={() => openEdit(cli)} className="p-4 sm:p-5 rounded-xl border border-white/[0.05] bg-[#0a0a0a] hover:bg-white/[0.02] transition-colors cursor-pointer group flex flex-col justify-between h-auto min-h-[140px] min-w-0">
+               <div className="min-w-0">
+                 <div className="text-[14px] sm:text-[15px] font-semibold text-white mb-1 truncate">{cli.name}</div>
+                 <div className="text-[11px] sm:text-[12px] font-medium text-neutral-500 flex items-center gap-1.5 min-w-0"><Mail className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">{cli.email || 'No email provided'}</span></div>
                </div>
                
-               <div className="flex items-end justify-between border-t border-white/[0.05] pt-4 mt-4">
-                 <div>
-                   <div className="text-[10px] uppercase tracking-widest font-medium text-neutral-500 mb-1">{incomeTerm}</div>
-                   <div className="text-[16px] font-semibold tracking-tight text-emerald-400 tabular-nums">{formatCurrency(revenue)}</div>
+               <div className="flex items-end justify-between border-t border-white/[0.05] pt-4 mt-4 min-w-0 gap-2">
+                 <div className="min-w-0">
+                   <div className="text-[10px] uppercase tracking-widest font-medium text-neutral-500 mb-1 truncate">{incomeTerm}</div>
+                   <div className="text-[15px] sm:text-[16px] font-semibold tracking-tight text-emerald-400 tabular-nums truncate">{formatCurrency(revenue)}</div>
                  </div>
-                 <ExternalLink className="w-4 h-4 text-neutral-600 group-hover:text-white transition-colors" />
+                 <ExternalLink className="w-4 h-4 text-neutral-600 group-hover:text-white transition-colors shrink-0" />
                </div>
             </div>
           );

@@ -16,6 +16,12 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, sans-serif;
+  /* Global overflow guard — prevents any child from causing viewport-level horizontal scroll */
+  overflow-x: hidden;
+}
+
+html {
+  overflow-x: hidden;
 }
 
 /* Base structural overrides */

@@ -139,10 +139,10 @@ function DocsContent() {
       <SupportSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
 
       {/* Docs Shell */}
-      <div className="flex-1 max-w-7xl w-full mx-auto px-6 flex flex-col md:flex-row gap-8 py-8 relative">
+      <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 flex flex-col md:flex-row gap-6 md:gap-8 py-6 md:py-8 relative">
         
         {/* Left Sidebar Navigation */}
-        <aside className="w-full md:w-64 shrink-0 md:sticky md:top-24 md:h-[calc(100vh-8rem)] overflow-y-auto pr-4 border-r border-white/[0.05] space-y-6">
+        <aside className="w-full md:w-56 shrink-0 md:sticky md:top-24 md:h-[calc(100vh-8rem)] overflow-y-auto md:pr-4 md:border-r border-white/[0.05] space-y-5 pb-4 md:pb-0">
           
           {/* Quick Search Button */}
           <button 

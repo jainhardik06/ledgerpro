@@ -74,10 +74,10 @@ export default function AboutPage() {
   const [activeAudience, setActiveAudience] = useState<'freelancer' | 'agency' | 'org' | 'business'>('freelancer');
 
   return (
-    <div className="flex flex-col items-center bg-[#000000] text-white min-h-screen pb-32">
+    <div className="flex flex-col w-full bg-[#000000] text-white min-h-screen pb-32">
       
       {/* Hero Section */}
-      <section className="w-full pt-32 pb-20 px-6 relative overflow-hidden border-b border-white/[0.05]">
+      <section className="w-full pt-24 sm:pt-24 sm:pt-32 pb-16 sm:pb-20 px-4 sm:px-6 relative overflow-hidden border-b border-white/[0.05]">
         {/* Ambient background glow */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-neutral-900/30 via-[#000000] to-[#000000] -z-10" />
         
@@ -88,7 +88,7 @@ export default function AboutPage() {
             100% Free For Beta Onboarding
           </div>
 
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tighter text-white mb-6 leading-[1.1] max-w-3xl">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tighter text-white mb-6 leading-[1.1] max-w-3xl">
             Financial clarity, engineered for the way modern teams work.
           </h1>
           <p className="text-neutral-400 max-w-xl mb-8 text-[14px] md:text-[16px] leading-relaxed font-medium">
@@ -108,8 +108,9 @@ export default function AboutPage() {
             </Link>
           </div>
 
-          {/* Quick Technical Stats Bar */}
-          <div className="w-full max-w-3xl grid grid-cols-3 border border-white/[0.05] rounded-xl bg-[#050505] p-4 text-left divide-x divide-white/[0.05]">
+          {/* Quick Technical Stats Bar — scrolls on mobile */}
+          <div className="w-full max-w-3xl overflow-x-auto">
+            <div className="grid grid-cols-3 border border-white/[0.05] rounded-xl bg-[#050505] p-4 text-left divide-x divide-white/[0.05] min-w-[480px]">
             <div className="px-4">
               <div className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-1">Architecture</div>
               <div className="text-[13px] font-medium text-white flex items-center gap-1.5">
@@ -128,12 +129,13 @@ export default function AboutPage() {
                 <Lock className="w-3.5 h-3.5 text-amber-400" /> Zero Password Storage
               </div>
             </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* The Friction (The Problem) */}
-      <section className="w-full py-24 px-6 border-b border-white/[0.05] relative">
+      <section className="w-full py-16 sm:py-24 px-4 sm:px-6 border-b border-white/[0.05] relative">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <span className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest block mb-2">The Friction</span>
@@ -173,7 +175,7 @@ export default function AboutPage() {
       </section>
 
       {/* Why Money OS Exists */}
-      <section className="w-full py-28 px-6 bg-[#030303] border-b border-white/[0.05] relative">
+      <section className="w-full py-16 sm:py-28 px-4 sm:px-6 bg-[#030303] border-b border-white/[0.05] relative">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-500/5 via-transparent to-transparent pointer-events-none" />
         <div className="max-w-2xl mx-auto text-center">
           <span className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest block mb-4">Our Thesis</span>
@@ -187,7 +189,7 @@ export default function AboutPage() {
       </section>
 
       {/* Philosophy Principles */}
-      <section className="w-full py-24 px-6 border-b border-white/[0.05]">
+      <section className="w-full py-16 sm:py-24 px-4 sm:px-6 border-b border-white/[0.05]">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <span className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest block mb-2">Engineering Rules</span>
@@ -231,15 +233,15 @@ export default function AboutPage() {
       </section>
 
       {/* Comparison Matrix */}
-      <section className="w-full py-24 px-6 border-b border-white/[0.05]">
+      <section className="w-full py-16 sm:py-24 px-4 sm:px-6 border-b border-white/[0.05]">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <span className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest block mb-2">The Shift</span>
             <h2 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">How we think about financial tools</h2>
           </div>
 
-          <div className="border border-white/[0.05] rounded-xl overflow-hidden bg-[#050505]">
-            <table className="w-full text-[13px] border-collapse text-left">
+          <div className="border border-white/[0.05] rounded-xl overflow-x-auto bg-[#050505]">
+            <table className="w-full text-[13px] border-collapse text-left min-w-[600px]">
               <thead>
                 <tr className="border-b border-white/[0.05] bg-white/[0.02] text-neutral-400 font-mono text-[10px] uppercase tracking-widest">
                   <th className="p-4 font-semibold">Aspect</th>
@@ -275,7 +277,7 @@ export default function AboutPage() {
       </section>
 
       {/* Audience Segments (Interactive Tabbed Section) */}
-      <section className="w-full py-24 px-6 border-b border-white/[0.05] relative">
+      <section className="w-full py-16 sm:py-24 px-4 sm:px-6 border-b border-white/[0.05] relative">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <span className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest block mb-2">Designed For</span>
@@ -300,7 +302,7 @@ export default function AboutPage() {
           </div>
 
           {/* Dynamic Content Panel */}
-          <div className="p-8 rounded-xl border border-white/[0.05] bg-[#070707] grid md:grid-cols-2 gap-8 items-start min-h-[220px]">
+          <div className="p-5 sm:p-8 rounded-xl border border-white/[0.05] bg-[#070707] grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 items-start">
             <div>
               <div className="text-[11px] font-mono text-neutral-500 uppercase tracking-widest mb-3">Core Challenges</div>
               <ul className="space-y-2">
@@ -332,7 +334,7 @@ export default function AboutPage() {
       </section>
 
       {/* Technical Trust Shield */}
-      <section className="w-full py-24 px-6 border-b border-white/[0.05]">
+      <section className="w-full py-16 sm:py-24 px-4 sm:px-6 border-b border-white/[0.05]">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <span className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest block mb-2">Hardened Layer</span>
@@ -368,10 +370,10 @@ export default function AboutPage() {
       </section>
 
       {/* Final Earned CTA */}
-      <section className="w-full py-28 px-6 text-center relative overflow-hidden">
+      <section className="w-full py-20 sm:py-28 px-4 sm:px-6 text-center relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-indigo-500/5 via-transparent to-transparent pointer-events-none" />
         <div className="max-w-2xl mx-auto flex flex-col items-center">
-          <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-white mb-6">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-white mb-6">
             Bring clarity to your business finances.
           </h2>
           <p className="text-neutral-400 text-[14px] max-w-md mb-8 leading-relaxed">

@@ -5,15 +5,15 @@ import { Button } from '@/components/ui/Button';
 
 export default function TeamsFeature() {
   return (
-    <div className="flex flex-col items-center pb-24">
+    <div className="flex flex-col w-full pb-24">
       {/* Hero */}
-      <section className="w-full pt-32 pb-24 px-6 relative border-b border-white/[0.05] overflow-hidden">
+      <section className="w-full pt-24 sm:pt-24 sm:pt-32 pb-24 px-4 sm:px-6 relative border-b border-white/[0.05] overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-[#000000] to-[#000000] -z-10" />
         <div className="max-w-4xl mx-auto flex flex-col items-center text-center">
           <div className="w-16 h-16 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-8 animate-in">
             <Users className="w-8 h-8 text-blue-500" />
           </div>
-          <h1 className="text-4xl md:text-6xl font-semibold tracking-tight text-white mb-6 animate-in" style={{ animationDelay: '100ms' }}>
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-semibold tracking-tight text-white mb-6 animate-in" style={{ animationDelay: '100ms' }}>
             Multi-player finance.
           </h1>
           <p className="text-lg text-neutral-400 font-medium max-w-2xl mx-auto mb-10 animate-in" style={{ animationDelay: '200ms' }}>
@@ -29,7 +29,7 @@ export default function TeamsFeature() {
       </section>
 
       {/* Abstract UI Showcase */}
-      <section className="w-full py-24 px-6 max-w-4xl mx-auto">
+      <section className="w-full py-16 sm:py-24 px-4 sm:px-6 max-w-4xl mx-auto">
         <div className="rounded-2xl border border-white/[0.1] bg-[#0a0a0a] p-8 shadow-2xl relative overflow-hidden flex flex-col md:flex-row gap-8">
            <div className="flex-1 space-y-4">
               <h3 className="text-[13px] text-neutral-500 font-medium uppercase tracking-widest border-b border-white/[0.05] pb-2">Active Users</h3>

@@ -6,7 +6,7 @@ import { ShieldCheck, ShieldAlert, Key, Users, Lock, Server, FileLock2, HelpCirc
 
 export default function SecurityPage() {
   return (
-    <div className="w-full pt-32 pb-24 px-6 bg-[#000000] text-white min-h-screen">
+    <div className="w-full pt-24 sm:pt-24 sm:pt-32 pb-24 px-4 sm:px-6 bg-[#000000] text-white min-h-screen">
       <main className="max-w-4xl mx-auto">
         {/* Back Link */}
         <Link href="/support" className="inline-flex items-center gap-2 text-[12px] text-neutral-500 hover:text-white transition-colors mb-8 font-mono">

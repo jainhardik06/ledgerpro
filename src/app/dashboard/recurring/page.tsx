@@ -135,24 +135,24 @@ export default function RecurringPage() {
   return (
     <div className="flex flex-col h-[calc(100vh-56px)] animate-in fade-in duration-500">
       
-      <div className="p-6 shrink-0 border-b border-white/[0.05] flex items-center justify-between">
+      <div className="p-4 sm:p-6 shrink-0 border-b border-white/[0.05] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-semibold tracking-tight text-white mb-1">Subscriptions & Obligations</h1>
-          <p className="text-[13px] text-neutral-400">Automate recurring revenue and fixed expenses.</p>
+          <p className="text-[12px] sm:text-[13px] text-neutral-400">Automate recurring revenue and fixed expenses.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="relative">
+        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+          <div className="relative flex-1 sm:flex-none min-w-0">
             <Search className="w-4 h-4 text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2" />
             <input 
               type="text" 
-              placeholder="Search schedules..." 
+              placeholder="Search..." 
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="h-9 w-64 bg-[#0a0a0a] border border-white/[0.1] rounded-md pl-9 pr-3 text-[13px] text-white focus:border-white/[0.2] outline-none"
+              className="h-9 w-full sm:w-64 bg-[#0a0a0a] border border-white/[0.1] rounded-md pl-9 pr-3 text-[13px] text-white focus:border-white/[0.2] outline-none"
             />
           </div>
 
-          <div className="relative">
+          <div className="relative shrink-0">
             <button 
               onClick={() => setIsFilterOpen(!isFilterOpen)} 
               className={`h-9 px-3 border rounded-md text-[13px] font-medium flex items-center gap-2 transition-colors ${
@@ -161,14 +161,14 @@ export default function RecurringPage() {
                   : 'border-white/[0.1] text-white hover:bg-white/[0.02]'
               }`}
             >
-              <Filter className="w-3.5 h-3.5" /> Filter
+              <Filter className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Filter</span>
               {isFilterActive && (
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               )}
             </button>
 
             {isFilterOpen && (
-              <div className="absolute right-0 mt-2 w-80 bg-[#0a0a0a] border border-white/[0.08] rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] p-5 z-50 space-y-4 text-left animate-in fade-in slide-in-from-top-1 duration-150">
+              <div className="absolute right-0 sm:right-auto mt-2 w-[280px] sm:w-80 bg-[#0a0a0a] border border-white/[0.08] rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] p-4 sm:p-5 z-50 space-y-4 text-left animate-in fade-in slide-in-from-top-1 duration-150">
                 <div className="flex items-center justify-between border-b border-white/[0.05] pb-2">
                   <span className="text-[12px] font-semibold text-white">Filters</span>
                   {isFilterActive && (
@@ -188,21 +188,21 @@ export default function RecurringPage() {
                     <button 
                       type="button" 
                       onClick={() => setFilterType('all')} 
-                      className={`flex-1 py-1 text-[11px] font-medium rounded transition-colors ${filterType === 'all' ? 'bg-[#111111] text-white shadow-sm border border-white/[0.05]' : 'text-neutral-500 hover:text-white'}`}
+                      className={`flex-1 py-1.5 sm:py-1 text-[11px] font-medium rounded transition-colors ${filterType === 'all' ? 'bg-[#111111] text-white shadow-sm border border-white/[0.05]' : 'text-neutral-500 hover:text-white'}`}
                     >
                       All
                     </button>
                     <button 
                       type="button" 
                       onClick={() => setFilterType('Credit')} 
-                      className={`flex-1 py-1 text-[11px] font-medium rounded transition-colors ${filterType === 'Credit' ? 'bg-[#111111] text-white shadow-sm border border-white/[0.05]' : 'text-neutral-500 hover:text-white'}`}
+                      className={`flex-1 py-1.5 sm:py-1 text-[11px] font-medium rounded transition-colors ${filterType === 'Credit' ? 'bg-[#111111] text-white shadow-sm border border-white/[0.05]' : 'text-neutral-500 hover:text-white'}`}
                     >
                       Income
                     </button>
                     <button 
                       type="button" 
                       onClick={() => setFilterType('Debit')} 
-                      className={`flex-1 py-1 text-[11px] font-medium rounded transition-colors ${filterType === 'Debit' ? 'bg-[#111111] text-white shadow-sm border border-white/[0.05]' : 'text-neutral-500 hover:text-white'}`}
+                      className={`flex-1 py-1.5 sm:py-1 text-[11px] font-medium rounded transition-colors ${filterType === 'Debit' ? 'bg-[#111111] text-white shadow-sm border border-white/[0.05]' : 'text-neutral-500 hover:text-white'}`}
                     >
                       Expense
                     </button>
@@ -215,7 +215,7 @@ export default function RecurringPage() {
                   <select 
                     value={filterInterval} 
                     onChange={e => setFilterInterval(e.target.value as any)} 
-                    className="w-full h-8 bg-white/[0.02] border border-white/[0.05] rounded-md px-2 text-[12px] text-white focus:border-white/[0.2] outline-none [&>option]:bg-[#000000]"
+                    className="w-full h-9 sm:h-8 bg-white/[0.02] border border-white/[0.05] rounded-md px-2 text-[12px] text-white focus:border-white/[0.2] outline-none [&>option]:bg-[#000000]"
                   >
                     <option value="all">All Intervals</option>
                     <option value="Daily">Daily</option>
@@ -230,7 +230,7 @@ export default function RecurringPage() {
                   <select 
                     value={filterAccountId} 
                     onChange={e => setFilterAccountId(e.target.value)} 
-                    className="w-full h-8 bg-white/[0.02] border border-white/[0.05] rounded-md px-2 text-[12px] text-white focus:border-white/[0.2] outline-none [&>option]:bg-[#000000]"
+                    className="w-full h-9 sm:h-8 bg-white/[0.02] border border-white/[0.05] rounded-md px-2 text-[12px] text-white focus:border-white/[0.2] outline-none [&>option]:bg-[#000000]"
                   >
                     <option value="all">All Accounts</option>
                     {accounts.map(acc => (
@@ -245,7 +245,7 @@ export default function RecurringPage() {
                   <select 
                     value={filterCategory} 
                     onChange={e => setFilterCategory(e.target.value)} 
-                    className="w-full h-8 bg-white/[0.02] border border-white/[0.05] rounded-md px-2 text-[12px] text-white focus:border-white/[0.2] outline-none [&>option]:bg-[#000000]"
+                    className="w-full h-9 sm:h-8 bg-white/[0.02] border border-white/[0.05] rounded-md px-2 text-[12px] text-white focus:border-white/[0.2] outline-none [&>option]:bg-[#000000]"
                   >
                     <option value="all">All Categories</option>
                     {categories.map(cat => (
@@ -263,14 +263,14 @@ export default function RecurringPage() {
                       placeholder="Min" 
                       value={filterMinAmount}
                       onChange={e => setFilterMinAmount(e.target.value)}
-                      className="w-1/2 h-8 bg-white/[0.02] border border-white/[0.05] rounded-md px-2.5 text-[12px] text-white placeholder:text-neutral-700 focus:border-white/[0.2] outline-none"
+                      className="w-1/2 h-9 sm:h-8 bg-white/[0.02] border border-white/[0.05] rounded-md px-2.5 text-[12px] text-white placeholder:text-neutral-700 focus:border-white/[0.2] outline-none"
                     />
                     <input 
                       type="number" 
                       placeholder="Max" 
                       value={filterMaxAmount}
                       onChange={e => setFilterMaxAmount(e.target.value)}
-                      className="w-1/2 h-8 bg-white/[0.02] border border-white/[0.05] rounded-md px-2.5 text-[12px] text-white placeholder:text-neutral-700 focus:border-white/[0.2] outline-none"
+                      className="w-1/2 h-9 sm:h-8 bg-white/[0.02] border border-white/[0.05] rounded-md px-2.5 text-[12px] text-white placeholder:text-neutral-700 focus:border-white/[0.2] outline-none"
                     />
                   </div>
                 </div>
@@ -278,7 +278,7 @@ export default function RecurringPage() {
                 <div className="flex justify-end pt-2 border-t border-white/[0.05]">
                   <button 
                     onClick={() => setIsFilterOpen(false)}
-                    className="px-3 py-1.5 bg-white text-black text-[11px] font-semibold rounded hover:bg-neutral-200 transition-colors"
+                    className="px-4 py-2 sm:px-3 sm:py-1.5 bg-white text-black text-[12px] sm:text-[11px] font-semibold rounded hover:bg-neutral-200 transition-colors"
                   >
                     Done
                   </button>
@@ -287,8 +287,8 @@ export default function RecurringPage() {
             )}
           </div>
 
-          <button onClick={openNew} className="h-9 px-3 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 flex items-center gap-2">
-            <Plus className="w-4 h-4" /> New Schedule
+          <button onClick={openNew} className="h-9 px-3 shrink-0 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 flex items-center gap-2">
+            <Plus className="w-4 h-4" /> <span className="hidden sm:inline">New Schedule</span>
           </button>
         </div>
       </div>
@@ -297,10 +297,10 @@ export default function RecurringPage() {
         <table className="w-full text-left border-collapse">
           <thead className="sticky top-0 bg-[#0a0a0a] z-10 shadow-[0_1px_0_rgba(255,255,255,0.05)]">
             <tr>
-              <th className="px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest w-1/3">Schedule</th>
-              <th className="px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest">Interval</th>
-              <th className="px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest">Next Run</th>
-              <th className="px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest text-right">Amount</th>
+              <th className="px-4 sm:px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest w-full sm:w-1/3">Schedule</th>
+              <th className="hidden sm:table-cell px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest">Interval</th>
+              <th className="hidden md:table-cell px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest">Next Run</th>
+              <th className="px-4 sm:px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest text-right shrink-0">Amount</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/[0.02]">
@@ -320,26 +320,32 @@ export default function RecurringPage() {
             ) : (
                filtered.map(item => (
                  <tr key={item.id} onClick={() => openEdit(item)} className="hover:bg-white/[0.02] transition-colors cursor-pointer group">
-                   <td className="px-6 py-4">
-                     <div className="flex items-center gap-3">
+                   <td className="px-4 sm:px-6 py-4 align-middle max-w-[200px] sm:max-w-none">
+                     <div className="flex items-center gap-3 min-w-0">
                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border ${item.type === 'Credit' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-white/[0.02] border-white/[0.05] text-neutral-400'}`}>
                          {item.type === 'Credit' ? <ArrowDownRight className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
                        </div>
-                       <div>
-                         <div className="text-[13px] font-medium text-white group-hover:text-emerald-400 transition-colors">{item.description}</div>
-                         <div className="text-[11px] text-neutral-500 mt-0.5">{item.category || 'Uncategorized'}</div>
+                       <div className="flex flex-col min-w-0">
+                         <div className="text-[13px] font-medium text-white group-hover:text-emerald-400 transition-colors truncate">{item.description}</div>
+                         <div className="text-[11px] text-neutral-500 mt-0.5 truncate flex items-center gap-1.5">
+                           <span className="truncate">{item.category || 'Uncat.'}</span>
+                           <span className="sm:hidden shrink-0">•</span>
+                           <span className="sm:hidden shrink-0">{item.interval}</span>
+                           <span className="md:hidden shrink-0">•</span>
+                           <span className="md:hidden shrink-0">{item.nextRunDate.substring(5)}</span>
+                         </div>
                        </div>
                      </div>
                    </td>
-                   <td className="px-6 py-4">
+                   <td className="hidden sm:table-cell px-6 py-4 align-middle">
                      <span className="inline-flex px-2 py-0.5 rounded border border-white/[0.05] bg-white/[0.02] text-[11px] font-medium text-neutral-300">
                        {item.interval}
                      </span>
                    </td>
-                   <td className="px-6 py-4">
+                   <td className="hidden md:table-cell px-6 py-4 align-middle">
                      <span className="text-[12px] text-neutral-300 font-mono flex items-center gap-1.5"><Calendar className="w-3 h-3"/> {item.nextRunDate}</span>
                    </td>
-                   <td className="px-6 py-4 text-right">
+                   <td className="px-4 sm:px-6 py-4 text-right shrink-0 align-middle">
                      <span className={`text-[13px] font-semibold tabular-nums ${item.type === 'Credit' ? 'text-emerald-400' : 'text-neutral-200'}`}>
                        {item.type === 'Credit' ? '+' : '-'}₹{item.amount.toLocaleString()}
                      </span>

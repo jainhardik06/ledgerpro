@@ -160,6 +160,28 @@ export interface NewsletterSubscriber {
   createdAt: Date;
 }
 
+export interface SystemIncident {
+  id?: string;
+  _id?: any;
+  title: string;
+  description: string;
+  status: 'INVESTIGATING' | 'IDENTIFIED' | 'MONITORING' | 'RESOLVED';
+  severity: 'INFO' | 'WARN' | 'CRITICAL';
+  createdAt: Date;
+  resolvedAt?: Date;
+}
+
+export interface SystemMaintenance {
+  id?: string;
+  _id?: any;
+  title: string;
+  description: string;
+  scheduledFor: Date;
+  durationMinutes: number;
+  status: 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED';
+  createdAt: Date;
+}
+
 const MONGODB_URI = process.env.MONGODB_URI;
 
 let mongoClient: MongoClient | null = null;
@@ -182,14 +204,61 @@ interface LocalDbSchema {
   tickets: SupportTicket[];
   broadcasts: Broadcast[];
   subscribers: NewsletterSubscriber[];
+  incidents: SystemIncident[];
+  maintenances: SystemMaintenance[];
+}
+
+function getNextSunday() {
+  const date = new Date();
+  const resultDate = new Date(date);
+  resultDate.setDate(date.getDate() + ((7 - date.getDay()) % 7 || 7));
+  resultDate.setHours(2, 0, 0, 0); // 02:00 UTC
+  return resultDate;
 }
 
 export function initLocalDb(): LocalDbSchema {
   if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true });
   }
+  const nextSunday = getNextSunday();
+  const initialIncidents: SystemIncident[] = [
+    {
+      id: 'inc_1',
+      title: 'Minor Database Latency Resolved',
+      description: 'We identified database locks due to complex reporting queries. The indexing configuration was adjusted, returning query performance levels to standard parameters.',
+      status: 'RESOLVED',
+      severity: 'WARN',
+      createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+      resolvedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000 + 45 * 60 * 1000)
+    },
+    {
+      id: 'inc_2',
+      title: 'Email Relay Delay',
+      description: 'An upstream relay server delay impacted verification codes. Failover routes were deployed to guarantee instantaneous email deliverables.',
+      status: 'RESOLVED',
+      severity: 'INFO',
+      createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
+      resolvedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000 + 20 * 60 * 1000)
+    }
+  ];
+  const initialMaintenances: SystemMaintenance[] = [
+    {
+      id: 'maint_1',
+      title: 'Upcoming Upgrade Window',
+      description: 'A core database server upgrade is scheduled for Sunday. Expect short database connection interruptions during this interval.',
+      scheduledFor: nextSunday,
+      durationMinutes: 60,
+      status: 'SCHEDULED',
+      createdAt: new Date()
+    }
+  ];
+
   if (!fs.existsSync(DB_FILE)) {
-    const defaultData: LocalDbSchema = { tenants: [], users: [], accounts: [], transactions: [], categories: [], budgets: [], recurring: [], clients: [], logs: [], flags: [], tickets: [], broadcasts: [], subscribers: [] };
+    const defaultData: LocalDbSchema = { 
+      tenants: [], users: [], accounts: [], transactions: [], categories: [], budgets: [], 
+      recurring: [], clients: [], logs: [], flags: [], tickets: [], broadcasts: [], 
+      subscribers: [], incidents: initialIncidents, maintenances: initialMaintenances 
+    };
     fs.writeFileSync(DB_FILE, JSON.stringify(defaultData, null, 2), 'utf-8');
     return defaultData;
   }
@@ -209,9 +278,15 @@ export function initLocalDb(): LocalDbSchema {
     if (!parsed.tickets) parsed.tickets = [];
     if (!parsed.broadcasts) parsed.broadcasts = [];
     if (!parsed.subscribers) parsed.subscribers = [];
+    if (!parsed.incidents || parsed.incidents.length === 0) parsed.incidents = initialIncidents;
+    if (!parsed.maintenances || parsed.maintenances.length === 0) parsed.maintenances = initialMaintenances;
     return parsed;
   } catch (e) {
-    const defaultData: LocalDbSchema = { tenants: [], users: [], accounts: [], transactions: [], categories: [], budgets: [], recurring: [], clients: [], logs: [], flags: [], tickets: [], broadcasts: [], subscribers: [] };
+    const defaultData: LocalDbSchema = { 
+      tenants: [], users: [], accounts: [], transactions: [], categories: [], budgets: [], 
+      recurring: [], clients: [], logs: [], flags: [], tickets: [], broadcasts: [], 
+      subscribers: [], incidents: initialIncidents, maintenances: initialMaintenances 
+    };
     fs.writeFileSync(DB_FILE, JSON.stringify(defaultData, null, 2), 'utf-8');
     return defaultData;
   }
@@ -1296,3 +1371,84 @@ export async function createNewsletterSubscriber(email: string): Promise<Newslet
   writeLocalDb(data);
   return localSub;
 }
+
+// ---- SYSTEM INCIDENTS ----
+export async function getSystemIncidents(): Promise<SystemIncident[]> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const incidents = await db.collection('incidents').find({}).sort({ createdAt: -1 }).toArray();
+      return incidents.map(i => ({
+        id: i._id.toString(),
+        title: i.title,
+        description: i.description,
+        status: i.status,
+        severity: i.severity,
+        createdAt: i.createdAt,
+        resolvedAt: i.resolvedAt
+      }));
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  return data.incidents.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
+export async function createSystemIncident(incident: Omit<SystemIncident, 'id' | '_id' | 'createdAt'>): Promise<SystemIncident> {
+  const { db } = await connectDb();
+  const newIncident = { ...incident, createdAt: new Date() };
+  if (db) {
+    try {
+      const result = await db.collection('incidents').insertOne(newIncident);
+      return { id: result.insertedId.toString(), ...newIncident };
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  const id = 'inc_' + Math.random().toString(36).substring(2, 9);
+  const localIncident: SystemIncident = { id, ...newIncident };
+  data.incidents.push(localIncident);
+  writeLocalDb(data);
+  return localIncident;
+}
+
+// ---- SYSTEM MAINTENANCES ----
+export async function getSystemMaintenances(): Promise<SystemMaintenance[]> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const maintenances = await db.collection('maintenances').find({}).sort({ scheduledFor: -1 }).toArray();
+      return listMaintenancesMapping(maintenances);
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  return data.maintenances.sort((a, b) => new Date(b.scheduledFor).getTime() - new Date(a.scheduledFor).getTime());
+}
+
+function listMaintenancesMapping(maintenances: any[]): SystemMaintenance[] {
+  return maintenances.map(m => ({
+    id: m._id ? m._id.toString() : (m.id || ''),
+    title: m.title,
+    description: m.description,
+    scheduledFor: m.scheduledFor,
+    durationMinutes: Number(m.durationMinutes),
+    status: m.status,
+    createdAt: m.createdAt
+  }));
+}
+
+export async function createSystemMaintenance(maint: Omit<SystemMaintenance, 'id' | '_id' | 'createdAt'>): Promise<SystemMaintenance> {
+  const { db } = await connectDb();
+  const newMaint = { ...maint, createdAt: new Date() };
+  if (db) {
+    try {
+      const result = await db.collection('maintenances').insertOne(newMaint);
+      return { id: result.insertedId.toString(), ...newMaint };
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  const id = 'maint_' + Math.random().toString(36).substring(2, 9);
+  const localMaint: SystemMaintenance = { id, ...newMaint };
+  data.maintenances.push(localMaint);
+  writeLocalDb(data);
+  return localMaint;
+}
+

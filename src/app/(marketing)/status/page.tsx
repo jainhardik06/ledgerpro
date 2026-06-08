@@ -34,19 +34,13 @@ export default function StatusPage() {
   }, []);
 
   const renderUptimeBar = (componentKey: string) => {
-    const componentStatus = data?.components?.[componentKey]?.status || 'OPERATIONAL';
-    return Array.from({ length: 45 }).map((_, idx) => {
-      let status = 'operational';
-      if (idx === 44) {
-        status = componentStatus === 'OPERATIONAL' ? 'operational' : 'error';
-      } else {
-        // Historical mock representation
-        status = idx === 18 ? 'warning' : idx === 32 ? 'error' : 'operational';
-      }
+    const component = data?.components?.[componentKey];
+    const history = component?.history || Array.from({ length: 45 }).map(() => 'operational');
+    return history.map((status: string, idx: number) => {
       return (
         <div 
           key={idx} 
-          className={`h-6 w-[3px] rounded-full ${
+          className={`h-6 w-[3px] rounded-full ${idx < 15 ? 'hidden sm:block' : ''} ${
             status === 'operational' 
               ? 'bg-emerald-500' 
               : status === 'warning' 
@@ -54,7 +48,7 @@ export default function StatusPage() {
                 : 'bg-rose-500'
           }`} 
           title={idx === 44 
-            ? `Current Status: ${componentStatus === 'OPERATIONAL' ? 'Operational' : 'Degraded'}` 
+            ? `Current Status: ${component?.status === 'OPERATIONAL' ? 'Operational' : 'Degraded'}` 
             : `Day ${45 - idx} ago: ${status === 'operational' ? '100% Uptime' : status === 'warning' ? 'Minor latency' : 'Service degraded'}`
           }
         />
@@ -65,7 +59,7 @@ export default function StatusPage() {
   const isAllSystemsOperational = data ? data.status === 'OPERATIONAL' : true;
 
   return (
-    <div className="w-full pt-32 pb-24 px-6 bg-[#000000] text-white min-h-screen">
+    <div className="w-full pt-24 sm:pt-24 sm:pt-32 pb-24 px-4 sm:px-6 bg-[#000000] text-white min-h-screen">
       <main className="max-w-3xl mx-auto">
         
         {/* Back Link & Refresh Trigger */}
@@ -121,7 +115,7 @@ export default function StatusPage() {
             <div className="space-y-6">
               {/* Ledger API */}
               <div className="p-4 rounded-xl border border-white/[0.05] bg-[#0a0a0a] space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <span className="text-[13.5px] font-semibold text-white flex items-center gap-2">
                     <Activity className="w-4 h-4 text-blue-400" /> Core Ledger API
                   </span>
@@ -138,7 +132,7 @@ export default function StatusPage() {
 
               {/* Authentication Gateway */}
               <div className="p-4 rounded-xl border border-white/[0.05] bg-[#0a0a0a] space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <span className="text-[13.5px] font-semibold text-white flex items-center gap-2">
                     <Key className="w-4 h-4 text-purple-400" /> Authentication Gateway
                   </span>
@@ -155,7 +149,7 @@ export default function StatusPage() {
 
               {/* Core Database Cluster */}
               <div className="p-4 rounded-xl border border-white/[0.05] bg-[#0a0a0a] space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <span className="text-[13.5px] font-semibold text-white flex items-center gap-2">
                     <Database className="w-4 h-4 text-emerald-400" /> Core Database Cluster ({data.components?.database?.type})
                   </span>
@@ -178,7 +172,7 @@ export default function StatusPage() {
 
               {/* Email & Webhook Dispatch */}
               <div className="p-4 rounded-xl border border-white/[0.05] bg-[#0a0a0a] space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <span className="text-[13.5px] font-semibold text-white flex items-center gap-2">
                     <Mail className="w-4 h-4 text-rose-400" /> Email & Webhook Dispatch
                   </span>
@@ -224,40 +218,47 @@ export default function StatusPage() {
         <section className="mb-16">
           <h3 className="text-[11px] font-semibold text-neutral-500 uppercase tracking-widest mb-6">Recent Incidents</h3>
           <div className="space-y-6">
-            
-            <div className="relative pl-6 before:absolute before:left-0 before:top-2 before:bottom-0 before:w-px before:bg-white/[0.1]">
-              <span className="absolute left-0 top-1.5 w-1.5 h-1.5 rounded-full bg-neutral-600 -translate-x-[2.5px]" />
-              <div className="text-[12px] font-mono text-neutral-500 mb-1">June 5, 2026</div>
-              <h4 className="text-[14px] font-semibold text-white mb-2">Minor Database Latency Resolved</h4>
-              <p className="text-[12.5px] text-neutral-400 leading-relaxed">
-                We identified database locks due to complex reporting queries. The indexing configuration was adjusted, returning query performance levels to standard parameters.
-              </p>
-            </div>
-
-            <div className="relative pl-6 before:absolute before:left-0 before:top-2 before:bottom-0 before:w-px before:bg-white/[0.1]">
-              <span className="absolute left-0 top-1.5 w-1.5 h-1.5 rounded-full bg-neutral-600 -translate-x-[2.5px]" />
-              <div className="text-[12px] font-mono text-neutral-500 mb-1">May 24, 2026</div>
-              <h4 className="text-[14px] font-semibold text-white mb-2">Email Relay Delay</h4>
-              <p className="text-[12.5px] text-neutral-400 leading-relaxed">
-                An upstream relay server delay impacted verification codes. Failover routes were deployed to guarantee instantaneous email deliverables.
-              </p>
-            </div>
-
+            {!loading && data?.incidents?.length > 0 ? (
+              data.incidents.map((inc: any, i: number) => (
+                <div key={inc.id || i} className="relative pl-6 before:absolute before:left-0 before:top-2 before:bottom-0 before:w-px before:bg-white/[0.1]">
+                  <span className={`absolute left-0 top-1.5 w-1.5 h-1.5 rounded-full -translate-x-[2.5px] ${inc.status === 'RESOLVED' ? 'bg-neutral-600' : 'bg-rose-500 animate-pulse'}`} />
+                  <div className="text-[12px] font-mono text-neutral-500 mb-1">
+                    {new Date(inc.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </div>
+                  <h4 className="text-[14px] font-semibold text-white mb-2">
+                    {inc.title} {inc.status !== 'RESOLVED' && <span className="text-[10px] font-mono font-medium text-rose-400 uppercase tracking-wider ml-2 bg-rose-500/10 px-1.5 py-0.5 rounded border border-rose-500/20">{inc.status}</span>}
+                  </h4>
+                  <p className="text-[12.5px] text-neutral-400 leading-relaxed">
+                    {inc.description}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="text-[13px] text-neutral-500">All systems operational. No recent incidents reported.</p>
+            )}
           </div>
         </section>
 
         {/* Maintenance Windows info */}
         <section>
           <h3 className="text-[11px] font-semibold text-neutral-500 uppercase tracking-widest mb-4">Maintenance Windows</h3>
-          <div className="p-4 rounded-xl border border-white/[0.05] bg-white/[0.01] flex gap-3 items-start">
-            <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-            <div>
-              <h4 className="text-[13px] font-semibold text-white">Upcoming Upgrade Window</h4>
-              <p className="text-[12px] text-neutral-400 mt-1 leading-relaxed">
-                A core database server upgrade is scheduled for Sunday, June 14, 2026, between 02:00 and 03:00 UTC. Expect short database connection interruptions during this interval.
-              </p>
+          {!loading && data?.maintenances?.length > 0 ? (
+            data.maintenances.map((m: any, i: number) => (
+              <div key={m.id || i} className="p-4 rounded-xl border border-white/[0.05] bg-white/[0.01] flex gap-3 items-start mb-4">
+                <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-[13px] font-semibold text-white">{m.title}</h4>
+                  <p className="text-[12px] text-neutral-400 mt-1 leading-relaxed">
+                    {m.description} Scheduled for: {new Date(m.scheduledFor).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="p-4 rounded-xl border border-white/[0.05] bg-white/[0.01] text-center text-[12px] text-neutral-500">
+              No upcoming maintenance windows scheduled.
             </div>
-          </div>
+          )}
         </section>
 
       </main>

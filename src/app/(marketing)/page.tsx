@@ -5,10 +5,10 @@ import { Button } from '@/components/ui/Button';
 
 export default function MarketingHome() {
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col w-full">
       
       {/* Hero Section */}
-      <section className="w-full flex flex-col items-center text-center pt-32 pb-24 px-6 relative overflow-hidden">
+      <section className="w-full flex flex-col items-center text-center pt-24 sm:pt-24 sm:pt-32 pb-16 sm:pb-24 px-4 sm:px-6 relative overflow-hidden">
         {/* Subtle radial gradient background effect for OLED black */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-neutral-900/40 via-[#000000] to-[#000000] -z-10" />
         
@@ -17,11 +17,11 @@ export default function MarketingHome() {
           Money OS 2.0 is now live
         </div>
         
-        <h1 className="text-5xl md:text-7xl font-semibold tracking-tighter text-white max-w-4xl mb-6 animate-in leading-[1.1]" style={{ animationDelay: '200ms' }}>
+        <h1 className="text-3xl sm:text-5xl md:text-7xl font-semibold tracking-tighter text-white max-w-4xl mb-5 sm:mb-6 animate-in leading-[1.1]" style={{ animationDelay: '200ms' }}>
           The financial command center for modern teams.
         </h1>
         
-        <p className="text-lg md:text-xl text-neutral-400 max-w-2xl mb-10 font-medium animate-in" style={{ animationDelay: '300ms' }}>
+        <p className="text-base sm:text-lg md:text-xl text-neutral-400 max-w-2xl mb-8 sm:mb-10 font-medium animate-in px-2" style={{ animationDelay: '300ms' }}>
           End the spreadsheet chaos. Money OS provides precise expense tracking, tenant isolation, and actionable insights out of the box.
         </p>
         
@@ -36,7 +36,7 @@ export default function MarketingHome() {
       </section>
 
       {/* Trusted By Logos */}
-      <section className="w-full border-y border-white/[0.05] bg-[#0a0a0a] py-10 px-6">
+      <section className="w-full border-y border-white/[0.05] bg-[#0a0a0a] py-8 sm:py-10 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto flex flex-col items-center">
           <p className="text-[12px] font-medium text-neutral-500 uppercase tracking-widest mb-8">Trusted by forward-thinking companies</p>
           <div className="flex flex-wrap justify-center gap-12 md:gap-24 opacity-40 grayscale">
@@ -51,10 +51,10 @@ export default function MarketingHome() {
       </section>
 
       {/* Problem / Solution Narrative */}
-      <section className="w-full py-24 px-6 max-w-5xl mx-auto">
+      <section className="w-full py-16 sm:py-24 px-4 sm:px-6 max-w-5xl mx-auto">
         <div className="grid md:grid-cols-2 gap-16 items-center">
           <div>
-            <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-white mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-white mb-4">
               Accounting software doesn't have to be complicated.
             </h2>
             <p className="text-neutral-400 mb-6 leading-relaxed">
@@ -91,16 +91,16 @@ export default function MarketingHome() {
       </section>
 
       {/* Bento Grid Features */}
-      <section className="w-full py-24 px-6 bg-[#0a0a0a] border-t border-white/[0.05]">
+      <section className="w-full py-16 sm:py-24 px-4 sm:px-6 bg-[#0a0a0a] border-t border-white/[0.05]">
         <div className="max-w-7xl mx-auto">
           <div className="mb-16">
             <h2 className="text-3xl font-semibold tracking-tight text-white mb-4">Everything you need. Nothing you don't.</h2>
             <p className="text-neutral-400 max-w-xl">Designed for speed. Keyboard-first navigation, instant page loads, and zero layout shift.</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {/* Bento Card 1 */}
-            <div className="md:col-span-2 rounded-2xl border border-white/[0.05] bg-[#000000] p-8 flex flex-col justify-end min-h-[300px] relative overflow-hidden group">
+            <div className="sm:col-span-2 md:col-span-2 rounded-2xl border border-white/[0.05] bg-[#000000] p-6 sm:p-8 flex flex-col justify-end min-h-[260px] sm:min-h-[300px] relative overflow-hidden group">
               <div className="absolute top-8 right-8 text-neutral-800 group-hover:text-neutral-700 transition-colors">
                 <Layout className="w-24 h-24" />
               </div>
@@ -127,7 +127,7 @@ export default function MarketingHome() {
             </div>
 
              {/* Bento Card 4 */}
-             <div className="md:col-span-2 rounded-2xl border border-white/[0.05] bg-[#000000] p-8 flex flex-col justify-end min-h-[300px] relative overflow-hidden group">
+             <div className="sm:col-span-2 md:col-span-2 rounded-2xl border border-white/[0.05] bg-[#000000] p-6 sm:p-8 flex flex-col justify-end min-h-[260px] sm:min-h-[300px] relative overflow-hidden group">
               <div className="absolute top-8 right-8 text-neutral-800 group-hover:text-neutral-700 transition-colors">
                 <LineChart className="w-24 h-24" />
               </div>
@@ -139,7 +139,7 @@ export default function MarketingHome() {
       </section>
 
       {/* CTA Section */}
-      <section className="w-full py-32 px-6">
+      <section className="w-full py-20 sm:py-32 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-semibold tracking-tight text-white mb-6">Ready to regain control?</h2>
           <p className="text-lg text-neutral-400 mb-10 max-w-2xl mx-auto">

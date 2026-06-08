@@ -24,17 +24,17 @@ export default function BlogPage() {
   ];
 
   return (
-    <div className="flex flex-col items-center pb-24 min-h-screen">
-      <section className="w-full pt-32 pb-16 px-6 border-b border-white/[0.05]">
+    <div className="flex flex-col w-full pb-24 min-h-screen">
+      <section className="w-full pt-24 sm:pt-24 sm:pt-32 pb-12 sm:pb-16 px-4 sm:px-6 border-b border-white/[0.05]">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-white mb-4 animate-in">Blog</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-white mb-4 animate-in">Blog</h1>
           <p className="text-lg text-neutral-400 font-medium animate-in" style={{ animationDelay: '100ms' }}>
             Thoughts on design, engineering, and building a sustainable business.
           </p>
         </div>
       </section>
 
-      <section className="w-full py-16 px-6 max-w-4xl mx-auto">
+      <section className="w-full py-12 sm:py-16 px-4 sm:px-6 max-w-4xl mx-auto">
         <div className="grid sm:grid-cols-2 gap-6">
           {/* Featured Post */}
           <Link href="/blog/redesign" className="sm:col-span-2 group block p-8 rounded-2xl border border-white/[0.05] bg-[#0a0a0a] hover:bg-white/[0.02] transition-colors relative overflow-hidden">

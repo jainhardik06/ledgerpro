@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function DPAPage() {
   return (
-    <div className="w-full pt-32 pb-24 px-6">
+    <div className="w-full pt-24 sm:pt-24 sm:pt-32 pb-24 px-4 sm:px-6">
       <main className="max-w-3xl mx-auto">
         <h1 className="text-3xl font-semibold text-white mb-2 tracking-tight">Data Processing Agreement</h1>
         <p className="text-[14px] text-neutral-500 mb-8">Last Updated: June 8, 2026</p>

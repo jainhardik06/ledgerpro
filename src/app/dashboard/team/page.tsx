@@ -121,12 +121,12 @@ export default function TeamPage() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-56px)] animate-in fade-in duration-500">
-      <div className="p-6 shrink-0 border-b border-white/[0.05] flex items-center justify-between">
+      <div className="p-4 sm:p-6 shrink-0 border-b border-white/[0.05] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-semibold tracking-tight text-white mb-1">Team Workspace</h1>
-          <p className="text-[13px] text-neutral-400">Manage members, permissions, and platform access.</p>
+          <p className="text-[12px] sm:text-[13px] text-neutral-400">Manage members, permissions, and platform access.</p>
         </div>
-        <button onClick={openNew} className="h-9 px-3 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 flex items-center gap-2">
+        <button onClick={openNew} className="h-9 px-3 shrink-0 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 flex items-center justify-center gap-2">
           <Plus className="w-4 h-4" /> Invite Member
         </button>
       </div>
@@ -135,41 +135,47 @@ export default function TeamPage() {
         <table className="w-full text-left border-collapse">
           <thead className="sticky top-0 bg-[#0a0a0a] z-10 shadow-[0_1px_0_rgba(255,255,255,0.05)]">
             <tr>
-              <th className="px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest w-1/3">User Identity</th>
-              <th className="px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest">Role</th>
-              <th className="px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest">Status</th>
-              <th className="px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest text-right">Actions</th>
+              <th className="px-4 sm:px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest w-full sm:w-1/3">User Identity</th>
+              <th className="hidden sm:table-cell px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest">Role</th>
+              <th className="hidden md:table-cell px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest">Status</th>
+              <th className="px-4 sm:px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/[0.02]">
              {team.map(member => (
                <tr key={member.id} onClick={() => openEdit(member)} className="hover:bg-white/[0.02] transition-colors group cursor-pointer">
-                 <td className="px-6 py-4">
-                   <div className="flex items-center gap-3">
+                 <td className="px-4 sm:px-6 py-4 align-middle min-w-0">
+                   <div className="flex items-center gap-3 min-w-0">
                      <div className="w-8 h-8 rounded-full border border-white/[0.05] bg-white/[0.02] flex items-center justify-center shrink-0">
                        <Users className="w-4 h-4 text-neutral-400" />
                      </div>
-                     <div>
-                       <div className="text-[13px] font-medium text-white mb-0.5 group-hover:text-emerald-400 transition-colors">{member.username}</div>
-                       <div className="text-[11px] font-mono text-neutral-500">{member.id}</div>
+                     <div className="min-w-0">
+                       <div className="text-[13px] font-medium text-white mb-0.5 group-hover:text-emerald-400 transition-colors truncate">{member.username}</div>
+                       <div className="text-[11px] font-mono text-neutral-500 truncate">{member.id}</div>
+                       <div className="sm:hidden mt-1 flex items-center gap-1.5 min-w-0">
+                         {member.role === 'TENANT_ADMIN' && <Shield className="w-3.5 h-3.5 text-indigo-400 shrink-0" />}
+                         <span className={`text-[10px] font-medium truncate ${member.role === 'TENANT_ADMIN' ? 'text-indigo-300' : 'text-neutral-400'}`}>
+                           {member.role ? member.role.replace('_', ' ') : 'USER'}
+                         </span>
+                       </div>
                      </div>
                    </div>
                  </td>
-                 <td className="px-6 py-4">
-                   <div className="flex items-center gap-1.5">
-                     {member.role === 'TENANT_ADMIN' && <Shield className="w-3.5 h-3.5 text-indigo-400" />}
-                     <span className={`text-[12px] font-medium ${member.role === 'TENANT_ADMIN' ? 'text-indigo-300' : 'text-neutral-400'}`}>
+                 <td className="hidden sm:table-cell px-6 py-4 align-middle">
+                   <div className="flex items-center gap-1.5 min-w-0">
+                     {member.role === 'TENANT_ADMIN' && <Shield className="w-3.5 h-3.5 text-indigo-400 shrink-0" />}
+                     <span className={`text-[12px] font-medium truncate ${member.role === 'TENANT_ADMIN' ? 'text-indigo-300' : 'text-neutral-400'}`}>
                        {member.role ? member.role.replace('_', ' ') : 'USER'}
                      </span>
                    </div>
                  </td>
-                 <td className="px-6 py-4">
-                   <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-bold font-mono tracking-widest uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                 <td className="hidden md:table-cell px-6 py-4 align-middle">
+                   <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-bold font-mono tracking-widest uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
                      Active
                    </span>
                  </td>
-                 <td className="px-6 py-4 text-right">
-                   <button onClick={(e) => { e.stopPropagation(); openEdit(member); }} className="p-1.5 hover:bg-white/[0.1] rounded text-neutral-400 hover:text-white transition-colors opacity-0 group-hover:opacity-100">
+                 <td className="px-4 sm:px-6 py-4 text-right align-middle shrink-0">
+                   <button onClick={(e) => { e.stopPropagation(); openEdit(member); }} className="p-1.5 hover:bg-white/[0.1] rounded text-neutral-400 hover:text-white transition-colors opacity-100 sm:opacity-0 group-hover:opacity-100">
                      <MoreHorizontal className="w-4 h-4" />
                    </button>
                  </td>

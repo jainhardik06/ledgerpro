@@ -96,19 +96,19 @@ export default function BudgetsPage() {
   const formatCurrency = (val: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8 animate-in fade-in duration-500 w-full overflow-hidden">
       
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-white mb-1">Budget Planning</h1>
-          <p className="text-[13px] text-neutral-400">Forecast and enforce spending limits across categories.</p>
+          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-white mb-1">Budget Planning</h1>
+          <p className="text-[12px] sm:text-[13px] text-neutral-400">Forecast and enforce spending limits across categories.</p>
         </div>
-        <button onClick={openNew} className="h-9 px-4 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 flex items-center gap-2">
+        <button onClick={openNew} className="h-9 px-4 shrink-0 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 flex items-center justify-center gap-2">
           <Plus className="w-4 h-4" /> Create Budget
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {budgets.map(bud => {
           const spent = currentMonthTxs.filter(t => t.category === bud.category).reduce((s, t) => s + t.amount, 0);
           const percent = bud.limitAmount > 0 ? (spent / bud.limitAmount) * 100 : 0;
@@ -116,32 +116,34 @@ export default function BudgetsPage() {
           const isDanger = percent >= 100;
 
           return (
-            <div key={bud.id} onClick={() => openEdit(bud)} className="p-5 rounded-xl border border-white/[0.05] bg-[#0a0a0a] hover:bg-white/[0.02] transition-colors cursor-pointer group">
-               <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2 text-[13px] font-medium text-white">
-                     <Target className="w-4 h-4 text-neutral-400" /> {bud.category}
+            <div key={bud.id} onClick={() => openEdit(bud)} className="p-4 sm:p-5 rounded-xl border border-white/[0.05] bg-[#0a0a0a] hover:bg-white/[0.02] transition-colors cursor-pointer group flex flex-col min-w-0">
+               <div className="flex items-center justify-between mb-4 min-w-0 gap-2">
+                  <div className="flex items-center gap-2 text-[12px] sm:text-[13px] font-medium text-white min-w-0">
+                     <Target className="w-4 h-4 text-neutral-400 shrink-0" /> <span className="truncate">{bud.category}</span>
                   </div>
-                  {isDanger && <AlertTriangle className="w-4 h-4 text-rose-500" />}
-                  {isWarning && <AlertTriangle className="w-4 h-4 text-amber-500" />}
+                  <div className="shrink-0">
+                    {isDanger && <AlertTriangle className="w-4 h-4 text-rose-500" />}
+                    {isWarning && <AlertTriangle className="w-4 h-4 text-amber-500" />}
+                  </div>
                </div>
                
-               <div className="space-y-3">
-                 <div className="flex items-end justify-between">
-                   <div className="text-2xl font-semibold tracking-tight text-white tabular-nums">{formatCurrency(spent)}</div>
-                   <div className="text-[12px] text-neutral-500 font-medium mb-1">of {formatCurrency(bud.limitAmount)}</div>
+               <div className="space-y-3 min-w-0">
+                 <div className="flex items-end justify-between min-w-0 gap-2">
+                   <div className="text-2xl sm:text-3xl font-semibold tracking-tight text-white tabular-nums truncate">{formatCurrency(spent)}</div>
+                   <div className="text-[11px] sm:text-[12px] text-neutral-500 font-medium mb-1 shrink-0">of {formatCurrency(bud.limitAmount)}</div>
                  </div>
 
                  {/* Progress Bar */}
-                 <div className="h-1.5 w-full bg-white/[0.05] rounded-full overflow-hidden">
+                 <div className="h-1.5 w-full bg-white/[0.05] rounded-full overflow-hidden shrink-0">
                     <div 
                       className={`h-full rounded-full transition-all duration-500 ${isDanger ? 'bg-rose-500' : isWarning ? 'bg-amber-500' : 'bg-emerald-500'}`} 
                       style={{ width: `${Math.min(percent, 100)}%` }} 
                     />
                  </div>
                  
-                 <div className="text-[11px] font-medium text-neutral-500 flex justify-between">
-                   <span>{percent.toFixed(1)}% consumed</span>
-                   <span>{bud.limitAmount - spent >= 0 ? formatCurrency(bud.limitAmount - spent) + ' left' : formatCurrency(spent - bud.limitAmount) + ' over'}</span>
+                 <div className="text-[10px] sm:text-[11px] font-medium text-neutral-500 flex justify-between min-w-0 gap-2">
+                   <span className="truncate">{percent.toFixed(1)}% consumed</span>
+                   <span className="truncate">{bud.limitAmount - spent >= 0 ? formatCurrency(bud.limitAmount - spent) + ' left' : formatCurrency(spent - bud.limitAmount) + ' over'}</span>
                  </div>
                </div>
             </div>

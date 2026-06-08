@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
-  Search, Book, Shield, HelpCircle, Mail, MessageSquare, Play, Sparkles, 
-  ArrowRight, ShieldCheck, Zap, Activity, Clock, Users, ArrowUpRight 
+  Search, Book, Shield, HelpCircle, Mail, Play, Sparkles, 
+  ArrowRight, Clock, ArrowUpRight 
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { SupportSearch } from '@/components/SupportSearch';
@@ -13,7 +13,6 @@ import { DOCS_ARTICLES, SUPPORT_FAQS } from '@/lib/supportData';
 export default function SupportPage() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  
   const [email, setEmail] = useState('');
   const [subscribing, setSubscribing] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
@@ -57,202 +56,216 @@ export default function SupportPage() {
   };
 
   return (
-    <div className="flex flex-col items-center pb-24 bg-[#000000] text-white min-h-screen">
-      {/* Search Overlay */}
+    <div className="flex flex-col w-full pb-24 bg-[#000000] text-white min-h-screen">
       <SupportSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
 
-      {/* Hero Section */}
-      <section className="w-full pt-32 pb-16 px-6 relative overflow-hidden border-b border-white/[0.05]">
-        {/* Ambient background glow */}
+      {/* ── Hero ── */}
+      <section className="w-full pt-28 pb-14 px-4 sm:px-6 relative overflow-hidden border-b border-white/[0.05]">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-neutral-900/30 via-[#000000] to-[#000000] -z-10" />
-        
-        <div className="max-w-4xl mx-auto text-center flex flex-col items-center">
+
+        <div className="max-w-2xl mx-auto text-center flex flex-col items-center">
           {/* Status Badge */}
-          <Link href="/status" className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[11px] font-medium text-emerald-400 mb-8 hover:bg-emerald-500/15 transition-all">
-            <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <Link
+            href="/status"
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[11px] font-medium text-emerald-400 mb-6 hover:bg-emerald-500/15 transition-all min-h-[32px]"
+          >
+            <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
             All systems operational
           </Link>
 
-          <h1 className="text-4xl md:text-5xl font-semibold tracking-tighter text-white mb-6 leading-[1.15]">
-            How can we help you today?
+          <h1 className="text-3xl sm:text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tighter text-white mb-4 leading-[1.15]">
+            How can we help?
           </h1>
-          <p className="text-neutral-400 max-w-xl mb-8 text-[15px] font-medium">
-            Search our guides, technical documentations, and FAQs, or open a conversation with our support engineering team.
+          <p className="text-neutral-400 max-w-sm sm:max-w-xl mb-8 text-[14px] sm:text-[15px] font-medium leading-relaxed px-2">
+            Search our guides, technical docs, and FAQs — or open a conversation with our support team.
           </p>
 
-          {/* Large Search Trigger */}
-          <button 
+          {/* Search trigger — full-width, no overflow */}
+          <button
             onClick={() => setSearchOpen(true)}
-            className="w-full max-w-lg h-12 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] hover:border-white/[0.12] px-4 flex items-center justify-between text-neutral-500 hover:text-neutral-300 transition-all text-left group shadow-lg"
+            className="w-full min-h-[48px] rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] hover:border-white/[0.12] px-4 flex items-center justify-between text-neutral-500 hover:text-neutral-300 transition-all text-left group"
+            aria-label="Open search"
           >
-            <span className="flex items-center gap-3 text-[13px]">
-              <Search className="w-4 h-4 text-neutral-400 group-hover:text-neutral-300 transition-colors" />
-              Search docs, guides, updates...
+            <span className="flex items-center gap-3 text-[13px] truncate">
+              <Search className="w-4 h-4 text-neutral-400 shrink-0 group-hover:text-neutral-300 transition-colors" />
+              <span className="truncate">Search docs, guides, updates...</span>
             </span>
-            <span className="text-[10px] bg-white/[0.05] border border-white/[0.08] px-1.5 py-0.5 rounded font-mono text-neutral-400">
-              {mounted && (navigator.platform.indexOf('Mac') > -1 ? '⌘K' : 'Ctrl+K')}
-            </span>
+            {mounted && (
+              <span className="text-[10px] bg-white/[0.05] border border-white/[0.08] px-1.5 py-0.5 rounded font-mono text-neutral-400 shrink-0 ml-2">
+                {navigator.platform.indexOf('Mac') > -1 ? '⌘K' : 'Ctrl+K'}
+              </span>
+            )}
           </button>
         </div>
       </section>
 
-      {/* Main Support Grid */}
-      <section className="w-full max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-4 gap-8 py-16">
-        
-        {/* Left Column: Quick Navigation Links & Status */}
-        <div className="lg:col-span-1 space-y-8">
-          <div>
-            <h3 className="text-[11px] font-semibold text-neutral-500 uppercase tracking-widest mb-4">Support Channels</h3>
-            <nav className="flex flex-col gap-1">
-              <Link href="/support/getting-started" className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium text-neutral-400 hover:text-white hover:bg-white/[0.03] transition-all">
-                <Sparkles className="w-4 h-4 text-emerald-400" /> Getting Started
-              </Link>
-              <Link href="/docs" className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium text-neutral-400 hover:text-white hover:bg-white/[0.03] transition-all">
-                <Book className="w-4 h-4 text-blue-400" /> Documentation
-              </Link>
-              <Link href="/guides" className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium text-neutral-400 hover:text-white hover:bg-white/[0.03] transition-all">
-                <Play className="w-4 h-4 text-purple-400" /> Guides & Tutorials
-              </Link>
-              <Link href="/security" className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium text-neutral-400 hover:text-white hover:bg-white/[0.03] transition-all">
-                <Shield className="w-4 h-4 text-rose-400" /> Security Center
-              </Link>
-              <Link href="/faq" className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium text-neutral-400 hover:text-white hover:bg-white/[0.03] transition-all">
-                <HelpCircle className="w-4 h-4 text-amber-400" /> FAQs Portal
-              </Link>
-              <Link href="/changelog" className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium text-neutral-400 hover:text-white hover:bg-white/[0.03] transition-all">
-                <Clock className="w-4 h-4 text-cyan-400" /> Changelog Updates
-              </Link>
-            </nav>
-          </div>
+      {/* ── Main Grid ── */}
+      <section className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 lg:gap-10">
 
-          <hr className="border-white/[0.05]" />
+          {/* Left: Quick Navigation */}
+          <div className="lg:col-span-1 space-y-6">
+            <div>
+              <h3 className="text-[11px] font-semibold text-neutral-500 uppercase tracking-widest mb-3 px-1">
+                Support Channels
+              </h3>
+              <nav className="flex flex-col gap-0.5">
+                {[
+                  { href: '/support/getting-started', icon: Sparkles, label: 'Getting Started', color: 'text-emerald-400' },
+                  { href: '/docs', icon: Book, label: 'Documentation', color: 'text-blue-400' },
+                  { href: '/guides', icon: Play, label: 'Guides & Tutorials', color: 'text-purple-400' },
+                  { href: '/security', icon: Shield, label: 'Security Center', color: 'text-rose-400' },
+                  { href: '/faq', icon: HelpCircle, label: 'FAQs Portal', color: 'text-amber-400' },
+                  { href: '/changelog', icon: Clock, label: 'Changelog', color: 'text-cyan-400' },
+                ].map(({ href, icon: Icon, label, color }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13px] font-medium text-neutral-400 hover:text-white hover:bg-white/[0.03] transition-all min-h-[44px]"
+                  >
+                    <Icon className={`w-4 h-4 shrink-0 ${color}`} />
+                    {label}
+                  </Link>
+                ))}
+              </nav>
+            </div>
 
-          {/* Quick Contact Box */}
-          <div className="p-4 rounded-xl border border-white/[0.05] bg-white/[0.01]">
-            <h4 className="text-[12px] font-semibold text-white mb-2 flex items-center gap-1.5">
-              <Mail className="w-3.5 h-3.5 text-neutral-400" /> Need developer help?
-            </h4>
-            <p className="text-[11px] text-neutral-400 mb-4 leading-relaxed">
-              Our support team answers complex questions with 1-on-1 assistance.
-            </p>
-            <Link href="/contact-support" className="w-full">
-              <Button size="sm" className="w-full bg-white text-black hover:bg-neutral-200 text-[11px] h-8 font-medium">
-                Submit Support Ticket
-              </Button>
-            </Link>
-          </div>
-        </div>
+            <hr className="border-white/[0.05]" />
 
-        {/* Right Columns: Dynamic Content Grid */}
-        <div className="lg:col-span-3 space-y-12">
-          
-          {/* Quick Categories Cards */}
-          <div>
-            <h2 className="text-[11px] font-semibold text-neutral-500 uppercase tracking-widest mb-6">Core Support Categories</h2>
-            <div className="grid md:grid-cols-3 gap-4">
-              <Link href="/support/getting-started" className="p-5 rounded-xl border border-white/[0.05] bg-[#0a0a0a] hover:bg-white/[0.02] transition-colors group">
-                <Sparkles className="w-5 h-5 text-emerald-400 mb-3" />
-                <h4 className="text-[14px] font-medium text-white group-hover:text-emerald-400 transition-colors flex items-center gap-1.5">
-                  Getting Started <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all" />
-                </h4>
-                <p className="text-[12px] text-neutral-400 mt-2 leading-relaxed">Setup your organization ledger and invite team members.</p>
-              </Link>
-
-              <Link href="/docs" className="p-5 rounded-xl border border-white/[0.05] bg-[#0a0a0a] hover:bg-white/[0.02] transition-colors group">
-                <Book className="w-5 h-5 text-blue-400 mb-3" />
-                <h4 className="text-[14px] font-medium text-white group-hover:text-blue-400 transition-colors flex items-center gap-1.5">
-                  Documentation <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all" />
-                </h4>
-                <p className="text-[12px] text-neutral-400 mt-2 leading-relaxed">Read technical papers about double-entry structures and tenant keys.</p>
-              </Link>
-
-              <Link href="/security" className="p-5 rounded-xl border border-white/[0.05] bg-[#0a0a0a] hover:bg-white/[0.02] transition-colors group">
-                <Shield className="w-5 h-5 text-rose-400 mb-3" />
-                <h4 className="text-[14px] font-medium text-white group-hover:text-rose-400 transition-colors flex items-center gap-1.5">
-                  Security Hub <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all" />
-                </h4>
-                <p className="text-[12px] text-neutral-400 mt-2 leading-relaxed">Understand database isolation standards and role audits.</p>
+            {/* Quick Contact */}
+            <div className="p-4 rounded-xl border border-white/[0.05] bg-white/[0.01]">
+              <h4 className="text-[12px] font-semibold text-white mb-2 flex items-center gap-1.5">
+                <Mail className="w-3.5 h-3.5 text-neutral-400 shrink-0" /> Need developer help?
+              </h4>
+              <p className="text-[11px] text-neutral-400 mb-4 leading-relaxed">
+                Our support team answers complex questions with 1-on-1 assistance.
+              </p>
+              <Link href="/contact-support" className="w-full block">
+                <Button size="sm" className="w-full bg-white text-black hover:bg-neutral-200 text-[11px] h-9 font-medium">
+                  Submit Support Ticket
+                </Button>
               </Link>
             </div>
           </div>
 
-          {/* Popular & Trending Sections split */}
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Popular Articles */}
+          {/* Right: Content Grid */}
+          <div className="lg:col-span-3 space-y-10">
+
+            {/* Category Cards */}
             <div>
-              <h3 className="text-[11px] font-semibold text-neutral-500 uppercase tracking-widest mb-4">Popular Articles</h3>
-              <div className="space-y-3">
-                {DOCS_ARTICLES.slice(0, 3).map(article => (
-                  <Link 
-                    key={article.id}
-                    href={`/docs?id=${article.id}`}
-                    className="block p-3 rounded-lg border border-white/[0.03] hover:border-white/[0.08] hover:bg-white/[0.01] transition-all group"
+              <h2 className="text-[11px] font-semibold text-neutral-500 uppercase tracking-widest mb-5">
+                Core Support Categories
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                {[
+                  { href: '/support/getting-started', icon: Sparkles, color: 'text-emerald-400', title: 'Getting Started', desc: 'Setup your organization ledger and invite team members.' },
+                  { href: '/docs', icon: Book, color: 'text-blue-400', title: 'Documentation', desc: 'Read technical papers about double-entry structures and tenant keys.' },
+                  { href: '/security', icon: Shield, color: 'text-rose-400', title: 'Security Hub', desc: 'Understand database isolation standards and role audits.' },
+                ].map(({ href, icon: Icon, color, title, desc }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className="p-4 sm:p-5 rounded-xl border border-white/[0.05] bg-[#0a0a0a] hover:bg-white/[0.02] transition-colors group"
                   >
-                    <div className="text-[13px] font-medium text-neutral-200 group-hover:text-white flex items-center justify-between">
-                      {article.title}
-                      <ArrowUpRight className="w-3 h-3 text-neutral-600 group-hover:text-neutral-400 transition-colors" />
-                    </div>
-                    <p className="text-[11px] text-neutral-400 truncate mt-1">{article.description}</p>
+                    <Icon className={`w-5 h-5 ${color} mb-3`} />
+                    <h4 className={`text-[13px] sm:text-[14px] font-medium text-white group-hover:${color} transition-colors flex items-center gap-1.5`}>
+                      {title}
+                      <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all" />
+                    </h4>
+                    <p className="text-[12px] text-neutral-400 mt-2 leading-relaxed">{desc}</p>
                   </Link>
                 ))}
               </div>
             </div>
 
-            {/* Trending FAQs */}
-            <div>
-              <h3 className="text-[11px] font-semibold text-neutral-500 uppercase tracking-widest mb-4">Trending FAQs</h3>
-              <div className="space-y-3">
-                {SUPPORT_FAQS.slice(0, 3).map(faq => (
-                  <Link 
-                    key={faq.id}
-                    href={`/faq?id=${faq.id}`}
-                    className="block p-3 rounded-lg border border-white/[0.03] hover:border-white/[0.08] hover:bg-white/[0.01] transition-all group"
-                  >
-                    <div className="text-[13px] font-medium text-neutral-200 group-hover:text-white flex items-center justify-between">
-                      {faq.question}
-                      <ArrowUpRight className="w-3 h-3 text-neutral-600 group-hover:text-neutral-400 transition-colors" />
-                    </div>
-                    <p className="text-[11px] text-neutral-400 truncate mt-1">{faq.answer}</p>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
-
-
-          {/* Newsletter Subscription CTA */}
-          <div className="p-8 rounded-xl border border-white/[0.05] bg-[#0a0a0a] flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-transparent pointer-events-none" />
-            <div className="max-w-md">
-              <h4 className="text-lg font-semibold text-white mb-1.5">Subscribe to Product Updates</h4>
-              <p className="text-[13px] text-neutral-400">Receive summaries of new changelogs, features, and security reports. No spam.</p>
-            </div>
-            {subscribed ? (
-              <div className="text-[13px] text-emerald-400 font-medium bg-emerald-500/10 border border-emerald-500/20 px-4 py-2 rounded-lg font-mono">
-                Subscription active! Thank you.
-              </div>
-            ) : (
-              <form onSubmit={handleSubscribe} className="flex flex-col gap-2 w-full md:w-auto">
-                <div className="flex gap-2">
-                  <input 
-                    type="email" 
-                    required
-                    placeholder="you@domain.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="bg-black border border-white/[0.1] rounded-lg px-3 py-1.5 text-[12px] text-white outline-none focus:border-white/[0.3] flex-1 md:w-48"
-                  />
-                  <Button type="submit" disabled={subscribing} size="sm" className="bg-white text-black hover:bg-neutral-200 text-[11px] h-8 shrink-0 font-medium">
-                    {subscribing ? 'Subscribing...' : 'Subscribe'}
-                  </Button>
+            {/* Popular Articles + FAQs */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+              <div>
+                <h3 className="text-[11px] font-semibold text-neutral-500 uppercase tracking-widest mb-4">
+                  Popular Articles
+                </h3>
+                <div className="space-y-2.5">
+                  {DOCS_ARTICLES.slice(0, 3).map(article => (
+                    <Link
+                      key={article.id}
+                      href={`/docs?id=${article.id}`}
+                      className="block p-3 rounded-lg border border-white/[0.03] hover:border-white/[0.08] hover:bg-white/[0.01] transition-all group min-h-[56px]"
+                    >
+                      <div className="text-[13px] font-medium text-neutral-200 group-hover:text-white flex items-start justify-between gap-2">
+                        <span className="leading-snug">{article.title}</span>
+                        <ArrowUpRight className="w-3 h-3 text-neutral-600 group-hover:text-neutral-400 transition-colors shrink-0 mt-0.5" />
+                      </div>
+                      <p className="text-[11px] text-neutral-400 truncate mt-1">{article.description}</p>
+                    </Link>
+                  ))}
                 </div>
-                {subscribeError && (
-                  <p className="text-[11px] text-rose-400 font-mono">{subscribeError}</p>
-                )}
-              </form>
-            )}
-          </div>
+              </div>
 
+              <div>
+                <h3 className="text-[11px] font-semibold text-neutral-500 uppercase tracking-widest mb-4">
+                  Trending FAQs
+                </h3>
+                <div className="space-y-2.5">
+                  {SUPPORT_FAQS.slice(0, 3).map(faq => (
+                    <Link
+                      key={faq.id}
+                      href={`/faq?id=${faq.id}`}
+                      className="block p-3 rounded-lg border border-white/[0.03] hover:border-white/[0.08] hover:bg-white/[0.01] transition-all group min-h-[56px]"
+                    >
+                      <div className="text-[13px] font-medium text-neutral-200 group-hover:text-white flex items-start justify-between gap-2">
+                        <span className="leading-snug">{faq.question}</span>
+                        <ArrowUpRight className="w-3 h-3 text-neutral-600 group-hover:text-neutral-400 transition-colors shrink-0 mt-0.5" />
+                      </div>
+                      <p className="text-[11px] text-neutral-400 truncate mt-1">{faq.answer}</p>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Newsletter CTA — stacks on mobile */}
+            <div className="p-6 sm:p-8 rounded-xl border border-white/[0.05] bg-[#0a0a0a] relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-transparent pointer-events-none" />
+              <div className="relative flex flex-col gap-5">
+                <div>
+                  <h4 className="text-base sm:text-lg font-semibold text-white mb-1.5">Subscribe to Product Updates</h4>
+                  <p className="text-[13px] text-neutral-400">Receive summaries of new changelogs, features, and security reports. No spam.</p>
+                </div>
+
+                {subscribed ? (
+                  <div className="text-[13px] text-emerald-400 font-medium bg-emerald-500/10 border border-emerald-500/20 px-4 py-2 rounded-lg font-mono">
+                    Subscription active! Thank you.
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubscribe} className="flex flex-col gap-3">
+                    {/* Always stacked — row only on sm+ */}
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <input
+                        type="email"
+                        required
+                        placeholder="you@domain.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="bg-black border border-white/[0.1] rounded-lg px-3 py-2.5 text-[13px] text-white outline-none focus:border-white/[0.3] w-full min-h-[44px]"
+                      />
+                      <Button
+                        type="submit"
+                        disabled={subscribing}
+                        size="sm"
+                        className="bg-white text-black hover:bg-neutral-200 text-[12px] h-11 sm:h-auto sm:min-h-[44px] px-5 shrink-0 font-medium w-full sm:w-auto"
+                      >
+                        {subscribing ? 'Subscribing...' : 'Subscribe'}
+                      </Button>
+                    </div>
+                    {subscribeError && (
+                      <p className="text-[11px] text-rose-400 font-mono">{subscribeError}</p>
+                    )}
+                  </form>
+                )}
+              </div>
+            </div>
+
+          </div>
         </div>
       </section>
     </div>

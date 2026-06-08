@@ -5,15 +5,15 @@ import { Button } from '@/components/ui/Button';
 
 export default function ExpenseTrackingFeature() {
   return (
-    <div className="flex flex-col items-center pb-24">
+    <div className="flex flex-col w-full pb-24">
       {/* Hero */}
-      <section className="w-full pt-32 pb-24 px-6 relative border-b border-white/[0.05] overflow-hidden">
+      <section className="w-full pt-24 sm:pt-24 sm:pt-32 pb-24 px-4 sm:px-6 relative border-b border-white/[0.05] overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-900/10 via-[#000000] to-[#000000] -z-10" />
         <div className="max-w-4xl mx-auto flex flex-col items-center text-center">
           <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-8 animate-in">
             <Activity className="w-8 h-8 text-emerald-500" />
           </div>
-          <h1 className="text-4xl md:text-6xl font-semibold tracking-tight text-white mb-6 animate-in" style={{ animationDelay: '100ms' }}>
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-semibold tracking-tight text-white mb-6 animate-in" style={{ animationDelay: '100ms' }}>
             Expense Tracking,<br />re-engineered for speed.
           </h1>
           <p className="text-lg text-neutral-400 font-medium max-w-2xl mx-auto mb-10 animate-in" style={{ animationDelay: '200ms' }}>
@@ -28,7 +28,7 @@ export default function ExpenseTrackingFeature() {
       </section>
 
       {/* Abstract UI Showcase */}
-      <section className="w-full py-24 px-6 max-w-5xl mx-auto">
+      <section className="w-full py-16 sm:py-24 px-4 sm:px-6 max-w-5xl mx-auto">
         <div className="rounded-2xl border border-white/[0.1] bg-[#0a0a0a] p-4 shadow-2xl relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-t from-[#000000] via-transparent to-transparent z-10" />
           
@@ -60,7 +60,7 @@ export default function ExpenseTrackingFeature() {
       </section>
 
       {/* Benefits Grid */}
-      <section className="w-full py-24 px-6 max-w-5xl mx-auto">
+      <section className="w-full py-16 sm:py-24 px-4 sm:px-6 max-w-5xl mx-auto">
         <div className="grid md:grid-cols-2 gap-16">
           <div className="space-y-8">
             <div className="flex items-start gap-4">

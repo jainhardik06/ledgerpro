@@ -38,20 +38,20 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="flex flex-col items-center pb-24 bg-black min-h-screen text-white">
+    <div className="flex flex-col w-full pb-24 bg-black min-h-screen text-white">
       {/* Header */}
-      <section className="w-full pt-32 pb-16 px-6 border-b border-white/[0.05]">
+      <section className="w-full pt-28 pb-12 px-4 sm:px-6 border-b border-white/[0.05]">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-white mb-4 animate-in">
+          <h1 className="text-3xl sm:text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-white mb-4 animate-in">
             Contact our team
           </h1>
-          <p className="text-lg text-neutral-400 font-medium animate-in" style={{ animationDelay: '100ms' }}>
+          <p className="text-base sm:text-lg text-neutral-400 font-medium animate-in" style={{ animationDelay: '100ms' }}>
             Whether you have a question about features, integrations, or anything else, we're ready to answer.
           </p>
         </div>
       </section>
 
-      <section className="w-full px-6 max-w-4xl mx-auto mt-16 grid md:grid-cols-2 gap-16">
+      <section className="w-full px-4 sm:px-6 max-w-4xl mx-auto mt-10 sm:mt-16 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16">
         {/* Contact Form */}
         <div className="animate-in" style={{ animationDelay: '200ms' }}>
           {submitted ? (
@@ -64,7 +64,7 @@ export default function ContactPage() {
              </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[12px] font-medium mb-1.5 text-neutral-400">First Name</label>
                   <Input 

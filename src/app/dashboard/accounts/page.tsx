@@ -98,19 +98,19 @@ export default function AccountsPage() {
   const formatCurrency = (val: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8 animate-in fade-in duration-500">
       
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-white mb-1">Financial Infrastructure</h1>
-          <p className="text-[13px] text-neutral-400">Manage bank accounts, wallets, and cash reserves.</p>
+          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-white mb-1">Financial Infrastructure</h1>
+          <p className="text-[12px] sm:text-[13px] text-neutral-400">Manage bank accounts, wallets, and cash reserves.</p>
         </div>
-        <button onClick={openNew} className="h-9 px-4 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 flex items-center gap-2">
+        <button onClick={openNew} className="h-9 px-4 shrink-0 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 flex items-center justify-center gap-2">
           <Plus className="w-4 h-4" /> Add Account
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {accounts.map(acc => {
           const accTxs = transactions.filter(t => t.accountId === acc.id);
           const cr = accTxs.filter(t => t.type === 'Credit').reduce((s, t) => s + t.amount, 0);
@@ -118,22 +118,22 @@ export default function AccountsPage() {
           const currentBalance = acc.initialBalance + cr - dr;
 
           return (
-            <div key={acc.id} onClick={() => openEdit(acc)} className="p-5 rounded-xl border border-white/[0.05] bg-[#0a0a0a] hover:bg-white/[0.02] transition-colors cursor-pointer group">
-               <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                     <div className="w-10 h-10 rounded-lg bg-white/[0.05] border border-white/[0.1] flex items-center justify-center">
+            <div key={acc.id} onClick={() => openEdit(acc)} className="p-4 sm:p-5 rounded-xl border border-white/[0.05] bg-[#0a0a0a] hover:bg-white/[0.02] transition-colors cursor-pointer group flex flex-col min-w-0">
+               <div className="flex items-center justify-between mb-5 sm:mb-6">
+                  <div className="flex items-center gap-3 min-w-0">
+                     <div className="w-10 h-10 rounded-lg bg-white/[0.05] border border-white/[0.1] flex items-center justify-center shrink-0">
                         {acc.type === 'Checking' ? <Building2 className="w-5 h-5 text-neutral-400" /> : <Wallet className="w-5 h-5 text-neutral-400" />}
                      </div>
-                     <div>
-                       <div className="text-[14px] font-semibold text-white">{acc.name}</div>
-                       <div className="text-[11px] font-medium text-neutral-500 tracking-widest uppercase">{acc.type}</div>
+                     <div className="min-w-0">
+                       <div className="text-[13px] sm:text-[14px] font-semibold text-white truncate">{acc.name}</div>
+                       <div className="text-[10px] sm:text-[11px] font-medium text-neutral-500 tracking-widest uppercase truncate">{acc.type}</div>
                      </div>
                   </div>
                </div>
                
-               <div className="flex flex-col gap-1">
-                 <div className="text-[12px] font-medium text-neutral-500">Current Balance</div>
-                 <div className="text-2xl font-semibold tracking-tight text-white tabular-nums">{formatCurrency(currentBalance)}</div>
+               <div className="flex flex-col gap-1 min-w-0">
+                 <div className="text-[11px] sm:text-[12px] font-medium text-neutral-500">Current Balance</div>
+                 <div className="text-2xl sm:text-3xl font-semibold tracking-tight text-white tabular-nums truncate">{formatCurrency(currentBalance)}</div>
                </div>
             </div>
           );

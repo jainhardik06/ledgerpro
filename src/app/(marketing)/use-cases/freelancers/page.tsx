@@ -5,14 +5,14 @@ import { Button } from '@/components/ui/Button';
 
 export default function FreelancersUseCase() {
   return (
-    <div className="flex flex-col items-center pb-24">
-      <section className="w-full pt-32 pb-24 px-6 relative border-b border-white/[0.05] overflow-hidden">
+    <div className="flex flex-col w-full pb-24">
+      <section className="w-full pt-24 sm:pt-24 sm:pt-32 pb-24 px-4 sm:px-6 relative border-b border-white/[0.05] overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-900/10 via-[#000000] to-[#000000] -z-10" />
         <div className="max-w-4xl mx-auto flex flex-col items-center text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.03] border border-white/[0.08] text-[12px] font-medium text-amber-400 mb-8">
             Money OS for Freelancers
           </div>
-          <h1 className="text-4xl md:text-6xl font-semibold tracking-tight text-white mb-6 animate-in" style={{ animationDelay: '100ms' }}>
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-semibold tracking-tight text-white mb-6 animate-in" style={{ animationDelay: '100ms' }}>
             Tax season, simplified.
           </h1>
           <p className="text-lg text-neutral-400 font-medium max-w-2xl mx-auto mb-10 animate-in" style={{ animationDelay: '200ms' }}>
@@ -26,7 +26,7 @@ export default function FreelancersUseCase() {
         </div>
       </section>
 
-      <section className="w-full py-24 px-6 max-w-5xl mx-auto">
+      <section className="w-full py-16 sm:py-24 px-4 sm:px-6 max-w-5xl mx-auto">
         <div className="grid md:grid-cols-3 gap-8">
            <div className="rounded-2xl border border-white/[0.05] bg-[#0a0a0a] p-8 shadow-2xl">
               <Coffee className="w-6 h-6 text-amber-500 mb-4" />

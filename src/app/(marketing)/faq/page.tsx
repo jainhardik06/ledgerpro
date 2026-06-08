@@ -51,7 +51,7 @@ function FaqContent() {
   };
 
   return (
-    <div className="w-full pt-32 pb-24 px-6 bg-[#000000] text-white min-h-screen">
+    <div className="w-full pt-24 sm:pt-24 sm:pt-32 pb-24 px-4 sm:px-6 bg-[#000000] text-white min-h-screen">
       <main className="max-w-3xl mx-auto">
         
         {/* Back Link */}
