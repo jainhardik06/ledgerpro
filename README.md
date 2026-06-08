@@ -123,8 +123,8 @@ graph TD
 * **Data Visualization**: Recharts, d3-color
 * **Styling**: Tailwind CSS v4, custom glassmorphism, responsive grid layout
 * **Persistence**: MongoDB Native Driver, Node File System (`fs`) adapter
-* **Authentication**: Signed HTTP-Only session cookies (HMAC SHA-256)
-* **Encryption**: BCrypt password hashing (10 salt rounds)
+* **Authentication**: Signed HTTP-Only session cookies (HMAC SHA-256, 24-hour lifetime)
+* **Encryption**: BCrypt password hashing (12 salt rounds)
 
 ---
 
@@ -140,6 +140,9 @@ Money OS mitigates modern security risks using these strategies:
 | **Cross-Origin CSRF** | Domain Locking | Session cookies carry `SameSite=Strict`, blocking unauthorized cross-origin requests. |
 | **Database Tampering** | Immutable Audit Trail | Audit logs have no update (PUT) or delete (DELETE) routes, establishing a permanent log. |
 | **Password Theft** | Cryptographic Hashing | Client passwords are salted and hashed using `bcryptjs` before storage. |
+| **Brute Force Login** | Per-IP Rate Limiting | `/api/auth/login` allows 10 attempts per 15-minute window. |
+| **Super Admin Secrets** | Hash-Only Admin Password | Super Admin authentication reads `SUPER_ADMIN_PASSWORD_HASH`; plaintext admin passwords are not accepted in production. |
+| **Clickjacking & XSS** | Security Headers | `proxy.ts` applies CSP, `X-Frame-Options`, `X-Content-Type-Options`, Referrer Policy, Permissions Policy, and HSTS in production. |
 
 ---
 
@@ -170,10 +173,17 @@ JWT_SECRET=generatetodaysupersecretrandomkeyvaluehere
 # Application URL
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-# Super Admin Dashboard Credentials (No DB lookup required)
+# Super Admin Dashboard Credentials (hash generated with bcrypt)
 SUPER_ADMIN_USERNAME=admin
-SUPER_ADMIN_PASSWORD=supersecurepassword
+SUPER_ADMIN_PASSWORD_HASH=$2b$12$replace_this_with_a_bcrypt_hash
 ```
+
+Generate a local Super Admin hash:
+```bash
+node -e "const bcrypt=require('bcryptjs'); console.log(bcrypt.hashSync('your-strong-password', 12));"
+```
+
+Use a unique 64+ character `JWT_SECRET` for every environment. The app refuses to start in production without `JWT_SECRET` and `SUPER_ADMIN_PASSWORD_HASH`.
 
 ### 3. Spin Up Workspace
 Run in development mode:
@@ -316,6 +326,15 @@ interface SystemLog {
 }
 ```
 </details>
+
+## Production Hardening Notes
+
+* List endpoints for transactions, clients, and audit logs support `page` and `limit` query parameters, capped at 100 records per request.
+* MongoDB startup creates indexes for transactions, logs, clients, users, and unique tenant/category/month budgets.
+* Local fallback data is stored at `.data/local_db.json`, outside `src/`, and local IDs use `crypto.randomUUID()`.
+* Super Admin tenant impersonation is represented only in the server-signed JWT, never `localStorage`.
+* Public contact and support endpoints include rate limiting and bounded input validation.
+* `proxy.ts` applies application security headers before page rendering.
 
 <details>
 <summary><b>📂 Show Directory Layout (Next.js App Router)</b></summary>

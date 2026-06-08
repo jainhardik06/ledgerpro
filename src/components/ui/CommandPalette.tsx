@@ -57,14 +57,6 @@ export function CommandPalette() {
       .then(res => res.json())
       .then(data => {
         if (data.user) {
-          const impStr = typeof window !== 'undefined' ? localStorage.getItem('impersonating_tenant') : null;
-          if (impStr) {
-            try {
-              const imp = JSON.parse(impStr);
-              data.user.tenantId = imp.id;
-              data.user.role = 'TENANT_ADMIN';
-            } catch (e) {}
-          }
           setUser(data.user);
         } else {
           setUser(null);
@@ -90,7 +82,7 @@ export function CommandPalette() {
           setLoading(false);
         })
         .catch(() => setLoading(false));
-    }, 150);
+    }, 300);
 
     return () => clearTimeout(delayDebounce);
   }, [query]);

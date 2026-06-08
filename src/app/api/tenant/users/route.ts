@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
 import { getUsersByTenant, createUser, createLog, getUserByUsername } from '@/lib/db';
 import bcrypt from 'bcryptjs';
+import { validatePassword, validateString } from '@/lib/validation';
+import { logError } from '@/lib/logger';
 
 export async function GET() {
   try {
@@ -20,7 +22,7 @@ export async function GET() {
     }));
     return NextResponse.json({ success: true, users: safeUsers });
   } catch (error: any) {
-    console.error('Fetch users error:', error);
+    logError('Fetch users error', error);
     return NextResponse.json({ error: 'An error occurred fetching users' }, { status: 500 });
   }
 }
@@ -34,14 +36,12 @@ export async function POST(req: NextRequest) {
 
     const { username, password } = await req.json();
 
-    if (!username || !password) {
-      return NextResponse.json(
-        { error: 'Username and password are required' },
-        { status: 400 }
-      );
-    }
+    const cleanUsername = validateString(username, 'Username', { min: 3, max: 32 });
+    if (cleanUsername instanceof NextResponse) return cleanUsername;
+    const cleanPassword = validatePassword(password);
+    if (cleanPassword instanceof NextResponse) return cleanPassword;
 
-    const existingUser = await getUserByUsername(username);
+    const existingUser = await getUserByUsername(cleanUsername);
     if (existingUser) {
       return NextResponse.json(
         { error: 'Username already exists' },
@@ -49,10 +49,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const passwordHash = await bcrypt.hash(password, 10);
-    const newUser = await createUser(username, passwordHash, 'USER', session.tenantId);
+    const passwordHash = await bcrypt.hash(cleanPassword, 12);
+    const newUser = await createUser(cleanUsername, passwordHash, 'USER', session.tenantId);
 
-    await createLog(session.username, 'Add User', `Created user: ${username}`, session.tenantId);
+    await createLog(session.username, 'Add User', `Created user: ${cleanUsername}`, session.tenantId);
 
     return NextResponse.json({ 
       success: true, 
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
       } 
     });
   } catch (error: any) {
-    console.error('Create user error:', error);
+    logError('Create user error', error);
     return NextResponse.json(
       { error: 'An error occurred creating the user' },
       { status: 500 }

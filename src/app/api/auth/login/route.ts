@@ -3,91 +3,102 @@ import { cookies } from 'next/headers';
 import bcrypt from 'bcryptjs';
 import { getUserByUsername, createLog, getTenantById } from '@/lib/db';
 import { generateToken } from '@/lib/auth';
+import { checkRateLimit } from '@/lib/rateLimit';
+import { firstClientIp, validatePassword, validateString } from '@/lib/validation';
+import { logError } from '@/lib/logger';
+
+const LOGIN_LIMIT = 10;
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24;
+
+function setSessionCookie(token: string) {
+  return cookies().then(cookieStore => {
+    cookieStore.set({
+      name: 'token',
+      value: token,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: SESSION_MAX_AGE_SECONDS,
+      path: '/',
+    });
+  });
+}
+
+function requireSuperAdminHash(): string | null {
+  const hash = process.env.SUPER_ADMIN_PASSWORD_HASH;
+  if (!hash) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('SUPER_ADMIN_PASSWORD_HASH must be set in production');
+    }
+    return null;
+  }
+  return hash;
+}
 
 export async function POST(req: NextRequest) {
-  try {
-    const { username, password } = await req.json();
+  const ipAddress = firstClientIp(req);
 
-    if (!username || !password) {
+  try {
+    const rate = checkRateLimit(`login:${ipAddress}`, LOGIN_LIMIT, LOGIN_WINDOW_MS);
+    if (!rate.allowed) {
       return NextResponse.json(
-        { error: 'Username and password are required' },
-        { status: 400 }
+        { error: 'Too many login attempts. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(rate.retryAfter) } }
       );
     }
 
-    const ipAddress = req.headers.get('x-forwarded-for') || req.headers.get('remote-addr') || 'unknown';
+    const body = await req.json();
+    const username = validateString(body.username, 'Username', { min: 3, max: 32 });
+    if (username instanceof NextResponse) return username;
+    const password = validatePassword(body.password);
+    if (password instanceof NextResponse) return password;
 
-    const SUPER_ADMIN_USERNAME = process.env.SUPER_ADMIN_USERNAME;
-    const SUPER_ADMIN_PASSWORD = process.env.SUPER_ADMIN_PASSWORD;
+    const superAdminUsername = process.env.SUPER_ADMIN_USERNAME;
+    const superAdminHash = requireSuperAdminHash();
 
-    if (
-      SUPER_ADMIN_USERNAME &&
-      SUPER_ADMIN_PASSWORD &&
-      username === SUPER_ADMIN_USERNAME &&
-      password === SUPER_ADMIN_PASSWORD
-    ) {
+    if (superAdminUsername && superAdminHash && username === superAdminUsername) {
+      const isAdminMatch = await bcrypt.compare(password, superAdminHash);
+      if (!isAdminMatch) {
+        await createLog(username, 'FAILED_LOGIN', 'Super Admin: incorrect password', undefined, ipAddress);
+        return NextResponse.json({ error: 'Invalid username or password' }, { status: 401 });
+      }
+
       const token = generateToken({
         userId: 'super_admin',
-        username: SUPER_ADMIN_USERNAME,
+        username: superAdminUsername,
         role: 'SUPER_ADMIN',
       });
-
-      const cookieStore = await cookies();
-      cookieStore.set({
-        name: 'token',
-        value: token,
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 60 * 60 * 24 * 7, // 7 days
-        path: '/',
-      });
-
+      await setSessionCookie(token);
       await createLog(username, 'Login', 'Super Admin successfully logged in', undefined, ipAddress);
 
       return NextResponse.json({
         success: true,
-        user: {
-          username: SUPER_ADMIN_USERNAME,
-          role: 'SUPER_ADMIN',
-        },
+        user: { username: superAdminUsername, role: 'SUPER_ADMIN' },
       });
     }
 
     const user = await getUserByUsername(username);
     if (!user) {
       await createLog(username, 'FAILED_LOGIN', 'User not found', undefined, ipAddress);
-      return NextResponse.json(
-        { error: 'Invalid username or password' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Invalid username or password' }, { status: 401 });
     }
 
     if (user.status === 'LOCKED') {
       await createLog(username, 'FAILED_LOGIN', 'Account is locked', user.tenantId, ipAddress);
-      return NextResponse.json(
-        { error: 'Account is locked. Contact administrator.' },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'Account is locked. Contact administrator.' }, { status: 403 });
     }
 
     const tenant = await getTenantById(user.tenantId);
-    if (tenant && tenant.status === 'SUSPENDED') {
+    if (tenant?.status === 'SUSPENDED') {
       await createLog(username, 'FAILED_LOGIN', 'Tenant is suspended', user.tenantId, ipAddress);
-      return NextResponse.json(
-        { error: 'Organization account is suspended. Contact support.' },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'Organization account is suspended. Contact support.' }, { status: 403 });
     }
-
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
       await createLog(user.username, 'FAILED_LOGIN', 'Incorrect password entered', user.tenantId, ipAddress);
-      return NextResponse.json(
-        { error: 'Invalid username or password' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Invalid username or password' }, { status: 401 });
     }
 
     const token = generateToken({
@@ -96,18 +107,7 @@ export async function POST(req: NextRequest) {
       role: user.role,
       tenantId: user.tenantId,
     });
-
-    const cookieStore = await cookies();
-    cookieStore.set({
-      name: 'token',
-      value: token,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: '/',
-    });
-
+    await setSessionCookie(token);
     await createLog(user.username, 'Login', 'User successfully logged in', user.tenantId, ipAddress);
 
     return NextResponse.json({
@@ -118,11 +118,8 @@ export async function POST(req: NextRequest) {
         tenantId: user.tenantId,
       },
     });
-  } catch (error: any) {
-    console.error('Login error:', error);
-    return NextResponse.json(
-      { error: 'An error occurred during sign in' },
-      { status: 500 }
-    );
+  } catch (error) {
+    logError('Login error', error, { ipAddress });
+    return NextResponse.json({ error: 'An error occurred during sign in' }, { status: 500 });
   }
 }

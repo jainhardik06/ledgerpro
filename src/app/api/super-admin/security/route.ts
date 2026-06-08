@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
 import { getLogs, connectDb } from '@/lib/db';
+import { logError } from '@/lib/logger';
 
 export async function GET() {
   try {
@@ -9,11 +10,19 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 1. Fetch Failed Logins
-    const allLogs = await getLogs();
-    const failedLogins = allLogs.filter(log => log.action === 'FAILED_LOGIN');
+    const allLogs = await getLogs(undefined, { limit: 100 });
+    const failedLogins = allLogs
+      .filter(log => log.action === 'FAILED_LOGIN')
+      .slice(0, 50)
+      .map(log => ({
+        id: log.id,
+        username: log.username,
+        action: log.action,
+        details: log.details,
+        tenantId: log.tenantId,
+        timestamp: log.timestamp,
+      }));
 
-    // 2. Ping Database Health
     const { client } = await connectDb();
     let dbStatus = 'Offline (Local)';
     let pingTime = 0;
@@ -31,10 +40,10 @@ export async function GET() {
         status: dbStatus,
         ping: pingTime,
         memoryUsage: process.memoryUsage().heapUsed,
-      }
+      },
     });
-  } catch (error: any) {
-    console.error('Security fetch error:', error);
+  } catch (error) {
+    logError('Security fetch error', error);
     return NextResponse.json({ error: 'Failed to fetch security metrics' }, { status: 500 });
   }
 }

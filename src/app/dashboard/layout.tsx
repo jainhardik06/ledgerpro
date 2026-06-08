@@ -50,7 +50,7 @@ function Sidebar({ isMobile, isOpen, onClose }: { isMobile?: boolean; isOpen?: b
           </div>
         </div>
         {isMobile && (
-          <button onClick={onClose} className="p-1.5 rounded-md text-neutral-400 hover:text-white hover:bg-white/[0.05] transition-colors md:hidden">
+          <button aria-label="Close navigation menu" onClick={onClose} className="p-1.5 rounded-md text-neutral-400 hover:text-white hover:bg-white/[0.05] transition-colors md:hidden">
             <X className="w-5 h-5" />
           </button>
         )}
@@ -93,7 +93,7 @@ function Sidebar({ isMobile, isOpen, onClose }: { isMobile?: boolean; isOpen?: b
 
       {/* User Profile / Logout */}
       <div className="p-3 border-t border-white/[0.05] shrink-0">
-        <button className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-[13.5px] font-medium text-neutral-400 hover:text-white hover:bg-white/[0.04] transition-colors" onClick={() => { onClose?.(); window.dispatchEvent(new Event('open-command-palette')); }}>
+        <button aria-label="Open command palette" className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-[13.5px] font-medium text-neutral-400 hover:text-white hover:bg-white/[0.04] transition-colors" onClick={() => { onClose?.(); window.dispatchEvent(new Event('open-command-palette')); }}>
            <Search className="w-4 h-4 text-neutral-500" />
            <span className="flex-1 text-left">Command Palette</span>
            <span className="text-[10px] font-mono border border-white/[0.1] px-1.5 rounded bg-white/[0.02]">Cmd+K</span>
@@ -142,14 +142,14 @@ function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
   return (
     <header className="h-14 border-b border-white/[0.05] bg-[#000000]/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 shrink-0">
       <div className="flex items-center gap-3">
-         <button onClick={onOpenMenu} className="p-1.5 -ml-1.5 text-neutral-400 hover:text-white transition-colors md:hidden rounded-md hover:bg-white/[0.05]">
+         <button aria-label="Open navigation menu" onClick={onOpenMenu} className="p-1.5 -ml-1.5 text-neutral-400 hover:text-white transition-colors md:hidden rounded-md hover:bg-white/[0.05]">
            <Menu className="w-5 h-5" />
          </button>
          <span className="text-[14px] sm:text-[15px] font-semibold tracking-tight text-white">{title === 'Dashboard' ? 'Command Center' : title}</span>
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3">
-         <button className="w-8 h-8 rounded-full border border-white/[0.1] flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/[0.05] transition-colors" onClick={() => window.dispatchEvent(new Event('open-command-palette'))}>
+         <button aria-label="Open command palette" className="w-8 h-8 rounded-full border border-white/[0.1] flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/[0.05] transition-colors" onClick={() => window.dispatchEvent(new Event('open-command-palette'))}>
             <Search className="w-4 h-4 sm:hidden" />
             <Plus className="w-4 h-4 hidden sm:block" />
          </button>

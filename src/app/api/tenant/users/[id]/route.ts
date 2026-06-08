@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
 import { getUserById, updateUser, deleteUser, createLog, getUserByUsername } from '@/lib/db';
 import bcrypt from 'bcryptjs';
+import { logError } from '@/lib/logger';
+import { validatePassword, validateString } from '@/lib/validation';
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -22,7 +24,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const updates: any = {};
 
     if (username) {
-      const cleanUsername = username.trim();
+      const cleanUsername = validateString(username, 'Username', { min: 3, max: 32 });
+      if (cleanUsername instanceof NextResponse) return cleanUsername;
       if (cleanUsername.toLowerCase() !== user.username.toLowerCase()) {
         // Check uniqueness in database
         const existing = await getUserByUsername(cleanUsername);
@@ -34,7 +37,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 
     if (password) {
-      updates.passwordHash = await bcrypt.hash(password, 10);
+      const cleanPassword = validatePassword(password);
+      if (cleanPassword instanceof NextResponse) return cleanPassword;
+      updates.passwordHash = await bcrypt.hash(cleanPassword, 12);
     }
 
     if (Object.keys(updates).length > 0) {
@@ -44,7 +49,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error('Update user error:', error);
+    logError('Update user error', error);
     return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });
   }
 }
@@ -74,7 +79,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error('Delete user error:', error);
+    logError('Delete user error', error);
     return NextResponse.json({ error: 'Failed to delete user' }, { status: 500 });
   }
 }

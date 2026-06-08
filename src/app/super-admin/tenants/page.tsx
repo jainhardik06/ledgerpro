@@ -28,11 +28,17 @@ export default function TenantsPage() {
   const filteredTenants = tenants.filter(t => t.name.toLowerCase().includes(search.toLowerCase()) || t.id.toLowerCase().includes(search.toLowerCase()));
 
   const handleImpersonate = async (tenantId: string) => {
-    // In a real app this would mint an impersonation token. For local DB we'll just set local storage.
-    const t = tenants.find(x => x.id === tenantId);
-    if(t) {
-       localStorage.setItem('impersonating_tenant', JSON.stringify({ id: t.id, name: t.name }));
-       window.location.href = '/dashboard';
+    try {
+      const res = await fetch('/api/super-admin/impersonate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tenantId }),
+      });
+      if (res.ok) {
+        window.location.href = '/dashboard';
+      }
+    } catch (e) {
+      console.error("Failed to impersonate tenant", e);
     }
   };
 
@@ -103,10 +109,10 @@ export default function TenantsPage() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => handleImpersonate(tenant.id)} title="Impersonate Tenant" className="p-1.5 hover:bg-white/[0.1] rounded text-neutral-400 hover:text-white transition-colors">
+                      <button onClick={() => handleImpersonate(tenant.id)} title="Impersonate Tenant" aria-label={`Impersonate ${tenant.name}`} className="p-1.5 hover:bg-white/[0.1] rounded text-neutral-400 hover:text-white transition-colors">
                         <UserSquare2 className="w-4 h-4" />
                       </button>
-                      <button className="p-1.5 hover:bg-white/[0.1] rounded text-neutral-400 hover:text-white transition-colors">
+                      <button aria-label={`More actions for ${tenant.name}`} className="p-1.5 hover:bg-white/[0.1] rounded text-neutral-400 hover:text-white transition-colors">
                         <MoreHorizontal className="w-4 h-4" />
                       </button>
                     </div>

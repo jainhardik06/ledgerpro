@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getSessionUser, generateToken } from '@/lib/auth';
-import { getUserById, createLog } from '@/lib/db';
+import { getUserById, getUsersByTenant, createLog } from '@/lib/db';
+import { logError } from '@/lib/logger';
+import { validateString } from '@/lib/validation';
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,13 +12,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { userId } = await req.json();
+    const { userId, tenantId } = await req.json();
 
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID required' }, { status: 400 });
+    const cleanUserId = validateString(userId, 'User ID', { max: 100, required: false });
+    if (cleanUserId instanceof NextResponse) return cleanUserId;
+    const cleanTenantId = validateString(tenantId, 'Tenant ID', { max: 100, required: false });
+    if (cleanTenantId instanceof NextResponse) return cleanTenantId;
+
+    if (!cleanUserId && !cleanTenantId) {
+      return NextResponse.json({ error: 'User ID or tenant ID required' }, { status: 400 });
     }
 
-    const targetUser = await getUserById(userId);
+    const targetUser = cleanUserId
+      ? await getUserById(cleanUserId)
+      : (await getUsersByTenant(cleanTenantId)).find(user => user.role === 'TENANT_ADMIN') || null;
     
     if (!targetUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
@@ -42,11 +51,11 @@ export async function POST(req: NextRequest) {
       path: '/',
     });
 
-    await createLog(session.username, 'Impersonate', `Impersonated user ${targetUser.username} (${userId})`);
+    await createLog(session.username, 'Impersonate', `Impersonated user ${targetUser.username} (${targetUser.id})`);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error('Impersonation error:', error);
+    logError('Impersonation error', error);
     return NextResponse.json({ error: 'Failed to impersonate user' }, { status: 500 });
   }
 }

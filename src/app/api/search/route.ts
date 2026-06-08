@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
 import { connectDb, safeObjectId, initLocalDb } from '@/lib/db';
+import { logError } from '@/lib/logger';
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const query = searchParams.get('q') || '';
+    const query = (searchParams.get('q') || '').trim().slice(0, 80);
     
     // 1. Authenticate user session
     const session = await getSessionUser();
@@ -22,7 +23,7 @@ export async function GET(request: Request) {
     };
 
     // Safe regex for search query
-    const cleanQuery = query.trim().replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const cleanQuery = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
     const regex = new RegExp(cleanQuery, 'i');
 
     const { db } = await connectDb();
@@ -136,7 +137,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ results });
   } catch (error) {
-    console.error('Search API failure:', error);
+    logError('Search API failure', error);
     return NextResponse.json({ error: 'Search failed' }, { status: 500 });
   }
 }

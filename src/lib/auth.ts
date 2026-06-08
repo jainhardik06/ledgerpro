@@ -1,8 +1,18 @@
 import jwt from 'jsonwebtoken';
-import { NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_business_money_tracker_key_1234567890';
+const JWT_SECRET = (() => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('[FATAL] JWT_SECRET environment variable is not set. Refusing to start in production without a secure secret.');
+    }
+    // Development-only warning — never silently use a known public key
+    console.warn('[WARNING] JWT_SECRET is not set. Using an insecure development-only placeholder. Set JWT_SECRET before deploying.');
+    return 'dev_only_placeholder_set_JWT_SECRET_in_env';
+  }
+  return secret;
+})();
 
 export interface TokenPayload {
   userId: string;

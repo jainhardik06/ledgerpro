@@ -1,32 +1,48 @@
 import { NextResponse } from 'next/server';
 import { createSupportTicket } from '@/lib/db';
+import { logError } from '@/lib/logger';
+import { firstClientIp, validateString } from '@/lib/validation';
+import { checkRateLimit } from '@/lib/rateLimit';
 
 export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-    const { firstName, lastName, email, message } = body;
+  const ipAddress = firstClientIp(req);
 
-    if (!firstName || !lastName || !email || !message) {
-      return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
+  try {
+    const rate = checkRateLimit(`contact:${ipAddress}`, 5, 15 * 60 * 1000);
+    if (!rate.allowed) {
+      return NextResponse.json(
+        { error: 'Too many contact submissions. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(rate.retryAfter) } }
+      );
     }
 
-    // Embed name, email, and message content into the ticket subject for dashboard visibility
-    const subject = `[Contact Form] ${firstName} ${lastName} (${email}): ${message}`;
+    const body = await req.json();
+    const { firstName, lastName, email, message } = body;
+    const cleanFirstName = validateString(firstName, 'First name', { min: 1, max: 80 });
+    if (cleanFirstName instanceof NextResponse) return cleanFirstName;
+    const cleanLastName = validateString(lastName, 'Last name', { min: 1, max: 80 });
+    if (cleanLastName instanceof NextResponse) return cleanLastName;
+    const cleanEmail = validateString(email, 'Email', { min: 3, max: 254 });
+    if (cleanEmail instanceof NextResponse) return cleanEmail;
+    const cleanMessage = validateString(message, 'Message', { min: 10, max: 4000 });
+    if (cleanMessage instanceof NextResponse) return cleanMessage;
 
-    const ticket = await createSupportTicket({
+    const subject = `[Contact Form] ${cleanFirstName} ${cleanLastName} (${cleanEmail})`;
+
+    await createSupportTicket({
       subject,
-      tenantId: 'public_contact',
+      tenantId: 'public',
       status: 'OPEN',
-      priority: 'LOW',
-      name: `${firstName} ${lastName}`,
-      email,
-      message,
-      category: 'General Contact'
+      priority: 'MEDIUM',
+      name: `${cleanFirstName} ${cleanLastName}`,
+      email: cleanEmail,
+      message: cleanMessage,
+      category: 'Sales',
     });
 
-    return NextResponse.json(ticket, { status: 201 });
-  } catch (error: any) {
-    console.error('Contact submission error:', error);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    logError('Contact submission error', error, { ipAddress });
     return NextResponse.json({ error: 'Failed to submit contact message' }, { status: 500 });
   }
 }

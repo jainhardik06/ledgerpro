@@ -44,20 +44,9 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
       if (res.ok) {
         const data = await res.json();
         if (data.user) {
-          // Check impersonation
-          const impStr = localStorage.getItem('impersonating_tenant');
-          if (impStr) {
-            try {
-              const imp = JSON.parse(impStr);
-              data.user.tenantId = imp.id;
-              data.user.role = 'TENANT_ADMIN';
-              data.user.impersonatedBy = 'SUPER_ADMIN';
-            } catch (e) {}
-          }
-
           setUser(data.user);
 
-          if (data.user.role === 'SUPER_ADMIN' && !impStr) {
+          if (data.user.role === 'SUPER_ADMIN') {
             router.push('/super-admin');
             return;
           }
@@ -83,12 +72,16 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     fetchContext();
-  }, [pathname]);
+  }, []);
 
   const logout = async () => {
     if (user?.impersonatedBy) {
-      localStorage.removeItem('impersonating_tenant');
-      router.push('/super-admin/tenants');
+      // For exit impersonation, we need to clear the impersonation token 
+      // by doing a logout, but maybe redirect back to super admin login?
+      // Since we just override the token, logging out logs the super admin out.
+      // Wait, let's just log them out for now, to ensure safety.
+      await fetch('/api/auth/logout', { method: 'POST' });
+      router.push('/login');
       return;
     }
     await fetch('/api/auth/logout', { method: 'POST' });

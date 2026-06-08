@@ -1,7 +1,19 @@
 import { MongoClient, ObjectId } from 'mongodb';
+import { randomUUID } from 'crypto';
 
 export function safeObjectId(id: string): any {
   try { return new ObjectId(id); } catch(e) { return "invalid-id"; }
+}
+
+export interface ListOptions {
+  limit?: number;
+  page?: number;
+}
+
+function normalizeListOptions(options: ListOptions = {}) {
+  const limit = Math.min(Math.max(Number(options.limit) || 50, 1), 100);
+  const page = Math.max(Number(options.page) || 1, 1);
+  return { limit, page, skip: (page - 1) * limit };
 }
 
 import fs from 'fs';
@@ -187,7 +199,7 @@ const MONGODB_URI = process.env.MONGODB_URI;
 let mongoClient: MongoClient | null = null;
 let useLocalDb = false;
 
-const DATA_DIR = path.join(process.cwd(), 'src', 'data');
+const DATA_DIR = path.join(process.cwd(), '.data');
 const DB_FILE = path.join(DATA_DIR, 'local_db.json');
 
 interface LocalDbSchema {
@@ -304,7 +316,7 @@ export async function connectDb() {
   if (mongoClient) return { client: mongoClient, db: mongoClient.db() };
 
   if (!MONGODB_URI) {
-    console.warn('[Database] MONGODB_URI not set. Using local file-based database at src/data/local_db.json');
+    console.warn('[Database] MONGODB_URI not set. Using local file-based database at .data/local_db.json');
     useLocalDb = true;
     initLocalDb();
     return { client: null, db: null };
@@ -316,7 +328,24 @@ export async function connectDb() {
       serverSelectionTimeoutMS: 10000,
     });
     await mongoClient.connect();
-    return { client: mongoClient, db: mongoClient.db() };
+    const db = mongoClient.db();
+
+    // Create indexes for performance
+    try {
+      await db.collection('transactions').createIndex({ tenantId: 1, date: -1, createdAt: -1 });
+      await db.collection('logs').createIndex({ tenantId: 1, timestamp: -1 });
+      await db.collection('logs').createIndex({ action: 1, timestamp: -1 });
+      await db.collection('clients').createIndex({ tenantId: 1, createdAt: -1 });
+      await db.collection('budgets').createIndex({ tenantId: 1, category: 1, month: 1 }, { unique: true });
+      await db.collection('users').createIndex(
+        { username: 1 },
+        { unique: true, collation: { locale: 'en', strength: 2 } }
+      );
+    } catch (e) {
+      console.warn('[Database] Failed to create indexes', e);
+    }
+
+    return { client: mongoClient, db };
   } catch (error) {
     mongoClient = null;
     useLocalDb = true;
@@ -404,7 +433,7 @@ export async function createTenant(name: string): Promise<Tenant> {
     } catch (e) {}
   }
   const data = initLocalDb();
-  const id = Math.random().toString(36).substring(2, 11);
+  const id = randomUUID();
   const localTenant: Tenant = { id, ...newTenant };
   data.tenants.push(localTenant);
   writeLocalDb(data);
@@ -442,7 +471,6 @@ export async function updateTenantAppMode(id: string, mode: 'Standard' | 'Studen
       );
       return true;
     } catch (e) {
-      console.error(e);
       return false;
     }
   }
@@ -462,7 +490,10 @@ export async function getUserByUsername(username: string): Promise<User | null> 
   const { db } = await connectDb();
   if (db) {
     try {
-      const user = await db.collection('users').findOne({ username: new RegExp(`^${username}$`, 'i') });
+      const user = await db.collection('users').findOne(
+        { username },
+        { collation: { locale: 'en', strength: 2 } }
+      );
       if (user) {
         return {
           id: user._id.toString(),
@@ -562,7 +593,7 @@ export async function createUser(username: string, passwordHash: string, role: '
     } catch (e) {}
   }
   const data = initLocalDb();
-  const id = Math.random().toString(36).substring(2, 11);
+  const id = randomUUID();
   const localUser: User = { id, ...newUser };
   data.users.push(localUser);
   writeLocalDb(data);
@@ -631,26 +662,34 @@ export async function deleteUser(id: string): Promise<boolean> {
 
 // ---- TRANSACTIONS ----
 
-export async function getTransactions(tenantId: string): Promise<Transaction[]> {
+export async function getTransactions(tenantId: string, options: ListOptions = {}): Promise<Transaction[]> {
+  const { limit, skip } = normalizeListOptions(options);
   const { db } = await connectDb();
   if (db) {
     try {
-      const txs = await db.collection('transactions').find({ tenantId }).sort({ date: -1, createdAt: -1 }).toArray();
+      const txs = await db.collection('transactions').find({ tenantId }).sort({ date: -1, createdAt: -1 }).skip(skip).limit(limit).toArray();
       return txs.map(t => ({
         id: t._id.toString(),
         tenantId: t.tenantId,
         userId: t.userId,
+        username: t.username,
+        accountId: t.accountId,
+        clientId: t.clientId,
         type: t.type as 'Credit' | 'Debit',
         description: t.description,
         amount: Number(t.amount),
         date: t.date,
         category: t.category,
+        notes: t.notes,
         createdAt: t.createdAt,
       }));
     } catch (e) {}
   }
   const data = initLocalDb();
-  return data.transactions.filter(t => t.tenantId === tenantId).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  return data.transactions
+    .filter(t => t.tenantId === tenantId)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(skip, skip + limit);
 }
 
 export async function createTransaction(tx: Omit<Transaction, 'createdAt' | 'id' | '_id'>): Promise<Transaction> {
@@ -663,7 +702,7 @@ export async function createTransaction(tx: Omit<Transaction, 'createdAt' | 'id'
     } catch (e) {}
   }
   const data = initLocalDb();
-  const id = Math.random().toString(36).substring(2, 11);
+  const id = randomUUID();
   const localTx: Transaction = { id, ...newTx };
   data.transactions.push(localTx);
   writeLocalDb(data);
@@ -678,6 +717,9 @@ export async function updateTransaction(id: string, tenantId: string, tx: Partia
   if (tx.amount !== undefined) updateFields.amount = Number(tx.amount);
   if (tx.date) updateFields.date = tx.date;
   if (tx.category !== undefined) updateFields.category = tx.category;
+  if (tx.accountId !== undefined) updateFields.accountId = tx.accountId;
+  if (tx.clientId !== undefined) updateFields.clientId = tx.clientId;
+  if (tx.notes !== undefined) updateFields.notes = tx.notes;
 
   if (db) {
     try {
@@ -747,7 +789,7 @@ export async function createAccount(tenantId: string, name: string, type: string
     } catch (e) {}
   }
   const data = initLocalDb();
-  const id = Math.random().toString(36).substring(2, 11);
+  const id = randomUUID();
   const localAccount: Account = { id, ...newAccount };
   data.accounts.push(localAccount);
   writeLocalDb(data);
@@ -802,7 +844,7 @@ export async function createCategory(tenantId: string, userId: string, name: str
     } catch (e) {}
   }
   const data = initLocalDb();
-  const id = Math.random().toString(36).substring(2, 11);
+  const id = randomUUID();
   const localCat: Category = { id, ...newCat };
   data.categories.push(localCat);
   writeLocalDb(data);
@@ -839,19 +881,20 @@ export async function createLog(username: string, action: string, details: strin
     } catch (e) {}
   }
   const data = initLocalDb();
-  const id = Math.random().toString(36).substring(2, 11);
+  const id = randomUUID();
   const localLog: SystemLog = { id, ...newLog };
   data.logs.push(localLog);
   writeLocalDb(data);
   return localLog;
 }
 
-export async function getLogs(tenantId?: string): Promise<SystemLog[]> {
+export async function getLogs(tenantId?: string, options: ListOptions = {}): Promise<SystemLog[]> {
+  const { limit, skip } = normalizeListOptions(options);
   const { db } = await connectDb();
   if (db) {
     try {
       const query = tenantId ? { tenantId } : {};
-      const logs = await db.collection('logs').find(query).sort({ timestamp: -1 }).toArray();
+      const logs = await db.collection('logs').find(query).sort({ timestamp: -1 }).skip(skip).limit(limit).toArray();
       return logs.map(l => ({
         id: l._id.toString(),
         tenantId: l.tenantId,
@@ -868,7 +911,7 @@ export async function getLogs(tenantId?: string): Promise<SystemLog[]> {
   if (tenantId) {
     logs = logs.filter(l => l.tenantId === tenantId);
   }
-  return [...logs].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  return [...logs].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(skip, skip + limit);
 }
 
 // ---- BUDGETS ----
@@ -897,12 +940,17 @@ export async function createBudget(tenantId: string, category: string, limitAmou
   const newBudget = { tenantId, category, limitAmount: Number(limitAmount), month, createdAt: new Date() };
   if (db) {
     try {
-      const result = await db.collection('budgets').insertOne(newBudget);
-      return { id: result.insertedId.toString(), ...newBudget };
+      const result = await db.collection('budgets').findOneAndUpdate(
+        { tenantId, category, month },
+        { $set: newBudget },
+        { upsert: true, returnDocument: 'after' }
+      );
+      const budget = result!;
+      return { id: budget._id.toString(), tenantId: budget.tenantId, category: budget.category, limitAmount: Number(budget.limitAmount), month: budget.month, createdAt: budget.createdAt };
     } catch (e) {}
   }
   const data = initLocalDb();
-  const id = Math.random().toString(36).substring(2, 11);
+  const id = randomUUID();
   const localBudget: Budget = { id, ...newBudget };
   
   // Replace existing budget for this category/month
@@ -955,7 +1003,7 @@ export async function createRecurringTransaction(data: Omit<RecurringTransaction
     } catch (e) {}
   }
   const localData = initLocalDb();
-  const id = Math.random().toString(36).substring(2, 11);
+  const id = randomUUID();
   const localRT: RecurringTransaction = { id, ...newRT };
   localData.recurring.push(localRT);
   writeLocalDb(localData);
@@ -1003,11 +1051,12 @@ export async function deleteRecurringTransaction(id: string, tenantId: string): 
 
 // ---- CLIENTS ----
 
-export async function getClients(tenantId: string): Promise<Client[]> {
+export async function getClients(tenantId: string, options: ListOptions = {}): Promise<Client[]> {
+  const { limit, skip } = normalizeListOptions(options);
   const { db } = await connectDb();
   if (db) {
     try {
-      const clients = await db.collection('clients').find({ tenantId }).toArray();
+      const clients = await db.collection('clients').find({ tenantId }).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray();
       return clients.map(c => ({
         id: c._id.toString(),
         tenantId: c.tenantId,
@@ -1018,7 +1067,10 @@ export async function getClients(tenantId: string): Promise<Client[]> {
     } catch (e) {}
   }
   const data = initLocalDb();
-  return data.clients.filter(c => c.tenantId === tenantId);
+  return data.clients
+    .filter(c => c.tenantId === tenantId)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(skip, skip + limit);
 }
 
 export async function createClient(tenantId: string, name: string, email?: string): Promise<Client> {
@@ -1031,7 +1083,7 @@ export async function createClient(tenantId: string, name: string, email?: strin
     } catch (e) {}
   }
   const data = initLocalDb();
-  const id = Math.random().toString(36).substring(2, 11);
+  const id = randomUUID();
   const localClient: Client = { id, ...newClient };
   data.clients.push(localClient);
   writeLocalDb(data);
@@ -1225,7 +1277,7 @@ export async function createFeatureFlag(flag: Omit<FeatureFlag, 'id' | '_id' | '
     } catch (e) {}
   }
   const data = initLocalDb();
-  const id = 'ff_' + Math.random().toString(36).substring(2, 9);
+  const id = 'ff_' + randomUUID().slice(0, 8);
   const localFlag: FeatureFlag = { id, ...newFlag };
   data.flags.push(localFlag);
   writeLocalDb(data);
@@ -1266,7 +1318,7 @@ export async function createSupportTicket(ticket: Omit<SupportTicket, 'id' | '_i
     } catch (e) {}
   }
   const data = initLocalDb();
-  const id = 'T-' + Math.floor(Math.random() * 10000);
+  const id = 'T-' + randomUUID().slice(0, 8);
   const localTicket: SupportTicket = { id, ...newTicket };
   data.tickets.push(localTicket);
   writeLocalDb(data);
@@ -1323,7 +1375,7 @@ export async function createBroadcast(broadcast: Omit<Broadcast, 'id' | '_id' | 
     } catch (e) {}
   }
   const data = initLocalDb();
-  const id = 'b_' + Math.random().toString(36).substring(2, 9);
+  const id = 'b_' + randomUUID().slice(0, 8);
   const localBroadcast: Broadcast = { id, ...newBroadcast };
   data.broadcasts.push(localBroadcast);
   writeLocalDb(data);
@@ -1365,7 +1417,7 @@ export async function createNewsletterSubscriber(email: string): Promise<Newslet
   if (existingLocal) {
     return existingLocal;
   }
-  const id = 'sub_' + Math.random().toString(36).substring(2, 9);
+  const id = 'sub_' + randomUUID().slice(0, 8);
   const localSub: NewsletterSubscriber = { id, ...newSub };
   data.subscribers.push(localSub);
   writeLocalDb(data);
@@ -1403,7 +1455,7 @@ export async function createSystemIncident(incident: Omit<SystemIncident, 'id' |
     } catch (e) {}
   }
   const data = initLocalDb();
-  const id = 'inc_' + Math.random().toString(36).substring(2, 9);
+  const id = 'inc_' + randomUUID().slice(0, 8);
   const localIncident: SystemIncident = { id, ...newIncident };
   data.incidents.push(localIncident);
   writeLocalDb(data);
@@ -1445,10 +1497,9 @@ export async function createSystemMaintenance(maint: Omit<SystemMaintenance, 'id
     } catch (e) {}
   }
   const data = initLocalDb();
-  const id = 'maint_' + Math.random().toString(36).substring(2, 9);
+  const id = 'maint_' + randomUUID().slice(0, 8);
   const localMaint: SystemMaintenance = { id, ...newMaint };
   data.maintenances.push(localMaint);
   writeLocalDb(data);
   return localMaint;
 }
-

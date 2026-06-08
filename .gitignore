@@ -42,3 +42,4 @@ next-env.d.ts
 
 # database fallbacks
 src/data/local_db.json
+.data/
