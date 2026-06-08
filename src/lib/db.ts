@@ -138,6 +138,10 @@ export interface SupportTicket {
   status: 'OPEN' | 'RESOLVED';
   priority: 'LOW' | 'MEDIUM' | 'HIGH';
   createdAt: Date;
+  name?: string;
+  email?: string;
+  message?: string;
+  category?: string;
 }
 
 export interface Broadcast {
@@ -146,6 +150,13 @@ export interface Broadcast {
   type: string;
   message: string;
   target: string;
+  createdAt: Date;
+}
+
+export interface NewsletterSubscriber {
+  id?: string;
+  _id?: any;
+  email: string;
   createdAt: Date;
 }
 
@@ -170,6 +181,7 @@ interface LocalDbSchema {
   flags: FeatureFlag[];
   tickets: SupportTicket[];
   broadcasts: Broadcast[];
+  subscribers: NewsletterSubscriber[];
 }
 
 export function initLocalDb(): LocalDbSchema {
@@ -177,7 +189,7 @@ export function initLocalDb(): LocalDbSchema {
     fs.mkdirSync(DATA_DIR, { recursive: true });
   }
   if (!fs.existsSync(DB_FILE)) {
-    const defaultData: LocalDbSchema = { tenants: [], users: [], accounts: [], transactions: [], categories: [], budgets: [], recurring: [], clients: [], logs: [], flags: [], tickets: [], broadcasts: [] };
+    const defaultData: LocalDbSchema = { tenants: [], users: [], accounts: [], transactions: [], categories: [], budgets: [], recurring: [], clients: [], logs: [], flags: [], tickets: [], broadcasts: [], subscribers: [] };
     fs.writeFileSync(DB_FILE, JSON.stringify(defaultData, null, 2), 'utf-8');
     return defaultData;
   }
@@ -196,9 +208,10 @@ export function initLocalDb(): LocalDbSchema {
     if (!parsed.flags) parsed.flags = [];
     if (!parsed.tickets) parsed.tickets = [];
     if (!parsed.broadcasts) parsed.broadcasts = [];
+    if (!parsed.subscribers) parsed.subscribers = [];
     return parsed;
   } catch (e) {
-    const defaultData: LocalDbSchema = { tenants: [], users: [], accounts: [], transactions: [], categories: [], budgets: [], recurring: [], clients: [], logs: [], flags: [], tickets: [], broadcasts: [] };
+    const defaultData: LocalDbSchema = { tenants: [], users: [], accounts: [], transactions: [], categories: [], budgets: [], recurring: [], clients: [], logs: [], flags: [], tickets: [], broadcasts: [], subscribers: [] };
     fs.writeFileSync(DB_FILE, JSON.stringify(defaultData, null, 2), 'utf-8');
     return defaultData;
   }
@@ -1118,6 +1131,10 @@ export async function getSupportTickets(): Promise<SupportTicket[]> {
         status: t.status,
         priority: t.priority,
         createdAt: t.createdAt,
+        name: t.name,
+        email: t.email,
+        message: t.message,
+        category: t.category,
       }));
     } catch (e) {}
   }
@@ -1140,6 +1157,27 @@ export async function createSupportTicket(ticket: Omit<SupportTicket, 'id' | '_i
   data.tickets.push(localTicket);
   writeLocalDb(data);
   return localTicket;
+}
+
+export async function resolveSupportTicket(id: string): Promise<boolean> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const result = await db.collection('tickets').updateOne(
+        { _id: safeObjectId(id) },
+        { $set: { status: 'RESOLVED' } }
+      );
+      return result.modifiedCount > 0;
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  const ticket = data.tickets.find(t => t.id === id);
+  if (ticket) {
+    ticket.status = 'RESOLVED';
+    writeLocalDb(data);
+    return true;
+  }
+  return false;
 }
 
 // ---- BROADCASTS ----
@@ -1176,4 +1214,46 @@ export async function createBroadcast(broadcast: Omit<Broadcast, 'id' | '_id' | 
   data.broadcasts.push(localBroadcast);
   writeLocalDb(data);
   return localBroadcast;
+}
+
+// ---- NEWSLETTER SUBSCRIBERS ----
+export async function getNewsletterSubscribers(): Promise<NewsletterSubscriber[]> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const subs = await db.collection('subscribers').find({}).sort({ createdAt: -1 }).toArray();
+      return subs.map(s => ({
+        id: s._id.toString(),
+        email: s.email,
+        createdAt: s.createdAt,
+      }));
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  return data.subscribers.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
+export async function createNewsletterSubscriber(email: string): Promise<NewsletterSubscriber> {
+  const { db } = await connectDb();
+  const newSub = { email, createdAt: new Date() };
+  if (db) {
+    try {
+      const existing = await db.collection('subscribers').findOne({ email });
+      if (existing) {
+        return { id: existing._id.toString(), email: existing.email, createdAt: existing.createdAt };
+      }
+      const result = await db.collection('subscribers').insertOne(newSub);
+      return { id: result.insertedId.toString(), ...newSub };
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  const existingLocal = data.subscribers.find(s => s.email.toLowerCase() === email.toLowerCase());
+  if (existingLocal) {
+    return existingLocal;
+  }
+  const id = 'sub_' + Math.random().toString(36).substring(2, 9);
+  const localSub: NewsletterSubscriber = { id, ...newSub };
+  data.subscribers.push(localSub);
+  writeLocalDb(data);
+  return localSub;
 }

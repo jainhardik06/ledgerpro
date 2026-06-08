@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Triangle } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import { Logo } from '@/components/ui/Logo';
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -22,11 +23,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       {/* Left Canvas - Form Container */}
       <div className="flex-1 flex flex-col justify-center px-6 py-24 sm:px-12 md:px-24 z-10">
         <div className="w-full max-w-[400px] mx-auto">
-          <div className="mb-12 flex items-center gap-3">
-             <div className="p-2 rounded-lg bg-neutral-900 border border-neutral-800 flex items-center justify-center">
-              <Triangle className="w-5 h-5 text-neutral-300 fill-current" />
-            </div>
-            <span className="font-semibold tracking-tight text-white text-lg">Money OS</span>
+          <div className="mb-12">
+            <Logo size={26} showBeta={true} textClass="text-lg" />
           </div>
           {children}
         </div>

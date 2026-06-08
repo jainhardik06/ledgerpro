@@ -8,6 +8,7 @@ import {
   ToggleLeft, LifeBuoy, Megaphone, Settings, Search,
   TerminalSquare, ArrowLeft, Command
 } from 'lucide-react';
+import { BrandMark } from '@/components/ui/BrandMark';
 
 const primaryNav = [
   { name: 'Mission Control', href: '/super-admin', icon: TerminalSquare },
@@ -39,10 +40,8 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
       <aside className="w-64 border-r border-white/[0.05] bg-[#000000] flex flex-col shrink-0 h-screen sticky top-0">
         <div className="h-14 border-b border-white/[0.05] flex items-center px-4 shrink-0">
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded-md bg-white text-black flex items-center justify-center font-bold text-[10px]">
-              OS
-            </div>
-            <span className="font-semibold text-[13px] tracking-tight">Platform Console</span>
+            <BrandMark size={18} variant="monochrome" className="text-white" />
+            <span className="font-semibold text-[13px] tracking-[-0.015em]">Platform Console</span>
           </div>
         </div>
 

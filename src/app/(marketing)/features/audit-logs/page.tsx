@@ -19,10 +19,11 @@ export default function AuditLogsFeature() {
           <p className="text-lg text-neutral-400 font-medium max-w-2xl mx-auto mb-10 animate-in" style={{ animationDelay: '200ms' }}>
             When multiple people touch the ledger, trust is not enough. Money OS maintains an automatic, undeletable log of every single action taken within your workspace.
           </p>
-          <div className="flex items-center gap-4 animate-in" style={{ animationDelay: '300ms' }}>
-            <Link href="/pricing">
-              <Button variant="outline" className="border-white/[0.1] text-white hover:bg-white/[0.05]">View Team Pricing</Button>
+          <div className="flex flex-col items-center gap-2 animate-in" style={{ animationDelay: '300ms' }}>
+            <Link href="/login">
+              <Button variant="outline" className="border-white/[0.1] text-white hover:bg-white/[0.05]">Start your workspace</Button>
             </Link>
+            <span className="text-[12px] text-neutral-500 font-mono">100% Free during Beta</span>
           </div>
         </div>
       </section>

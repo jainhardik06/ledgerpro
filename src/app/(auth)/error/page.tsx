@@ -23,7 +23,7 @@ function ErrorContent() {
       color: 'text-amber-500',
       bg: 'bg-amber-500/10 border-amber-500/20',
       title: 'Account Suspended',
-      desc: 'Your workspace has been temporarily suspended. Please contact support or update your billing information.'
+      desc: 'Your workspace has been temporarily suspended. Please contact support for assistance.'
     },
     expired: {
       icon: Clock,

@@ -19,10 +19,11 @@ export default function TeamsFeature() {
           <p className="text-lg text-neutral-400 font-medium max-w-2xl mx-auto mb-10 animate-in" style={{ animationDelay: '200ms' }}>
             Invite your team, assign strict roles, and collaborate on your organization's ledger without compromising security.
           </p>
-          <div className="flex items-center gap-4 animate-in" style={{ animationDelay: '300ms' }}>
-            <Link href="/pricing">
-              <Button className="bg-white text-black hover:bg-neutral-200">View Team Plans</Button>
+          <div className="flex flex-col items-center gap-2 animate-in" style={{ animationDelay: '300ms' }}>
+            <Link href="/login">
+              <Button className="bg-white text-black hover:bg-neutral-200">Start your workspace</Button>
             </Link>
+            <span className="text-[12px] text-neutral-500 font-mono">100% Free during Beta</span>
           </div>
         </div>
       </section>

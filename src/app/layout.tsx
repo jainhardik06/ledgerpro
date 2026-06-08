@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LedgerPro - Business Money Tracker",
-  description: "Secure and encrypted business money and transaction tracking portal.",
+  title: "Money OS - Your Financial Operating System",
+  description: "Secure, encrypted, and designed-for-purpose financial command center for modern teams.",
 };
 
 export default function RootLayout({

@@ -1,81 +1,125 @@
+"use client";
+
 import React from 'react';
 import Link from 'next/link';
-import { ShieldCheck, Lock, Database, Users } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { ShieldCheck, ShieldAlert, Key, Users, Lock, Server, FileLock2, HelpCircle, ArrowLeft } from 'lucide-react';
 
 export default function SecurityPage() {
   return (
-    <div className="flex flex-col items-center pb-24">
-      <section className="w-full pt-32 pb-24 px-6 relative border-b border-white/[0.05] overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-neutral-800/20 via-[#000000] to-[#000000] -z-10" />
-        <div className="max-w-4xl mx-auto flex flex-col items-center text-center">
-          <div className="w-16 h-16 rounded-2xl bg-neutral-900 border border-neutral-800 flex items-center justify-center mb-8 animate-in">
-            <ShieldCheck className="w-8 h-8 text-neutral-300" />
-          </div>
-          <h1 className="text-4xl md:text-6xl font-semibold tracking-tight text-white mb-6 animate-in" style={{ animationDelay: '100ms' }}>
-            Enterprise-grade security.
+    <div className="w-full pt-32 pb-24 px-6 bg-[#000000] text-white min-h-screen">
+      <main className="max-w-4xl mx-auto">
+        {/* Back Link */}
+        <Link href="/support" className="inline-flex items-center gap-2 text-[12px] text-neutral-500 hover:text-white transition-colors mb-8 font-mono">
+          <ArrowLeft className="w-3.5 h-3.5" /> Back to Support Center
+        </Link>
+
+        {/* Header */}
+        <div className="mb-12 pb-8 border-b border-white/[0.05]">
+          <h1 className="text-3xl font-semibold tracking-tight text-white mb-3 flex items-center gap-2">
+            <ShieldCheck className="w-7 h-7 text-emerald-400" /> Security & Data Protection
           </h1>
-          <p className="text-lg text-neutral-400 font-medium max-w-2xl mx-auto mb-10 animate-in" style={{ animationDelay: '200ms' }}>
-            We treat your financial data with the highest level of strictness. Built from the ground up with tenant isolation and robust role management.
-          </p>
-        </div>
-      </section>
-
-      <section className="w-full py-24 px-6 max-w-5xl mx-auto grid md:grid-cols-2 gap-16">
-        <div className="space-y-12">
-          <div>
-            <div className="flex items-center gap-3 mb-4">
-              <Database className="w-5 h-5 text-white" />
-              <h3 className="text-xl font-semibold text-white">Strict Tenant Isolation</h3>
-            </div>
-            <p className="text-[14px] text-neutral-400 leading-relaxed">
-              Every query made to the Money OS database is strictly filtered by a cryptographic `tenantId`. It is mathematically impossible for data to leak across organizational boundaries. Your ledgers are completely siloed.
-            </p>
-          </div>
-          
-          <div>
-            <div className="flex items-center gap-3 mb-4">
-              <Lock className="w-5 h-5 text-white" />
-              <h3 className="text-xl font-semibold text-white">JWT Authentication</h3>
-            </div>
-            <p className="text-[14px] text-neutral-400 leading-relaxed">
-              We utilize secure, HttpOnly JSON Web Tokens for session management. We do not store plain-text passwords, and sessions are actively monitored and invalidated upon logout.
-            </p>
-          </div>
-
-          <div>
-            <div className="flex items-center gap-3 mb-4">
-              <Users className="w-5 h-5 text-white" />
-              <h3 className="text-xl font-semibold text-white">Role Management</h3>
-            </div>
-            <p className="text-[14px] text-neutral-400 leading-relaxed">
-              Access control is enforced at the API level. Tenant Admins have full configuration rights, while standard Users are restricted to operational data entry, preventing unauthorized schema modifications.
-            </p>
-          </div>
+          <p className="text-[14px] text-neutral-400">How we isolate, encrypt, and audit your financial records.</p>
         </div>
 
-        {/* Abstract UI for Security */}
-        <div className="relative rounded-2xl border border-white/[0.1] bg-[#0a0a0a] p-8 shadow-2xl overflow-hidden flex flex-col justify-center">
-           <div className="absolute top-0 left-0 right-0 h-1 bg-neutral-800" />
-           <div className="space-y-4">
-              {/* Tenant 1 */}
-              <div className="p-4 rounded-lg bg-[#000000] border border-white/[0.05] relative overflow-hidden">
-                <div className="absolute top-0 bottom-0 left-0 w-1 bg-emerald-500" />
-                <div className="text-[12px] text-neutral-500 uppercase tracking-widest mb-1">Tenant A Context</div>
-                <div className="text-[14px] font-medium text-white mb-2">Query Transactions</div>
-                <div className="text-[11px] text-emerald-400 font-mono bg-emerald-500/10 p-2 rounded">✓ Auth: Validated<br/>✓ Scope: Isolated</div>
+        {/* Security Framework Cards */}
+        <div className="grid md:grid-cols-2 gap-6 mb-16">
+          <div className="p-6 rounded-xl border border-white/[0.05] bg-[#0a0a0a] space-y-3">
+            <Server className="w-6 h-6 text-blue-400" />
+            <h3 className="text-[15px] font-semibold text-white">Database Tenant Isolation</h3>
+            <p className="text-[12.5px] text-neutral-400 leading-relaxed">
+              Every workspace query is scoped with hard cryptokeys. The database architecture separates customer records logically, preventing data bleed across organizations.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-xl border border-white/[0.05] bg-[#0a0a0a] space-y-3">
+            <Key className="w-6 h-6 text-purple-400" />
+            <h3 className="text-[15px] font-semibold text-white">Authentication & Sessions</h3>
+            <p className="text-[12.5px] text-neutral-400 leading-relaxed">
+              Sessions are guarded by TLS 1.3 encryption. Failed login attempts lock account access instantly and issue alerts to administrators.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-xl border border-white/[0.05] bg-[#0a0a0a] space-y-3">
+            <Users className="w-6 h-6 text-rose-400" />
+            <h3 className="text-[15px] font-semibold text-white">Role-Based Access Control (RBAC)</h3>
+            <p className="text-[12.5px] text-neutral-400 leading-relaxed">
+              Limit permissions with Admin, User, and Viewer roles. Audits log every transaction alteration, workspace invite, and data export.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-xl border border-white/[0.05] bg-[#0a0a0a] space-y-3">
+            <FileLock2 className="w-6 h-6 text-amber-400" />
+            <h3 className="text-[15px] font-semibold text-white">Encryption standards</h3>
+            <p className="text-[12.5px] text-neutral-400 leading-relaxed">
+              Files and backups are encrypted using industry-standard AES-256 keys. All network data transfers are forced through HTTPS connections.
+            </p>
+          </div>
+        </div>
+
+        {/* Security Best Practices */}
+        <section className="mb-16">
+          <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+            <Lock className="w-5 h-5 text-neutral-400" /> Security Best Practices
+          </h2>
+          <div className="space-y-4">
+            {[
+              { title: "Enforce strong passphrases", detail: "Enforce multi-character, unique passphrases across all team invitations." },
+              { title: "Review active sessions regularly", detail: "Navigate to Settings > Sessions to audit logged-in browser scopes." },
+              { title: "Limit Admin access privileges", detail: "Reserve the Admin role strictly for owners. Assign external accountants the read-only Viewer role." }
+            ].map((practice, idx) => (
+              <div key={idx} className="p-4 rounded-lg border border-white/[0.03] bg-white/[0.01]">
+                <h4 className="text-[13.5px] font-semibold text-white mb-1">{practice.title}</h4>
+                <p className="text-[12px] text-neutral-400">{practice.detail}</p>
               </div>
-              
-              {/* Tenant 2 */}
-              <div className="p-4 rounded-lg bg-[#000000] border border-white/[0.05] relative overflow-hidden opacity-50">
-                <div className="absolute top-0 bottom-0 left-0 w-1 bg-rose-500" />
-                <div className="text-[12px] text-neutral-500 uppercase tracking-widest mb-1">Tenant B Context</div>
-                <div className="text-[14px] font-medium text-white mb-2">Query Transactions</div>
-                <div className="text-[11px] text-rose-400 font-mono bg-rose-500/10 p-2 rounded">✗ Auth: Rejected<br/>✗ Scope: Denied</div>
-              </div>
-           </div>
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+
+        {/* Compliance Roadmap */}
+        <section className="mb-16">
+          <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+            <ShieldAlert className="w-5 h-5 text-neutral-400" /> Compliance Roadmap
+          </h2>
+          <div className="p-6 rounded-xl border border-white/[0.05] bg-[#0a0a0a]">
+            <p className="text-[13px] text-neutral-300 leading-relaxed mb-4">
+              Money OS is built from the ground up to align with institutional frameworks:
+            </p>
+            <ul className="space-y-3 text-[12px] text-neutral-400">
+              <li className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> **SOC 2 Type II Alignment**: Policies and automated logs conform to security trust guidelines.
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> **ISO 27001 Roadmap**: Implementing controls in preparation for audit validation.
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> **GDPR & CCPA**: User records are fully erasable upon validated requests.
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        {/* Incident Response */}
+        <section className="mb-16">
+          <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+            <HelpCircle className="w-5 h-5 text-neutral-400" /> Security FAQ & Reporting
+          </h2>
+          <div className="space-y-6">
+            <div>
+              <h4 className="text-[14px] font-semibold text-white mb-1.5">How do I report a security vulnerability?</h4>
+              <p className="text-[13px] text-neutral-400 leading-relaxed">
+                If you detect a vulnerability, please email us directly at <span className="text-white font-mono">moneyos@webasthetic.in</span>. We review and deploy hotfixes within 24 hours.
+              </p>
+            </div>
+            <div>
+              <h4 className="text-[14px] font-semibold text-white mb-1.5">Does Money OS store raw bank login credentials?</h4>
+              <p className="text-[13px] text-neutral-400 leading-relaxed">
+                No. Money OS does not hold bank credentials. Financial updates are created by manual entries, webhook updates, or secure CSV statement imports.
+              </p>
+            </div>
+          </div>
+        </section>
+
+      </main>
     </div>
   );
 }

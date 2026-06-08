@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import {
   Plus, Search, LogOut, Wallet, Moon, Sun, RefreshCw, AlertCircle, 
   User, Activity, FileSpreadsheet, Target, CalendarDays, Trash2, Edit2, 
-  Users, FileText, Settings, Briefcase, Paperclip, ChevronRight, Triangle
+  Users, FileText, Settings, Briefcase, Paperclip, ChevronRight
 } from 'lucide-react';
+import { BrandMark } from '@/components/ui/BrandMark';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, 
   ResponsiveContainer, PieChart, Pie, Cell 
@@ -322,7 +323,7 @@ export default function MoneyOSDashboard({ user, onLogout, darkMode, setDarkMode
       <header className={`sticky top-0 z-40 border-b flex h-14 items-center justify-between px-4 lg:px-6 ${darkMode ? 'bg-[#000000]/80 border-neutral-800 backdrop-blur-md' : 'bg-white/80 border-neutral-200 backdrop-blur-md'}`}>
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
-            <Triangle className={`w-5 h-5 ${darkMode ? 'text-neutral-200' : 'text-neutral-800'} fill-current`} />
+            <BrandMark size={24} className={`${darkMode ? 'text-neutral-200' : 'text-neutral-800'}`} />
             <span className="font-semibold text-[14px] tracking-tight">Money OS</span>
             <span className="text-neutral-400 dark:text-neutral-600 px-1">/</span>
             <span className="text-[14px] font-medium text-neutral-500">{tenant?.name || 'Workspace'}</span>

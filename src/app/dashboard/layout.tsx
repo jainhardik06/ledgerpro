@@ -6,9 +6,10 @@ import { usePathname } from 'next/navigation';
 import { DashboardProvider, useDashboardContext } from '@/components/dashboard/DashboardProvider';
 import { 
   Home, Activity, Wallet, PieChart, Repeat, Users, 
-  BarChart3, Shield, Settings, Search, Bell, Plus, Triangle, FileText
+  BarChart3, Shield, Settings, Search, Bell, Plus, FileText
 } from 'lucide-react';
 import { CommandPalette } from '@/components/ui/CommandPalette';
+import { BrandMark } from '@/components/ui/BrandMark';
 
 function Sidebar() {
   const pathname = usePathname();
@@ -38,8 +39,8 @@ function Sidebar() {
       {/* Brand & Workspace Header */}
       <div className="h-14 flex items-center px-4 border-b border-white/[0.05]">
         <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity w-full">
-          <div className="w-6 h-6 rounded bg-white flex items-center justify-center shrink-0">
-             <Triangle className="w-3.5 h-3.5 text-black fill-current" />
+          <div className="w-7 h-7 rounded bg-white flex items-center justify-center shrink-0">
+             <BrandMark size={15} variant="monochrome" className="text-black" />
           </div>
           <div className="flex flex-col flex-1 truncate">
             <span className="text-[13px] font-semibold text-white tracking-tight truncate">{tenant?.name || 'Workspace'}</span>

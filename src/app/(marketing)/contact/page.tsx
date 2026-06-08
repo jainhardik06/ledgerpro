@@ -6,21 +6,39 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
 export default function ContactPage() {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Simulate network request
-    setTimeout(() => {
+    setErrorMsg('');
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firstName, lastName, email, message })
+      });
+      if (res.ok) {
+        setSubmitted(true);
+      } else {
+        const data = await res.json();
+        setErrorMsg(data.error || 'Failed to send message. Please try again.');
+      }
+    } catch (err) {
+      setErrorMsg('Network error. Please check your connection and try again.');
+    } finally {
       setLoading(false);
-      setSubmitted(true);
-    }, 800);
+    }
   };
 
   return (
-    <div className="flex flex-col items-center pb-24">
+    <div className="flex flex-col items-center pb-24 bg-black min-h-screen text-white">
       {/* Header */}
       <section className="w-full pt-32 pb-16 px-6 border-b border-white/[0.05]">
         <div className="max-w-4xl mx-auto">
@@ -28,7 +46,7 @@ export default function ContactPage() {
             Contact our team
           </h1>
           <p className="text-lg text-neutral-400 font-medium animate-in" style={{ animationDelay: '100ms' }}>
-            Whether you have a question about features, trials, pricing, or anything else, we're ready to answer.
+            Whether you have a question about features, integrations, or anything else, we're ready to answer.
           </p>
         </div>
       </section>
@@ -49,24 +67,47 @@ export default function ContactPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[12px] font-medium mb-1.5 text-neutral-400">First Name</label>
-                  <Input required className="bg-[#0a0a0a] border-white/[0.05] text-white focus-visible:ring-white/[0.2]" />
+                  <Input 
+                    required 
+                    value={firstName} 
+                    onChange={e => setFirstName(e.target.value)}
+                    className="bg-[#0a0a0a] border-white/[0.05] text-white focus-visible:ring-white/[0.2]" 
+                  />
                 </div>
                 <div>
                   <label className="block text-[12px] font-medium mb-1.5 text-neutral-400">Last Name</label>
-                  <Input required className="bg-[#0a0a0a] border-white/[0.05] text-white focus-visible:ring-white/[0.2]" />
+                  <Input 
+                    required 
+                    value={lastName}
+                    onChange={e => setLastName(e.target.value)}
+                    className="bg-[#0a0a0a] border-white/[0.05] text-white focus-visible:ring-white/[0.2]" 
+                  />
                 </div>
               </div>
               <div>
                 <label className="block text-[12px] font-medium mb-1.5 text-neutral-400">Email Address</label>
-                <Input type="email" required className="bg-[#0a0a0a] border-white/[0.05] text-white focus-visible:ring-white/[0.2]" />
+                <Input 
+                  type="email" 
+                  required 
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  className="bg-[#0a0a0a] border-white/[0.05] text-white focus-visible:ring-white/[0.2]" 
+                />
               </div>
               <div>
                 <label className="block text-[12px] font-medium mb-1.5 text-neutral-400">How can we help?</label>
                 <textarea 
                   required 
+                  value={message}
+                  onChange={e => setMessage(e.target.value)}
                   className="flex w-full rounded-md border border-white/[0.05] bg-[#0a0a0a] px-3 py-2 text-[13px] text-white transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/[0.2] min-h-[120px] resize-none"
                 />
               </div>
+              {errorMsg && (
+                <div className="p-3 text-[12px] text-rose-400 bg-rose-500/5 border border-rose-500/10 rounded-md font-mono">
+                  {errorMsg}
+                </div>
+              )}
               <Button type="submit" disabled={loading} className="w-full bg-white text-black hover:bg-neutral-200">
                 {loading ? 'Sending...' : 'Send Message'}
               </Button>
@@ -83,28 +124,23 @@ export default function ContactPage() {
                 <Mail className="w-5 h-5 text-neutral-500 shrink-0" />
                 <div>
                   <p className="font-medium text-white mb-1">Support</p>
-                  <p>support@moneyos.com</p>
+                  <p className="font-mono text-neutral-300">moneyos@webasthetic.in</p>
                 </div>
               </div>
-              <div className="flex gap-4">
-                <Mail className="w-5 h-5 text-neutral-500 shrink-0" />
-                <div>
-                  <p className="font-medium text-white mb-1">Sales & Business Inquiries</p>
-                  <p>sales@moneyos.com</p>
-                </div>
-              </div>
+              
               <div className="flex gap-4">
                 <MapPin className="w-5 h-5 text-neutral-500 shrink-0" />
                 <div>
                   <p className="font-medium text-white mb-1">Office</p>
-                  <p>123 Financial District<br/>New York, NY 10004</p>
+                  <p>Remote</p>
                 </div>
               </div>
+              
               <div className="flex gap-4">
                 <Clock className="w-5 h-5 text-neutral-500 shrink-0" />
                 <div>
                   <p className="font-medium text-white mb-1">Business Hours</p>
-                  <p>Mon-Fri, 9:00 AM - 6:00 PM EST</p>
+                  <p>Mon-Fri, 9:00 AM - 6:00 PM IST</p>
                 </div>
               </div>
             </div>

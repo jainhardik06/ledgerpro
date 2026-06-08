@@ -31,11 +31,7 @@ export default function MarketingHome() {
               Start your workspace <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </Link>
-          <Link href="/pricing">
-            <Button variant="outline" size="default" className="h-10 px-6 border-white/[0.1] bg-transparent text-white hover:bg-white/[0.05] text-[14px]">
-              View Pricing
-            </Button>
-          </Link>
+          <span className="text-[13px] text-neutral-500 font-mono">100% Free during Beta</span>
         </div>
       </section>
 
@@ -149,11 +145,14 @@ export default function MarketingHome() {
           <p className="text-lg text-neutral-400 mb-10 max-w-2xl mx-auto">
             Join hundreds of teams managing their finances with precision. Setup takes less than two minutes.
           </p>
-          <Link href="/login">
-            <Button size="default" className="h-12 px-8 bg-white text-black hover:bg-neutral-200 text-[15px]">
-              Start your workspace
-            </Button>
-          </Link>
+          <div className="flex flex-col items-center gap-3">
+            <Link href="/login">
+              <Button size="default" className="h-12 px-8 bg-white text-black hover:bg-neutral-200 text-[15px]">
+                Start your workspace
+              </Button>
+            </Link>
+            <span className="text-[12px] text-neutral-500 font-mono">100% Free during Beta · No credit card required</span>
+          </div>
         </div>
       </section>
 

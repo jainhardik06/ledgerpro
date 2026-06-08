@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Triangle, Menu, X, ArrowRight } from 'lucide-react';
+import { Menu, X, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { Logo } from '@/components/ui/Logo';
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -13,17 +14,11 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
       {/* Navigation */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-[#000000]/70 backdrop-blur-md border-b border-white/[0.05]">
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="p-1.5 rounded-md bg-white/[0.05] group-hover:bg-white/[0.1] transition-colors">
-              <Triangle className="w-4 h-4 text-white fill-white" />
-            </div>
-            <span className="font-semibold text-[14px] tracking-tight text-white">Money OS</span>
-          </Link>
+          <Logo href="/" size={18} showBeta={true} />
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-6 text-[13px] font-medium text-neutral-400">
             <Link href="/about" className="hover:text-white transition-colors">About</Link>
-            <Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link>
             <Link href="/contact" className="hover:text-white transition-colors">Contact</Link>
             <div className="w-px h-4 bg-white/[0.1] mx-2" />
             <Link href="/login" className="hover:text-white transition-colors">Log in</Link>
@@ -47,7 +42,6 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
         {mobileMenuOpen && (
           <div className="md:hidden absolute top-14 left-0 right-0 bg-[#000000] border-b border-white/[0.05] p-6 flex flex-col gap-4 text-sm font-medium animate-in">
             <Link href="/about" className="text-neutral-300" onClick={() => setMobileMenuOpen(false)}>About</Link>
-            <Link href="/pricing" className="text-neutral-300" onClick={() => setMobileMenuOpen(false)}>Pricing</Link>
             <Link href="/contact" className="text-neutral-300" onClick={() => setMobileMenuOpen(false)}>Contact</Link>
             <hr className="border-white/[0.05]" />
             <Link href="/login" className="text-neutral-300" onClick={() => setMobileMenuOpen(false)}>Log in</Link>
@@ -67,10 +61,9 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
       <footer className="border-t border-white/[0.05] bg-[#000000] py-16 px-6">
         <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
           <div className="col-span-2 md:col-span-3 lg:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <Triangle className="w-5 h-5 text-white fill-white" />
-              <span className="font-semibold tracking-tight text-white">Money OS</span>
-            </Link>
+            <div className="mb-4">
+              <Logo href="/" size={22} showBeta={true} />
+            </div>
             <p className="text-[13px] text-neutral-500">
               The financial operating system for modern teams. Built with precision, speed, and design in mind.
             </p>
@@ -101,11 +94,9 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
           <div>
             <h4 className="text-[13px] font-semibold text-white mb-4">Resources</h4>
             <ul className="space-y-3 text-[13px] text-neutral-500">
-              <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
               <li><Link href="/support" className="hover:text-white transition-colors">Support Center</Link></li>
               <li><Link href="/docs" className="hover:text-white transition-colors">Documentation</Link></li>
               <li><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></li>
-              <li><Link href="/affiliates" className="hover:text-white transition-colors">Partner Program</Link></li>
             </ul>
           </div>
 
@@ -113,7 +104,6 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
             <h4 className="text-[13px] font-semibold text-white mb-4">Company</h4>
             <ul className="space-y-3 text-[13px] text-neutral-500">
               <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
-              <li><Link href="/careers" className="hover:text-white transition-colors">Careers</Link></li>
               <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
               <li><Link href="/security" className="hover:text-white transition-colors">Security</Link></li>
               <li><Link href="/status" className="hover:text-white transition-colors">System Status</Link></li>
