@@ -68,7 +68,17 @@ It is designed specifically for **Small Businesses, Freelancers, Student Clubs, 
 * **Smart Pre-Seeding**: New organizations are automatically initialized with Core Accounts and Smart Categories.
 * **Zero-Cost Receipts**: Attach Google Drive links or receipt notes directly to transactions to avoid expensive S3 bucket hosting.
 * **Team Leaderboards**: Track exactly who spent what within an organization.
-* **Dynamic Intelligence**: Actively forecasts upcoming cash flow obligations and alerts you before they hit.
+* **Real-Time System Telemetry**: A dedicated, high-resiliency status center (`/status`) tracking live database latency, Node.js memory heaps, and API response speeds.
+* **Export & Reporting Suite**: 1-click CSV exports across all modules, plus print-ready native PDF summary generation directly from the Reports intelligence center.
+* **Budget Intelligence Engine**: Set categorical limits with dynamic visual risk indicators (Warning, Critical) when spending approaches defined thresholds.
+* **Client & Sponsor CRM**: Built-in directory to track and attribute specific incoming revenue/funds to designated clients, complete with their own revenue leaderboards.
+### 📱 Mobile-First Design & Ergonomics
+Money OS has been meticulously audited and rebuilt for **flawless cross-device fluidity** using advanced responsive design patterns:
+* **Progressive Disclosure Tables**: Data-dense modules (Transactions, Recurring, Audit, Team) auto-collapse non-critical columns on mobile displays. Context is intelligently nested directly into the primary row, completely eliminating horizontal scrolling while preserving data integrity.
+* **Fluid Grid Stacks**: Card layouts (Dashboard, Accounts, Budgets, Reports) instantly stack and dynamically adapt padding, truncation, and typography to viewport bounds (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`).
+* **Interactive Slide-over Drawers**: Say goodbye to clunky center modals. All data entry, user invitations, and deep-dive audits are handled via smooth right-side sliding Drawers. On mobile, these feature prominent bottom-anchored "Close" actions designed specifically for 1-handed thumb operation.
+* **Mobile Drawer Navigation**: A dedicated responsive layout system hides the desktop sidebar on viewports `< 768px`, replacing it with an accessible TopBar and hidden drawer toggle, ensuring smooth application traversal on phones.
+* **Strict Overflow Boundaries**: Native text truncation (`min-w-0`, `truncate`) and flex-shrink logic guarantees that large currency numbers or extremely long email addresses will never break the grid or cause horizontal blowout.
 
 ---
 
