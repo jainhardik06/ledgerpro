@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, Activity, Search, Shield, Info, Download } from 'lucide-react';
+import { RefreshCw, Activity, Search, Shield, Info, Download, Globe } from 'lucide-react';
 import { useDashboardContext } from '@/components/dashboard/DashboardProvider';
 
 export default function AuditPage() {
@@ -24,6 +24,27 @@ export default function AuditPage() {
     fetchLogs();
   }, [user]);
 
+  const handleExportCSV = () => {
+    const headers = ['Timestamp', 'Action', 'Actor', 'IP Address', 'Details'];
+    const rows = filteredLogs.map(l => [
+      new Date(l.timestamp).toLocaleString(),
+      l.action,
+      l.username || 'system',
+      l.ipAddress || 'unknown',
+      `"${(l.details || '').toString().replace(/"/g, '""')}"`
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `moneyos_audit_log_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (loading) return <div className="flex h-full items-center justify-center"><RefreshCw className="w-5 h-5 animate-spin text-neutral-500" /></div>;
 
   if (user?.role !== 'TENANT_ADMIN') {
@@ -37,8 +58,10 @@ export default function AuditPage() {
   }
 
   const filteredLogs = logs.filter(l => 
-    l.action.toLowerCase().includes(search.toLowerCase()) || 
-    l.actorId.toLowerCase().includes(search.toLowerCase())
+    (l.action || '').toLowerCase().includes(search.toLowerCase()) || 
+    (l.username || '').toLowerCase().includes(search.toLowerCase()) ||
+    (l.ipAddress || '').toLowerCase().includes(search.toLowerCase()) ||
+    (l.details || '').toString().toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -59,7 +82,10 @@ export default function AuditPage() {
               className="h-9 w-64 bg-[#0a0a0a] border border-white/[0.1] rounded-md pl-9 pr-3 text-[13px] text-white focus:border-white/[0.2] outline-none"
             />
           </div>
-          <button className="h-9 px-3 border border-white/[0.1] rounded-md text-[13px] font-medium text-white hover:bg-white/[0.02] flex items-center gap-2">
+          <button 
+            onClick={handleExportCSV}
+            className="h-9 px-3 border border-white/[0.1] rounded-md text-[13px] font-medium text-white hover:bg-white/[0.02] flex items-center gap-2 transition-colors"
+          >
             <Download className="w-4 h-4" /> Export
           </button>
         </div>
@@ -69,48 +95,52 @@ export default function AuditPage() {
         <table className="w-full text-left border-collapse">
           <thead className="sticky top-0 bg-[#0a0a0a] z-10 shadow-[0_1px_0_rgba(255,255,255,0.05)]">
             <tr>
-              <th className="px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest w-1/4">Timestamp</th>
-              <th className="px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest">Action</th>
-              <th className="px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest">Actor</th>
-              <th className="px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest text-right">Details</th>
+              <th className="px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest w-1/5">Timestamp</th>
+              <th className="px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest w-1/6">Action</th>
+              <th className="px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest w-1/6">Actor</th>
+              <th className="px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest w-1/6">IP Address</th>
+              <th className="px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest">Details</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/[0.02]">
              {filteredLogs.length === 0 ? (
                 <tr>
-                 <td colSpan={4} className="px-6 py-16 text-center">
+                 <td colSpan={5} className="px-6 py-16 text-center">
                     <div className="flex flex-col items-center">
                       <div className="w-12 h-12 rounded-full bg-white/[0.02] flex items-center justify-center mb-4">
                         <Activity className="w-5 h-5 text-neutral-500" />
                       </div>
                       <p className="text-[14px] text-white font-medium mb-1">No events recorded</p>
-                      <p className="text-[13px] text-neutral-500 max-w-sm mb-4">System and user activity will appear here over time.</p>
+                      <p className="text-[13px] text-neutral-500 max-w-sm">System and user activity will appear here over time.</p>
                     </div>
                  </td>
                </tr>
              ) : (
-                filteredLogs.map(log => (
-                  <tr key={log.id} className="hover:bg-white/[0.02] transition-colors group">
-                    <td className="px-6 py-3 text-[12px] text-neutral-500 font-mono">
+                filteredLogs.map((log, idx) => (
+                  <tr key={log.id || idx} className="hover:bg-white/[0.02] transition-colors group">
+                    <td className="px-6 py-3.5 text-[12px] text-neutral-500 font-mono">
                       {new Date(log.timestamp).toLocaleString()}
                     </td>
-                    <td className="px-6 py-3">
-                      <span className="inline-flex px-2 py-0.5 rounded border border-white/[0.05] bg-white/[0.02] text-[11px] font-medium text-white uppercase tracking-widest">
+                    <td className="px-6 py-3.5">
+                      <span className={`inline-flex px-2 py-0.5 rounded border text-[10px] font-bold font-mono tracking-wider uppercase ${
+                        (log.action || '').startsWith('FAILED') ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' :
+                        (log.action || '').startsWith('DELETE') ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                        'bg-white/5 text-white border-white/10'
+                      }`}>
                         {log.action}
                       </span>
                     </td>
-                    <td className="px-6 py-3 text-[13px] font-medium text-neutral-400">
-                      {log.actorId}
+                    <td className="px-6 py-3.5 text-[13px] font-medium text-neutral-200">
+                      {log.username || 'system'}
                     </td>
-                    <td className="px-6 py-3 text-right">
-                      {log.details ? (
-                         <div className="group/tooltip relative inline-block cursor-help">
-                           <Info className="w-4 h-4 text-neutral-500 hover:text-white transition-colors" />
-                           <div className="absolute right-0 top-6 w-64 p-3 bg-[#111] border border-white/[0.1] rounded-md shadow-xl text-[11px] font-mono text-neutral-300 hidden group-hover/tooltip:block z-50 text-left whitespace-pre-wrap break-all">
-                             {JSON.stringify(log.details, null, 2)}
-                           </div>
-                         </div>
-                      ) : <span className="text-[12px] text-neutral-600">-</span>}
+                    <td className="px-6 py-3.5 text-[12px] text-neutral-500 font-mono">
+                      <div className="flex items-center gap-1.5">
+                        <Globe className="w-3.5 h-3.5 text-neutral-600" />
+                        <span>{log.ipAddress || 'local'}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-3.5 text-[13px] text-neutral-400 max-w-md break-words font-mono">
+                      {typeof log.details === 'string' ? log.details : JSON.stringify(log.details)}
                     </td>
                   </tr>
                 ))

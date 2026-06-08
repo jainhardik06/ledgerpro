@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, Users, Shield, Plus, MoreHorizontal } from 'lucide-react';
+import { RefreshCw, Users, Shield, Plus, MoreHorizontal, AlertCircle } from 'lucide-react';
 import { useDashboardContext } from '@/components/dashboard/DashboardProvider';
 import { Drawer } from '@/components/ui/Drawer';
 
@@ -11,8 +11,11 @@ export default function TeamPage() {
   const [team, setTeam] = useState<any[]>([]);
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<any | null>(null);
+  
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -29,6 +32,28 @@ export default function TeamPage() {
     fetchData();
   }, [user]);
 
+  useEffect(() => {
+    const handleOpen = () => openNew();
+    window.addEventListener('open-invite-user', handleOpen);
+    return () => window.removeEventListener('open-invite-user', handleOpen);
+  }, []);
+
+  const openNew = () => {
+    setSelectedMember(null);
+    setNewUsername('');
+    setNewPassword('');
+    setError('');
+    setIsDrawerOpen(true);
+  };
+
+  const openEdit = (member: any) => {
+    setSelectedMember(member);
+    setNewUsername(member.username);
+    setNewPassword('');
+    setError('');
+    setIsDrawerOpen(true);
+  };
+
   if (loading) return <div className="flex h-full items-center justify-center"><RefreshCw className="w-5 h-5 animate-spin text-neutral-500" /></div>;
 
   if (user?.role !== 'TENANT_ADMIN') {
@@ -44,19 +69,54 @@ export default function TeamPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    setError('');
     try {
-      const res = await fetch('/api/tenant/users', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: newUsername, password: newPassword })
+      const url = selectedMember ? `/api/tenant/users/${selectedMember.id}` : '/api/tenant/users';
+      const method = selectedMember ? 'PUT' : 'POST';
+      const body: any = { username: newUsername };
+      if (newPassword) body.password = newPassword;
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
       });
-      if (res.ok) {
-        setIsDrawerOpen(false);
-        setNewUsername('');
-        setNewPassword('');
-        const fres = await fetch('/api/tenant/users');
-        if (fres.ok) setTeam((await fres.json()).users);
+
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || 'Save failed');
+        setSaving(false);
+        return;
       }
-    } catch (e) {} finally { setSaving(false); }
+
+      setIsDrawerOpen(false);
+      const fres = await fetch('/api/tenant/users');
+      if (fres.ok) setTeam((await fres.json()).users);
+    } catch (e) {
+      setError('A connection error occurred.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to remove this team member? This action is irreversible.')) return;
+    setError('');
+    try {
+      const res = await fetch(`/api/tenant/users/${id}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || 'Failed to remove member');
+        return;
+      }
+      setIsDrawerOpen(false);
+      const fres = await fetch('/api/tenant/users');
+      if (fres.ok) setTeam((await fres.json()).users);
+    } catch (e) {
+      setError('Failed to reach server.');
+    }
   };
 
   return (
@@ -66,7 +126,7 @@ export default function TeamPage() {
           <h1 className="text-xl font-semibold tracking-tight text-white mb-1">Team Workspace</h1>
           <p className="text-[13px] text-neutral-400">Manage members, permissions, and platform access.</p>
         </div>
-        <button onClick={() => setIsDrawerOpen(true)} className="h-9 px-3 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 flex items-center gap-2">
+        <button onClick={openNew} className="h-9 px-3 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 flex items-center gap-2">
           <Plus className="w-4 h-4" /> Invite Member
         </button>
       </div>
@@ -83,14 +143,14 @@ export default function TeamPage() {
           </thead>
           <tbody className="divide-y divide-white/[0.02]">
              {team.map(member => (
-               <tr key={member.id} className="hover:bg-white/[0.02] transition-colors group">
+               <tr key={member.id} onClick={() => openEdit(member)} className="hover:bg-white/[0.02] transition-colors group cursor-pointer">
                  <td className="px-6 py-4">
                    <div className="flex items-center gap-3">
                      <div className="w-8 h-8 rounded-full border border-white/[0.05] bg-white/[0.02] flex items-center justify-center shrink-0">
                        <Users className="w-4 h-4 text-neutral-400" />
                      </div>
                      <div>
-                       <div className="text-[13px] font-medium text-white mb-0.5">{member.username}</div>
+                       <div className="text-[13px] font-medium text-white mb-0.5 group-hover:text-emerald-400 transition-colors">{member.username}</div>
                        <div className="text-[11px] font-mono text-neutral-500">{member.id}</div>
                      </div>
                    </div>
@@ -109,7 +169,7 @@ export default function TeamPage() {
                    </span>
                  </td>
                  <td className="px-6 py-4 text-right">
-                   <button className="p-1.5 hover:bg-white/[0.1] rounded text-neutral-400 hover:text-white transition-colors opacity-0 group-hover:opacity-100">
+                   <button onClick={(e) => { e.stopPropagation(); openEdit(member); }} className="p-1.5 hover:bg-white/[0.1] rounded text-neutral-400 hover:text-white transition-colors opacity-0 group-hover:opacity-100">
                      <MoreHorizontal className="w-4 h-4" />
                    </button>
                  </td>
@@ -119,28 +179,65 @@ export default function TeamPage() {
         </table>
       </div>
 
-      <Drawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} title="Invite Member">
+      <Drawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} title={selectedMember ? "Edit Member" : "Invite Member"}>
         <form onSubmit={handleSave} className="space-y-6 flex flex-col h-full">
-           <div className="space-y-5 flex-1">
-             <div>
-               <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">Username</label>
-               <input type="text" value={newUsername} onChange={e=>setNewUsername(e.target.value)} required className="w-full h-9 bg-transparent border-b border-white/[0.1] text-[14px] text-white focus:border-emerald-500 outline-none" placeholder="johndoe" />
-             </div>
-             <div>
-               <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">Temporary Password</label>
-               <input type="password" value={newPassword} onChange={e=>setNewPassword(e.target.value)} required className="w-full h-9 bg-transparent border-b border-white/[0.1] text-[14px] text-white focus:border-emerald-500 outline-none" />
-             </div>
-             <p className="text-[12px] text-neutral-500">New users are granted standard access by default. They can manage transactions, clients, and view reports, but cannot access Settings or Team Workspace.</p>
-           </div>
-           <div className="flex items-center justify-between pt-6 border-t border-white/[0.05]">
-             <div />
-             <div className="flex items-center gap-3">
-               <button type="button" onClick={() => setIsDrawerOpen(false)} className="px-4 py-2 text-[13px] font-medium text-neutral-400 hover:text-white transition-colors">Cancel</button>
-               <button type="submit" disabled={saving} className="px-4 py-2 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 transition-colors disabled:opacity-50">
-                 {saving ? 'Inviting...' : 'Invite Member'}
-               </button>
-             </div>
-           </div>
+            <div className="space-y-5 flex-1">
+              
+              {error && (
+                <div className="p-3 rounded bg-rose-500/10 border border-rose-500/20 text-rose-500 text-[12px] flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">Username</label>
+                <input 
+                  type="text" 
+                  value={newUsername} 
+                  onChange={e=>setNewUsername(e.target.value)} 
+                  required 
+                  className="w-full h-9 bg-transparent border-b border-white/[0.1] text-[14px] text-white focus:border-emerald-500 outline-none" 
+                  placeholder="johndoe" 
+                />
+              </div>
+
+              <div>
+                <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">
+                  {selectedMember ? "New Password (leave blank to keep current)" : "Temporary Password"}
+                </label>
+                <input 
+                  type="password" 
+                  value={newPassword} 
+                  onChange={e=>setNewPassword(e.target.value)} 
+                  required={!selectedMember}
+                  className="w-full h-9 bg-transparent border-b border-white/[0.1] text-[14px] text-white focus:border-emerald-500 outline-none" 
+                />
+              </div>
+
+              <p className="text-[12px] text-neutral-500">
+                New users are granted standard access by default. They can manage transactions, clients, and view reports, but cannot access Settings or Team Workspace.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between pt-6 border-t border-white/[0.05]">
+              {selectedMember && selectedMember.id !== user?.id ? (
+                <button 
+                  type="button" 
+                  onClick={() => handleDelete(selectedMember.id)} 
+                  className="text-[13px] font-medium text-rose-500 hover:text-rose-400 transition-colors"
+                >
+                  Remove Member
+                </button>
+              ) : <div />}
+              
+              <div className="flex items-center gap-3">
+                <button type="button" onClick={() => setIsDrawerOpen(false)} className="px-4 py-2 text-[13px] font-medium text-neutral-400 hover:text-white transition-colors">Cancel</button>
+                <button type="submit" disabled={saving} className="px-4 py-2 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 transition-colors disabled:opacity-50">
+                  {saving ? 'Saving...' : (selectedMember ? 'Save Changes' : 'Invite Member')}
+                </button>
+              </div>
+            </div>
         </form>
       </Drawer>
     </div>

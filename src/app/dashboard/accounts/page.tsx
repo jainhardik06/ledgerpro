@@ -23,6 +23,12 @@ export default function AccountsPage() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const handleOpen = () => openNew();
+    window.addEventListener('open-new-account', handleOpen);
+    return () => window.removeEventListener('open-new-account', handleOpen);
+  }, []);
+
   const fetchData = async () => {
     try {
       const [accRes, txRes] = await Promise.all([

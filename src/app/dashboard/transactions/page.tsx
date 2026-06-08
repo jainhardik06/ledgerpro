@@ -12,6 +12,15 @@ export default function TransactionsPage() {
   
   const [search, setSearch] = useState('');
   
+  // Filter Popover States
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [filterType, setFilterType] = useState<'all' | 'Credit' | 'Debit'>('all');
+  const [filterAccountId, setFilterAccountId] = useState('all');
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [filterDateRange, setFilterDateRange] = useState<'all' | 'this-month' | 'last-30' | 'this-year'>('all');
+  const [filterMinAmount, setFilterMinAmount] = useState('');
+  const [filterMaxAmount, setFilterMaxAmount] = useState('');
+  
   // Drawer States
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedTx, setSelectedTx] = useState<any | null>(null);
@@ -29,6 +38,12 @@ export default function TransactionsPage() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const handleOpen = () => openNew();
+    window.addEventListener('open-new-transaction', handleOpen);
+    return () => window.removeEventListener('open-new-transaction', handleOpen);
+  }, [accounts]);
 
   const fetchData = async () => {
     try {
@@ -106,11 +121,62 @@ export default function TransactionsPage() {
     setIsDrawerOpen(true);
   };
 
-  const filtered = transactions.filter(t => 
-    t.description.toLowerCase().includes(search.toLowerCase()) || 
-    t.category?.toLowerCase().includes(search.toLowerCase()) ||
-    t.amount.toString().includes(search)
-  );
+  const isFilterActive = 
+    filterType !== 'all' || 
+    filterAccountId !== 'all' || 
+    filterCategory !== 'all' || 
+    filterDateRange !== 'all' || 
+    filterMinAmount !== '' || 
+    filterMaxAmount !== '';
+
+  const clearFilters = () => {
+    setFilterType('all');
+    setFilterAccountId('all');
+    setFilterCategory('all');
+    setFilterDateRange('all');
+    setFilterMinAmount('');
+    setFilterMaxAmount('');
+  };
+
+  const filtered = transactions.filter(t => {
+    // 1. Search text filter
+    const matchesSearch = 
+      t.description.toLowerCase().includes(search.toLowerCase()) || 
+      t.category?.toLowerCase().includes(search.toLowerCase()) ||
+      t.amount.toString().includes(search);
+    if (!matchesSearch) return false;
+
+    // 2. Type filter
+    if (filterType !== 'all' && t.type !== filterType) return false;
+
+    // 3. Account filter
+    if (filterAccountId !== 'all' && t.accountId !== filterAccountId) return false;
+
+    // 4. Category filter
+    if (filterCategory !== 'all' && t.category !== filterCategory) return false;
+
+    // 5. Min / Max Amount filter
+    if (filterMinAmount !== '' && t.amount < Number(filterMinAmount)) return false;
+    if (filterMaxAmount !== '' && t.amount > Number(filterMaxAmount)) return false;
+
+    // 6. Date Range filter
+    if (filterDateRange !== 'all') {
+      const txDate = new Date(t.date);
+      const now = new Date();
+      if (filterDateRange === 'this-month') {
+        const currentMonthPrefix = now.toISOString().substring(0, 7);
+        if (!t.date.startsWith(currentMonthPrefix)) return false;
+      } else if (filterDateRange === 'last-30') {
+        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        if (txDate < thirtyDaysAgo) return false;
+      } else if (filterDateRange === 'this-year') {
+        const currentYear = now.getFullYear().toString();
+        if (!t.date.startsWith(currentYear)) return false;
+      }
+    }
+
+    return true;
+  });
 
   if (loading) {
     return <div className="flex h-full items-center justify-center"><RefreshCw className="w-5 h-5 animate-spin text-neutral-500" /></div>;
@@ -136,9 +202,140 @@ export default function TransactionsPage() {
               className="h-9 w-64 bg-[#0a0a0a] border border-white/[0.1] rounded-md pl-9 pr-3 text-[13px] text-white focus:border-white/[0.2] outline-none"
             />
           </div>
-          <button className="h-9 px-3 border border-white/[0.1] rounded-md text-[13px] font-medium text-white hover:bg-white/[0.02] flex items-center gap-2">
-            <Filter className="w-3.5 h-3.5" /> Filter
-          </button>
+          <div className="relative">
+            <button 
+              onClick={() => setIsFilterOpen(!isFilterOpen)} 
+              className={`h-9 px-3 border rounded-md text-[13px] font-medium flex items-center gap-2 transition-colors ${
+                isFilterActive || isFilterOpen
+                  ? 'bg-white text-black border-white'
+                  : 'border-white/[0.1] text-white hover:bg-white/[0.02]'
+              }`}
+            >
+              <Filter className="w-3.5 h-3.5" /> Filter
+              {isFilterActive && (
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              )}
+            </button>
+
+            {isFilterOpen && (
+              <div className="absolute right-0 mt-2 w-80 bg-[#0a0a0a] border border-white/[0.08] rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] p-5 z-50 space-y-4 text-left animate-in fade-in slide-in-from-top-1 duration-150">
+                <div className="flex items-center justify-between border-b border-white/[0.05] pb-2">
+                  <span className="text-[12px] font-semibold text-white">Filters</span>
+                  {isFilterActive && (
+                    <button 
+                      onClick={clearFilters}
+                      className="text-[10px] font-semibold text-emerald-500 hover:text-emerald-400 transition-colors"
+                    >
+                      Clear all
+                    </button>
+                  )}
+                </div>
+
+                {/* Filter by Type */}
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">Transaction Type</label>
+                  <div className="flex p-0.5 bg-white/[0.02] border border-white/[0.05] rounded-md">
+                    <button 
+                      type="button" 
+                      onClick={() => setFilterType('all')} 
+                      className={`flex-1 py-1 text-[11px] font-medium rounded transition-colors ${filterType === 'all' ? 'bg-[#111111] text-white shadow-sm border border-white/[0.05]' : 'text-neutral-500 hover:text-white'}`}
+                    >
+                      All
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => setFilterType('Credit')} 
+                      className={`flex-1 py-1 text-[11px] font-medium rounded transition-colors ${filterType === 'Credit' ? 'bg-[#111111] text-white shadow-sm border border-white/[0.05]' : 'text-neutral-500 hover:text-white'}`}
+                    >
+                      Income
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => setFilterType('Debit')} 
+                      className={`flex-1 py-1 text-[11px] font-medium rounded transition-colors ${filterType === 'Debit' ? 'bg-[#111111] text-white shadow-sm border border-white/[0.05]' : 'text-neutral-500 hover:text-white'}`}
+                    >
+                      Expense
+                    </button>
+                  </div>
+                </div>
+
+                {/* Filter by Account */}
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">Account</label>
+                  <select 
+                    value={filterAccountId} 
+                    onChange={e => setFilterAccountId(e.target.value)} 
+                    className="w-full h-8 bg-white/[0.02] border border-white/[0.05] rounded-md px-2 text-[12px] text-white focus:border-white/[0.2] outline-none [&>option]:bg-[#000000]"
+                  >
+                    <option value="all">All Accounts</option>
+                    {accounts.map(acc => (
+                      <option key={acc.id} value={acc.id}>{acc.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Filter by Category */}
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">Category</label>
+                  <select 
+                    value={filterCategory} 
+                    onChange={e => setFilterCategory(e.target.value)} 
+                    className="w-full h-8 bg-white/[0.02] border border-white/[0.05] rounded-md px-2 text-[12px] text-white focus:border-white/[0.2] outline-none [&>option]:bg-[#000000]"
+                  >
+                    <option value="all">All Categories</option>
+                    {categories.map(cat => (
+                      <option key={cat.id} value={cat.name}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Filter by Date Range */}
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">Date Period</label>
+                  <select 
+                    value={filterDateRange} 
+                    onChange={e => setFilterDateRange(e.target.value as any)} 
+                    className="w-full h-8 bg-white/[0.02] border border-white/[0.05] rounded-md px-2 text-[12px] text-white focus:border-white/[0.2] outline-none [&>option]:bg-[#000000]"
+                  >
+                    <option value="all">All Time</option>
+                    <option value="this-month">This Month</option>
+                    <option value="last-30">Last 30 Days</option>
+                    <option value="this-year">This Year</option>
+                  </select>
+                </div>
+
+                {/* Min / Max Amount */}
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">Amount Range (₹)</label>
+                  <div className="flex gap-2">
+                    <input 
+                      type="number" 
+                      placeholder="Min" 
+                      value={filterMinAmount}
+                      onChange={e => setFilterMinAmount(e.target.value)}
+                      className="w-1/2 h-8 bg-white/[0.02] border border-white/[0.05] rounded-md px-2.5 text-[12px] text-white placeholder:text-neutral-700 focus:border-white/[0.2] outline-none"
+                    />
+                    <input 
+                      type="number" 
+                      placeholder="Max" 
+                      value={filterMaxAmount}
+                      onChange={e => setFilterMaxAmount(e.target.value)}
+                      className="w-1/2 h-8 bg-white/[0.02] border border-white/[0.05] rounded-md px-2.5 text-[12px] text-white placeholder:text-neutral-700 focus:border-white/[0.2] outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-2 border-t border-white/[0.05]">
+                  <button 
+                    onClick={() => setIsFilterOpen(false)}
+                    className="px-3 py-1.5 bg-white text-black text-[11px] font-semibold rounded hover:bg-neutral-200 transition-colors"
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
           <button onClick={openNew} className="h-9 px-3 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 flex items-center gap-2">
             <Plus className="w-4 h-4" /> New Record
           </button>

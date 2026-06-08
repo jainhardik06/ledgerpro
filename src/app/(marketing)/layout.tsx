@@ -1,13 +1,30 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Menu, X, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Logo } from '@/components/ui/Logo';
+import { CommandPalette } from '@/components/ui/CommandPalette';
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then(res => res.json())
+      .then(data => {
+        if (data.user) {
+          setUser(data.user);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const dashboardPath = user?.role === 'SUPER_ADMIN' ? '/super-admin' : '/dashboard';
 
   return (
     <div className="min-h-screen bg-[#000000] text-[#ededed] font-sans selection:bg-neutral-800 selection:text-white flex flex-col">
@@ -21,12 +38,25 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
             <Link href="/about" className="hover:text-white transition-colors">About</Link>
             <Link href="/contact" className="hover:text-white transition-colors">Contact</Link>
             <div className="w-px h-4 bg-white/[0.1] mx-2" />
-            <Link href="/login" className="hover:text-white transition-colors">Log in</Link>
-            <Link href="/login">
-              <Button variant="default" size="sm" className="bg-white text-black hover:bg-neutral-200">
-                Start Workspace
-              </Button>
-            </Link>
+            
+            {loading ? (
+              <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+            ) : user ? (
+              <Link href={dashboardPath}>
+                <Button variant="default" size="sm" className="bg-white text-black hover:bg-neutral-200">
+                  Go to Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" className="hover:text-white transition-colors">Log in</Link>
+                <Link href="/login">
+                  <Button variant="default" size="sm" className="bg-white text-black hover:bg-neutral-200">
+                    Start Workspace
+                  </Button>
+                </Link>
+              </>
+            )}
           </nav>
 
           {/* Mobile Toggle */}
@@ -44,10 +74,21 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
             <Link href="/about" className="text-neutral-300" onClick={() => setMobileMenuOpen(false)}>About</Link>
             <Link href="/contact" className="text-neutral-300" onClick={() => setMobileMenuOpen(false)}>Contact</Link>
             <hr className="border-white/[0.05]" />
-            <Link href="/login" className="text-neutral-300" onClick={() => setMobileMenuOpen(false)}>Log in</Link>
-            <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
-              <Button className="w-full bg-white text-black mt-2">Start Workspace</Button>
-            </Link>
+            
+            {loading ? (
+              <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+            ) : user ? (
+              <Link href={dashboardPath} onClick={() => setMobileMenuOpen(false)}>
+                <Button className="w-full bg-white text-black mt-2">Go to Dashboard</Button>
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" className="text-neutral-300" onClick={() => setMobileMenuOpen(false)}>Log in</Link>
+                <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                  <Button className="w-full bg-white text-black mt-2">Start Workspace</Button>
+                </Link>
+              </>
+            )}
           </div>
         )}
       </header>
@@ -131,6 +172,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
           </div>
         </div>
       </footer>
+      <CommandPalette />
     </div>
   );
 }

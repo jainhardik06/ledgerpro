@@ -128,7 +128,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const { user } = useDashboardContext();
 
   return (
-    <div className="flex min-h-screen bg-[#000000] text-neutral-200 font-sans selection:bg-white/[0.2] selection:text-white">
+    <div className="flex h-screen overflow-hidden bg-[#000000] text-neutral-200 font-sans selection:bg-white/[0.2] selection:text-white">
       {user?.impersonatedBy && (
         <div className="fixed top-0 left-0 right-0 h-1 bg-rose-500 z-50" />
       )}

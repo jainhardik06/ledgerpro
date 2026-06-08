@@ -515,6 +515,45 @@ export async function updateUserStatus(id: string, status: 'ACTIVE' | 'LOCKED'):
   return false;
 }
 
+export async function updateUser(id: string, updates: Partial<Omit<User, 'id' | '_id' | 'createdAt'>>): Promise<boolean> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const result = await db.collection('users').updateOne(
+        { _id: safeObjectId(id) },
+        { $set: updates }
+      );
+      return result.modifiedCount > 0;
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  const idx = data.users.findIndex(u => u.id === id);
+  if (idx >= 0) {
+    data.users[idx] = { ...data.users[idx], ...updates };
+    writeLocalDb(data);
+    return true;
+  }
+  return false;
+}
+
+export async function deleteUser(id: string): Promise<boolean> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const result = await db.collection('users').deleteOne({ _id: safeObjectId(id) });
+      return result.deletedCount > 0;
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  const len = data.users.length;
+  data.users = data.users.filter(u => u.id !== id);
+  if (data.users.length < len) {
+    writeLocalDb(data);
+    return true;
+  }
+  return false;
+}
+
 // ---- TRANSACTIONS ----
 
 export async function getTransactions(tenantId: string): Promise<Transaction[]> {

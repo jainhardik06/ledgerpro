@@ -26,6 +26,12 @@ export default function ClientsPage() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const handleOpen = () => openNew();
+    window.addEventListener('open-new-client', handleOpen);
+    return () => window.removeEventListener('open-new-client', handleOpen);
+  }, []);
+
   const fetchData = async () => {
     try {
       const [cliRes, txRes] = await Promise.all([

@@ -9,6 +9,7 @@ import {
   TerminalSquare, ArrowLeft, Command
 } from 'lucide-react';
 import { BrandMark } from '@/components/ui/BrandMark';
+import { CommandPalette } from '@/components/ui/CommandPalette';
 
 const primaryNav = [
   { name: 'Mission Control', href: '/super-admin', icon: TerminalSquare },
@@ -126,7 +127,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
           
           <div className="flex-1 max-w-md">
              <button 
-               onClick={() => setCmdOpen(true)}
+               onClick={() => window.dispatchEvent(new CustomEvent('open-command-palette'))}
                className="w-full h-8 bg-[#0a0a0a] border border-white/[0.1] rounded-md px-3 flex items-center justify-between text-[12px] text-neutral-500 hover:border-white/[0.2] transition-colors group"
              >
                <div className="flex items-center gap-2">
@@ -134,7 +135,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
                  <span>Search organizations, users, or logs...</span>
                </div>
                <div className="flex items-center gap-1 font-mono text-[10px]">
-                 <Command className="w-3 h-3" />
+                 <Command className="w-3.5 h-3.5" />
                  <span>K</span>
                </div>
              </button>
@@ -146,33 +147,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
         </main>
       </div>
 
-      {/* Command Palette Mock */}
-      {cmdOpen && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] bg-black/60 backdrop-blur-sm px-4">
-           <div className="w-full max-w-xl bg-[#0a0a0a] border border-white/[0.1] rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-              <div className="flex items-center px-4 border-b border-white/[0.05]">
-                 <Search className="w-5 h-5 text-neutral-500" />
-                 <input 
-                   autoFocus 
-                   placeholder="Search..." 
-                   className="w-full bg-transparent border-0 text-white px-4 py-4 text-[15px] outline-none placeholder:text-neutral-600"
-                 />
-                 <button onClick={() => setCmdOpen(false)} className="text-[10px] font-mono font-medium text-neutral-500 hover:text-white px-2 py-1 rounded bg-white/[0.05]">ESC</button>
-              </div>
-              <div className="p-2">
-                 <div className="text-[10px] font-semibold text-neutral-500 uppercase tracking-widest px-2 py-2">Quick Actions</div>
-                 <button className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-white/[0.04] text-[13px] text-white transition-colors text-left">
-                   <span>Suspend Organization</span>
-                   <span className="text-[10px] font-mono text-neutral-500">ORG</span>
-                 </button>
-                 <button className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-white/[0.04] text-[13px] text-white transition-colors text-left">
-                   <span>Revoke User Session</span>
-                   <span className="text-[10px] font-mono text-neutral-500">USR</span>
-                 </button>
-              </div>
-           </div>
-        </div>
-      )}
+      <CommandPalette />
 
     </div>
   );

@@ -21,6 +21,12 @@ export default function BudgetsPage() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const handleOpen = () => openNew();
+    window.addEventListener('open-new-budget', handleOpen);
+    return () => window.removeEventListener('open-new-budget', handleOpen);
+  }, [categories]);
+
   const fetchData = async () => {
     try {
       const [budRes, txRes, catRes] = await Promise.all([
