@@ -22,7 +22,7 @@ export async function GET() {
     }
 
     return NextResponse.json({ success: true, categories });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Fetch categories error:', error);
     return NextResponse.json(
       { error: 'An error occurred fetching categories' },
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     await createLog(session.username, 'Add Category', `Created category: ${trimmedName}`, session.tenantId);
 
     return NextResponse.json({ success: true, category: newCategory });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Create category error:', error);
     return NextResponse.json(
       { error: 'An error occurred creating the category' },

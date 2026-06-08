@@ -38,13 +38,13 @@ export default function TeamPage() {
     return () => window.removeEventListener('open-invite-user', handleOpen);
   }, []);
 
-  const openNew = () => {
+  function openNew() {
     setSelectedMember(null);
     setNewUsername('');
     setNewPassword('');
     setError('');
     setIsDrawerOpen(true);
-  };
+  }
 
   const openEdit = (member: any) => {
     setSelectedMember(member);
@@ -73,8 +73,9 @@ export default function TeamPage() {
     try {
       const url = selectedMember ? `/api/tenant/users/${selectedMember.id}` : '/api/tenant/users';
       const method = selectedMember ? 'PUT' : 'POST';
-      const body: any = { username: newUsername };
-      if (newPassword) body.password = newPassword;
+      const body = newPassword
+        ? { username: newUsername, password: newPassword }
+        : { username: newUsername };
 
       const res = await fetch(url, {
         method,

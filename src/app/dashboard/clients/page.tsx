@@ -32,7 +32,7 @@ export default function ClientsPage() {
     return () => window.removeEventListener('open-new-client', handleOpen);
   }, []);
 
-  const fetchData = async () => {
+  async function fetchData() {
     try {
       const [cliRes, txRes] = await Promise.all([
         fetch('/api/clients'), fetch('/api/transactions')
@@ -40,7 +40,7 @@ export default function ClientsPage() {
       if (cliRes.ok) setClients((await cliRes.json()).clients);
       if (txRes.ok) setTransactions((await txRes.json()).transactions);
     } catch (e) {} finally { setLoading(false); }
-  };
+  }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,11 +64,11 @@ export default function ClientsPage() {
     } catch (e) {}
   };
 
-  const openNew = () => {
+  function openNew() {
     setSelectedClient(null);
     setCName(''); setCEmail('');
     setIsDrawerOpen(true);
-  };
+  }
 
   const openEdit = (cli: any) => {
     setSelectedClient(cli);

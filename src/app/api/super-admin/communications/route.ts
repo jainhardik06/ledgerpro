@@ -12,7 +12,7 @@ export async function GET() {
     const broadcasts = await getBroadcasts();
 
     return NextResponse.json(broadcasts);
-  } catch (error: any) {
+  } catch (error) {
     console.error('Broadcasts fetch error:', error);
     return NextResponse.json({ error: 'Failed to fetch broadcasts' }, { status: 500 });
   }
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     await createLog(session.username, 'GLOBAL_BROADCAST_DEPLOYED', `Type: ${type}, Target: ${target}`, undefined, 'API');
 
     return NextResponse.json(broadcast, { status: 201 });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Broadcast creation error:', error);
     return NextResponse.json({ error: 'Failed to deploy broadcast notice' }, { status: 500 });
   }

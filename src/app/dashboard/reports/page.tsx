@@ -112,8 +112,8 @@ export default function ReportsPage() {
   // Helper date generators
   const getPeriodRange = (range: string, customS?: string, customE?: string) => {
     const today = new Date();
-    let start = new Date();
-    let end = new Date();
+    const start = new Date();
+    const end = new Date();
     
     if (range === '7d') {
       start.setDate(today.getDate() - 6);

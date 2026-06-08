@@ -14,7 +14,7 @@ export async function GET() {
 
     const tenants = await getTenants();
     return NextResponse.json({ success: true, tenants });
-  } catch (error: any) {
+  } catch (error) {
     logError('Fetch tenants error', error);
     return NextResponse.json({ error: 'An error occurred fetching tenants' }, { status: 500 });
   }
@@ -50,6 +50,10 @@ export async function POST(req: NextRequest) {
     // Create the tenant admin
     const passwordHash = await bcrypt.hash(cleanAdminPassword, 12);
     const newAdmin = await createUser(cleanAdminUsername, passwordHash, 'TENANT_ADMIN', newTenant.id!);
+    const newAdminId = newAdmin.id || newAdmin._id?.toString();
+    if (!newAdminId) {
+      throw new Error('Created tenant admin is missing an identifier');
+    }
 
     // Pre-seed Accounts
     await createAccount(newTenant.id!, 'Cash', 'CASH', 0);
@@ -58,7 +62,7 @@ export async function POST(req: NextRequest) {
     // Pre-seed Smart Categories
     const defaultCategories = ['Food', 'Travel', 'Shopping', 'Bills', 'Entertainment', 'Salary', 'Marketing', 'Rent', 'Software', 'Client Revenue', 'Tax'];
     for (const cat of defaultCategories) {
-      await createCategory(newTenant.id!, newAdmin.id || newAdmin._id.toString(), cat);
+      await createCategory(newTenant.id!, newAdminId, cat);
     }
 
     await createLog(session.username, 'Add Tenant', `Created tenant: ${cleanName} with admin: ${cleanAdminUsername}`);
@@ -66,9 +70,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ 
       success: true, 
       tenant: { id: newTenant.id, name: newTenant.name }, 
-      admin: { id: newAdmin.id, username: newAdmin.username, role: newAdmin.role }
+      admin: { id: newAdminId, username: newAdmin.username, role: newAdmin.role }
     });
-  } catch (error: any) {
+  } catch (error) {
     logError('Create tenant error', error);
     return NextResponse.json(
       { error: 'An error occurred creating the tenant' },

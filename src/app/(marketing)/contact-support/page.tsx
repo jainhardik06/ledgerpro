@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/Input';
 export default function ContactSupportPage() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [ticketId, setTicketId] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -32,12 +33,13 @@ export default function ContactSupportPage() {
         body: JSON.stringify(formData)
       });
       if (res.ok) {
+        setTicketId(`MOS-${Date.now().toString(36).toUpperCase()}`);
         setSubmitted(true);
       } else {
         const data = await res.json();
         setErrorMsg(data.error || 'Failed to submit support request.');
       }
-    } catch (err: any) {
+    } catch {
       setErrorMsg('A network error occurred. Please try again.');
     } finally {
       setLoading(false);
@@ -80,7 +82,7 @@ export default function ContactSupportPage() {
               Your support request has been logged. Our engineers will respond to <strong className="text-white">{formData.email}</strong> {responseTimes[formData.priority].toLowerCase()}.
             </p>
             <div className="text-[11px] text-neutral-500 font-mono bg-white/[0.03] border border-white/[0.05] p-3 rounded-lg w-full text-left mb-6 space-y-1">
-              <div>Ticket ID: <span className="text-white">#MOS-{(Math.random() * 100000).toFixed(0)}</span></div>
+              <div>Ticket ID: <span className="text-white">#{ticketId}</span></div>
               <div>Category: <span className="text-white">{formData.category}</span></div>
               <div>Priority Scope: <span className="text-white">{formData.priority}</span></div>
             </div>

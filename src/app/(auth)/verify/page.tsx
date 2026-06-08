@@ -9,11 +9,10 @@ export default function VerifyEmailPage() {
   const [status, setStatus] = useState<'verifying' | 'success' | 'failed'>('verifying');
 
   useEffect(() => {
-    // Simulate verification check
     const timer = setTimeout(() => {
-      // Randomly succeed or fail for demo purposes
-      setStatus(Math.random() > 0.3 ? 'success' : 'failed');
-    }, 2000);
+      const token = new URLSearchParams(window.location.search).get('token');
+      setStatus(token ? 'success' : 'failed');
+    }, 500);
     return () => clearTimeout(timer);
   }, []);
 
@@ -58,7 +57,7 @@ export default function VerifyEmailPage() {
           Resend Link
         </Button>
         <Link href="/login" className="text-[13px] font-medium text-neutral-500 hover:text-white transition-colors mt-2">
-          ← Return to login
+          Return to login
         </Link>
       </div>
     </div>

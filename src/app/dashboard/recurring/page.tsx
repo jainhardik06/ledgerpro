@@ -37,7 +37,7 @@ export default function RecurringPage() {
     fetchData();
   }, []);
 
-  const fetchData = async () => {
+  async function fetchData() {
     try {
       const [recRes, accRes, catRes] = await Promise.all([
         fetch('/api/recurring'), fetch('/api/accounts'), fetch('/api/categories')
@@ -50,7 +50,7 @@ export default function RecurringPage() {
       }
       if (catRes.ok) setCategories((await catRes.json()).categories);
     } catch (e) {} finally { setLoading(false); }
-  };
+  }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,11 +74,11 @@ export default function RecurringPage() {
     } catch (e) {}
   };
 
-  const openNew = () => {
+  function openNew() {
     setSelectedItem(null);
     setRType('Debit'); setRAmount(''); setRDesc(''); setRInterval('Monthly'); setRNextRun(new Date().toISOString().split('T')[0]); setRCategory('');
     setIsDrawerOpen(true);
-  };
+  }
 
   const openEdit = (item: any) => {
     setSelectedItem(item);

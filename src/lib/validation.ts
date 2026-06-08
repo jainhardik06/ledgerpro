@@ -46,6 +46,35 @@ export function validateAmount(value: unknown, label = 'Amount'): number | NextR
   return parsed;
 }
 
+export function validateFiniteNumber(
+  value: unknown,
+  label: string,
+  options: { min?: number; max?: number } = {}
+): number | NextResponse {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    return NextResponse.json({ error: `${label} must be a valid number` }, { status: 400 });
+  }
+  if (options.min !== undefined && parsed < options.min) {
+    return NextResponse.json({ error: `${label} must be at least ${options.min}` }, { status: 400 });
+  }
+  if (options.max !== undefined && parsed > options.max) {
+    return NextResponse.json({ error: `${label} must not exceed ${options.max}` }, { status: 400 });
+  }
+  return parsed;
+}
+
+export function validateEnum<T extends string>(
+  value: unknown,
+  label: string,
+  allowed: readonly T[]
+): T | NextResponse {
+  if (typeof value !== 'string' || !allowed.includes(value as T)) {
+    return NextResponse.json({ error: `${label} must be one of: ${allowed.join(', ')}` }, { status: 400 });
+  }
+  return value as T;
+}
+
 export function validateDateString(value: unknown, label = 'Date'): string | NextResponse {
   const cleaned = cleanString(value);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(cleaned) || Number.isNaN(Date.parse(`${cleaned}T00:00:00Z`))) {

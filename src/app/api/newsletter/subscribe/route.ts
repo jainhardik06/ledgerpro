@@ -12,7 +12,7 @@ export async function POST(req: Request) {
 
     const subscriber = await createNewsletterSubscriber(email);
     return NextResponse.json(subscriber, { status: 201 });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Newsletter subscription error:', error);
     return NextResponse.json({ error: 'Failed to subscribe to newsletter.' }, { status: 500 });
   }

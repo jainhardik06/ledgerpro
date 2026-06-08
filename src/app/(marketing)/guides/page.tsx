@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { 
@@ -16,34 +16,24 @@ function GuidesContent() {
   const activeId = searchParams.get('id');
 
   const [activeCategory, setActiveCategory] = useState<string>('All');
-  const [selectedGuide, setSelectedGuide] = useState<SupportGuide | null>(null);
   const [currentStepIdx, setCurrentStepIdx] = useState(0);
+  const selectedGuide = activeId ? SUPPORT_GUIDES.find(g => g.id === activeId) || null : null;
+  const safeStepIdx = selectedGuide ? Math.min(currentStepIdx, selectedGuide.steps.length - 1) : 0;
 
   // Filter categories
   const categories = ['All', 'Freelancer Guides', 'Agency Guides', 'Student Club Guides', 'Small Business Guides'];
-
-  // Synchronize guide selection with URL parameter
-  useEffect(() => {
-    if (activeId) {
-      const guide = SUPPORT_GUIDES.find(g => g.id === activeId);
-      if (guide) {
-        setSelectedGuide(guide);
-        setCurrentStepIdx(0);
-        return;
-      }
-    }
-    setSelectedGuide(null);
-  }, [activeId]);
 
   const filteredGuides = activeCategory === 'All'
     ? SUPPORT_GUIDES
     : SUPPORT_GUIDES.filter(g => g.category === activeCategory);
 
   const selectGuide = (guide: SupportGuide) => {
+    setCurrentStepIdx(0);
     router.push(`/guides?id=${guide.id}`);
   };
 
   const clearGuideSelection = () => {
+    setCurrentStepIdx(0);
     router.push('/guides');
   };
 
@@ -145,14 +135,14 @@ function GuidesContent() {
                     key={idx}
                     onClick={() => setCurrentStepIdx(idx)}
                     className={`w-8 h-8 rounded-full border flex items-center justify-center text-[12px] font-mono font-bold transition-all relative z-10 ${
-                      idx === currentStepIdx
+                      idx === safeStepIdx
                         ? 'bg-white text-black border-white scale-110 shadow-lg'
-                        : idx < currentStepIdx
+                        : idx < safeStepIdx
                           ? 'bg-emerald-950 text-emerald-400 border-emerald-500/30'
                           : 'bg-black text-neutral-500 border-white/[0.05] hover:border-white/[0.12] hover:text-white'
                     }`}
                   >
-                    {idx < currentStepIdx ? <Check className="w-3.5 h-3.5" /> : idx + 1}
+                    {idx < safeStepIdx ? <Check className="w-3.5 h-3.5" /> : idx + 1}
                   </button>
                 ))}
               </div>
@@ -160,22 +150,22 @@ function GuidesContent() {
               {/* Step detail panel */}
               <div className="min-h-[160px] flex flex-col justify-between">
                 <div>
-                  <span className="text-[10px] text-neutral-500 font-mono uppercase tracking-widest">Step {currentStepIdx + 1} of {selectedGuide.steps.length}</span>
-                  <h3 className="text-lg font-semibold text-white mt-1 mb-3">{selectedGuide.steps[currentStepIdx].title}</h3>
-                  <p className="text-[13.5px] text-neutral-300 leading-relaxed">{selectedGuide.steps[currentStepIdx].description}</p>
+                  <span className="text-[10px] text-neutral-500 font-mono uppercase tracking-widest">Step {safeStepIdx + 1} of {selectedGuide.steps.length}</span>
+                  <h3 className="text-lg font-semibold text-white mt-1 mb-3">{selectedGuide.steps[safeStepIdx].title}</h3>
+                  <p className="text-[13.5px] text-neutral-300 leading-relaxed">{selectedGuide.steps[safeStepIdx].description}</p>
                 </div>
 
                 {/* Navigation inside step wizard */}
                 <div className="flex justify-between gap-4 mt-8 pt-4 border-t border-white/[0.05]">
                   <button
-                    disabled={currentStepIdx === 0}
+                    disabled={safeStepIdx === 0}
                     onClick={() => setCurrentStepIdx(prev => prev - 1)}
                     className="px-3 py-1.5 rounded bg-white/[0.03] hover:bg-white/[0.05] border border-white/[0.05] text-[12px] text-neutral-400 hover:text-white transition-colors disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1.5"
                   >
                     <ArrowLeft className="w-3.5 h-3.5" /> Previous Step
                   </button>
 
-                  {currentStepIdx < selectedGuide.steps.length - 1 ? (
+                  {safeStepIdx < selectedGuide.steps.length - 1 ? (
                     <button
                       onClick={() => setCurrentStepIdx(prev => prev + 1)}
                       className="px-4 py-1.5 rounded bg-white text-black hover:bg-neutral-200 text-[12px] font-semibold transition-colors flex items-center gap-1.5"

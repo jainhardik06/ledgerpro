@@ -9,19 +9,18 @@ import { logError } from '@/lib/logger';
 
 const LOGIN_LIMIT = 10;
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
-const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24;
+const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
 
-function setSessionCookie(token: string) {
-  return cookies().then(cookieStore => {
-    cookieStore.set({
-      name: 'token',
-      value: token,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: SESSION_MAX_AGE_SECONDS,
-      path: '/',
-    });
+async function setSessionCookie(token: string) {
+  const cookieStore = await cookies();
+  cookieStore.set({
+    name: 'token',
+    value: token,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: SESSION_MAX_AGE_SECONDS,
+    path: '/',
   });
 }
 
@@ -101,8 +100,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid username or password' }, { status: 401 });
     }
 
+    const persistedUserId = user.id || user._id?.toString();
+    if (!persistedUserId) {
+      throw new Error('Persisted user is missing an identifier');
+    }
+
     const token = generateToken({
-      userId: user.id || user._id.toString(),
+      userId: persistedUserId,
       username: user.username,
       role: user.role,
       tenantId: user.tenantId,

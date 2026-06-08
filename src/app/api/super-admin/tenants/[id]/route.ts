@@ -20,7 +20,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     await createLog(session.username, 'Update Tenant', `Updated tenant ${id} with ${JSON.stringify(body)}`);
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Tenant update error:', error);
     return NextResponse.json({ error: 'Failed to update tenant' }, { status: 500 });
   }

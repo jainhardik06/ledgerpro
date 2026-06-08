@@ -45,7 +45,7 @@ export default function TransactionsPage() {
     return () => window.removeEventListener('open-new-transaction', handleOpen);
   }, [accounts]);
 
-  const fetchData = async () => {
+  async function fetchData() {
     try {
       const [txRes, catRes, accRes] = await Promise.all([
         fetch('/api/transactions'), fetch('/api/categories'), fetch('/api/accounts')
@@ -62,7 +62,7 @@ export default function TransactionsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,7 +98,7 @@ export default function TransactionsPage() {
     }
   };
 
-  const openNew = () => {
+  function openNew() {
     setSelectedTx(null);
     setTxType('Debit');
     setTxAmount('');
@@ -107,7 +107,7 @@ export default function TransactionsPage() {
     setTxCategory('');
     setTxNotes('');
     setIsDrawerOpen(true);
-  };
+  }
 
   const openEdit = (tx: any) => {
     setSelectedTx(tx);

@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
       });
     }
     return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch tenant' }, { status: 500 });
   }
 }

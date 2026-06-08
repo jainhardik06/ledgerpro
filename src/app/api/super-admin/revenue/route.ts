@@ -44,7 +44,7 @@ export async function GET() {
       churnRate,
       planDistribution: planCounts
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Revenue fetch error:', error);
     return NextResponse.json({ error: 'Failed to fetch revenue data' }, { status: 500 });
   }

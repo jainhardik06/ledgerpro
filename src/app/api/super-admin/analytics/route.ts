@@ -12,7 +12,7 @@ export async function GET() {
     const analytics = await getGlobalAnalytics();
 
     return NextResponse.json(analytics);
-  } catch (error: any) {
+  } catch (error) {
     console.error('Analytics fetch error:', error);
     return NextResponse.json({ error: 'Failed to fetch global analytics' }, { status: 500 });
   }

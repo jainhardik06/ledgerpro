@@ -22,7 +22,7 @@ export async function GET() {
     }));
 
     return NextResponse.json(safeUsers);
-  } catch (error: any) {
+  } catch (error) {
     console.error('Users fetch error:', error);
     return NextResponse.json({ error: 'Failed to fetch global users' }, { status: 500 });
   }
@@ -49,7 +49,7 @@ export async function PUT(req: NextRequest) {
     await createLog(session.username, 'Update User', `Changed user ${id} status to ${status}`);
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error) {
     console.error('User update error:', error);
     return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });
   }

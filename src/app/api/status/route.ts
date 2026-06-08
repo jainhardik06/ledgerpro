@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { connectDb, getSystemIncidents, getSystemMaintenances, getLogs } from '@/lib/db';
 import crypto from 'crypto';
 import dns from 'dns/promises';
+import fs from 'fs';
+import path from 'path';
 
 export async function GET() {
   const start = Date.now();
@@ -20,7 +22,9 @@ export async function GET() {
     } else {
       // Local database fallback latency
       const dbStart = Date.now();
-      const localDbFile = require('fs').existsSync(require('path').join(process.cwd(), 'src', 'data', 'local_db.json'));
+      if (!fs.existsSync(path.join(process.cwd(), '.data', 'local_db.json'))) {
+        dbStatus = 'DEGRADED';
+      }
       dbLatency = Math.max(1, Date.now() - dbStart);
     }
   } catch (err) {

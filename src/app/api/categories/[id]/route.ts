@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
-import { deleteCategory, createLog } from '@/lib/db';
+import { deleteCategory, createLog, updateCategory } from '@/lib/db';
+import { validateString } from '@/lib/validation';
 
 export async function DELETE(
   req: NextRequest,
@@ -25,7 +26,7 @@ export async function DELETE(
     await createLog(session.username, 'Delete Category', `Deleted category (ID: ${id})`, session.tenantId);
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Delete category error:', error);
     return NextResponse.json(
       { error: 'An error occurred deleting the category' },
@@ -40,15 +41,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const session = await getSessionUser();
     if (!session || !session.tenantId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const { id } = await params;
-    const body = await req.json();
-    const { updateCategory } = await import('@/lib/db');
-    
-    let updates = body.name;
-    
+    const { name } = await req.json();
+    const cleanName = validateString(name, 'Category name', { min: 1, max: 80 });
+    if (cleanName instanceof NextResponse) return cleanName;
 
-    const success = await updateCategory(id, session.tenantId, updates);
+    const success = await updateCategory(id, session.tenantId, cleanName);
     if (success) {
-      const { createLog } = await import('@/lib/db');
       await createLog(session.username, 'Edit categories', `Edited categories ID: ${id}`, session.tenantId);
       return NextResponse.json({ success: true });
     }

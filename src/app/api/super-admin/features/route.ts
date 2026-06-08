@@ -12,7 +12,7 @@ export async function GET() {
     const flags = await getFeatureFlags();
 
     return NextResponse.json(flags);
-  } catch (error: any) {
+  } catch (error) {
     console.error('Features fetch error:', error);
     return NextResponse.json({ error: 'Failed to fetch feature flags' }, { status: 500 });
   }
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
 
     const flag = await createFeatureFlag({ name, desc, status: status || false, rollout: rollout || '0%', target: target || 'None' });
     return NextResponse.json(flag, { status: 201 });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Feature creation error:', error);
     return NextResponse.json({ error: 'Failed to create feature flag' }, { status: 500 });
   }

@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     } else {
       return NextResponse.json({ error: 'Failed to update tenant settings' }, { status: 500 });
     }
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }

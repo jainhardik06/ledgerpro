@@ -24,11 +24,15 @@ export async function GET() {
     if (!user) {
       return NextResponse.json({ authenticated: false }, { status: 401 });
     }
+    const persistedUserId = user.id || user._id?.toString();
+    if (!persistedUserId) {
+      return NextResponse.json({ authenticated: false }, { status: 401 });
+    }
 
     return NextResponse.json({
       authenticated: true,
       user: {
-        id: user.id || user._id.toString(),
+        id: persistedUserId,
         username: user.username,
         role: user.role,
         tenantId: user.tenantId,

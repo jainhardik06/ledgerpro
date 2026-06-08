@@ -1,8 +1,12 @@
 import { MongoClient, ObjectId } from 'mongodb';
 import { randomUUID } from 'crypto';
 
-export function safeObjectId(id: string): any {
-  try { return new ObjectId(id); } catch(e) { return "invalid-id"; }
+export function safeObjectId(id: string): ObjectId {
+  try {
+    return new ObjectId(id);
+  } catch {
+    return new ObjectId('000000000000000000000000');
+  }
 }
 
 export interface ListOptions {
@@ -21,7 +25,7 @@ import path from 'path';
 
 export interface Tenant {
   id?: string;
-  _id?: any;
+  _id?: ObjectId;
   name: string;
   status: 'ACTIVE' | 'SUSPENDED';
   plan: 'FREE' | 'STARTER' | 'ENTERPRISE';
@@ -38,7 +42,7 @@ export interface Tenant {
 
 export interface User {
   id?: string;
-  _id?: any;
+  _id?: ObjectId;
   username: string;
   passwordHash: string;
   role: 'TENANT_ADMIN' | 'USER';
@@ -49,7 +53,7 @@ export interface User {
 
 export interface Transaction {
   id?: string;
-  _id?: any;
+  _id?: ObjectId;
   tenantId: string;
   userId: string;
   username?: string;
@@ -66,7 +70,7 @@ export interface Transaction {
 
 export interface Client {
   id?: string;
-  _id?: any;
+  _id?: ObjectId;
   tenantId: string;
   name: string;
   email?: string;
@@ -75,7 +79,7 @@ export interface Client {
 
 export interface Category {
   id?: string;
-  _id?: any;
+  _id?: ObjectId;
   tenantId: string;
   userId: string;
   name: string;
@@ -84,7 +88,7 @@ export interface Category {
 
 export interface Account {
   id?: string;
-  _id?: any;
+  _id?: ObjectId;
   tenantId: string;
   name: string;
   type: string;
@@ -94,7 +98,7 @@ export interface Account {
 
 export interface Budget {
   id?: string;
-  _id?: any;
+  _id?: ObjectId;
   tenantId: string;
   category: string;
   limitAmount: number;
@@ -104,7 +108,7 @@ export interface Budget {
 
 export interface RecurringTransaction {
   id?: string;
-  _id?: any;
+  _id?: ObjectId;
   tenantId: string;
   userId: string;
   username?: string;
@@ -121,7 +125,7 @@ export interface RecurringTransaction {
 
 export interface SystemLog {
   id?: string;
-  _id?: any;
+  _id?: ObjectId;
   tenantId?: string; // Optional for super admin system logs
   username: string;
   action: string;
@@ -133,7 +137,7 @@ export interface SystemLog {
 
 export interface FeatureFlag {
   id?: string;
-  _id?: any;
+  _id?: ObjectId;
   name: string;
   desc: string;
   status: boolean;
@@ -144,7 +148,7 @@ export interface FeatureFlag {
 
 export interface SupportTicket {
   id?: string;
-  _id?: any;
+  _id?: ObjectId;
   subject: string;
   tenantId: string;
   status: 'OPEN' | 'RESOLVED';
@@ -158,7 +162,7 @@ export interface SupportTicket {
 
 export interface Broadcast {
   id?: string;
-  _id?: any;
+  _id?: ObjectId;
   type: string;
   message: string;
   target: string;
@@ -167,14 +171,14 @@ export interface Broadcast {
 
 export interface NewsletterSubscriber {
   id?: string;
-  _id?: any;
+  _id?: ObjectId;
   email: string;
   createdAt: Date;
 }
 
 export interface SystemIncident {
   id?: string;
-  _id?: any;
+  _id?: ObjectId;
   title: string;
   description: string;
   status: 'INVESTIGATING' | 'IDENTIFIED' | 'MONITORING' | 'RESOLVED';
@@ -185,7 +189,7 @@ export interface SystemIncident {
 
 export interface SystemMaintenance {
   id?: string;
-  _id?: any;
+  _id?: ObjectId;
   title: string;
   description: string;
   scheduledFor: Date;
@@ -316,6 +320,9 @@ export async function connectDb() {
   if (mongoClient) return { client: mongoClient, db: mongoClient.db() };
 
   if (!MONGODB_URI) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('[FATAL] MONGODB_URI is not set. Refusing to start production with local JSON storage.');
+    }
     console.warn('[Database] MONGODB_URI not set. Using local file-based database at .data/local_db.json');
     useLocalDb = true;
     initLocalDb();
@@ -348,6 +355,9 @@ export async function connectDb() {
     return { client: mongoClient, db };
   } catch (error) {
     mongoClient = null;
+    if (process.env.NODE_ENV === 'production') {
+      throw error;
+    }
     useLocalDb = true;
     initLocalDb();
     return { client: null, db: null };
@@ -711,7 +721,7 @@ export async function createTransaction(tx: Omit<Transaction, 'createdAt' | 'id'
 
 export async function updateTransaction(id: string, tenantId: string, tx: Partial<Omit<Transaction, 'id' | '_id' | 'tenantId' | 'userId' | 'createdAt'>>): Promise<boolean> {
   const { db } = await connectDb();
-  const updateFields: any = {};
+  const updateFields: Partial<Omit<Transaction, 'id' | '_id' | 'tenantId' | 'userId' | 'createdAt'>> = {};
   if (tx.type) updateFields.type = tx.type;
   if (tx.description) updateFields.description = tx.description;
   if (tx.amount !== undefined) updateFields.amount = Number(tx.amount);
@@ -1010,7 +1020,9 @@ export async function createRecurringTransaction(data: Omit<RecurringTransaction
   return localRT;
 }
 
-export async function updateRecurringTransaction(id: string, tenantId: string, updateFields: Partial<RecurringTransaction>): Promise<boolean> {
+type RecurringTransactionUpdate = Partial<Omit<RecurringTransaction, 'id' | '_id' | 'tenantId' | 'userId' | 'username' | 'createdAt'>>;
+
+export async function updateRecurringTransaction(id: string, tenantId: string, updateFields: RecurringTransactionUpdate): Promise<boolean> {
   const { db } = await connectDb();
   if (db) {
     try {
@@ -1134,7 +1146,9 @@ export async function getGlobalAnalytics() {
 }
 
 
-export async function updateAccount(id: string, tenantId: string, updates: Partial<Account>): Promise<boolean> {
+type AccountUpdate = Partial<Omit<Account, 'id' | '_id' | 'tenantId' | 'createdAt'>>;
+
+export async function updateAccount(id: string, tenantId: string, updates: AccountUpdate): Promise<boolean> {
   const { db } = await connectDb();
   if (db) {
     try {
@@ -1206,7 +1220,9 @@ export async function deleteBudget(id: string, tenantId: string): Promise<boolea
   return false;
 }
 
-export async function updateClient(id: string, tenantId: string, updates: any): Promise<boolean> {
+type ClientUpdate = Partial<Omit<Client, 'id' | '_id' | 'tenantId' | 'createdAt'>>;
+
+export async function updateClient(id: string, tenantId: string, updates: ClientUpdate): Promise<boolean> {
   const { db } = await connectDb();
   if (db) {
     try {
@@ -1475,15 +1491,15 @@ export async function getSystemMaintenances(): Promise<SystemMaintenance[]> {
   return data.maintenances.sort((a, b) => new Date(b.scheduledFor).getTime() - new Date(a.scheduledFor).getTime());
 }
 
-function listMaintenancesMapping(maintenances: any[]): SystemMaintenance[] {
+function listMaintenancesMapping(maintenances: Record<string, unknown>[]): SystemMaintenance[] {
   return maintenances.map(m => ({
-    id: m._id ? m._id.toString() : (m.id || ''),
-    title: m.title,
-    description: m.description,
-    scheduledFor: m.scheduledFor,
+    id: m._id ? String(m._id) : String(m.id || ''),
+    title: String(m.title || ''),
+    description: String(m.description || ''),
+    scheduledFor: m.scheduledFor as Date,
     durationMinutes: Number(m.durationMinutes),
-    status: m.status,
-    createdAt: m.createdAt
+    status: m.status as SystemMaintenance['status'],
+    createdAt: m.createdAt as Date
   }));
 }
 

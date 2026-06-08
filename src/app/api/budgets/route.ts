@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     }
     const budgets = await getBudgets(session.tenantId);
     return NextResponse.json({ success: true, budgets });
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch budgets' }, { status: 500 });
   }
 }
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     await createLog(session.username, 'Set Budget', `Set ${category} budget to ₹${limitAmount} for ${month}`, session.tenantId);
 
     return NextResponse.json({ success: true, budget: newBudget });
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json({ error: 'Failed to set budget' }, { status: 500 });
   }
 }

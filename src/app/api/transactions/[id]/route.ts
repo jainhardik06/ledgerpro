@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
 import { updateTransaction, deleteTransaction, createLog } from '@/lib/db';
+import { validateAmount, validateDateString, validateEnum, validateString } from '@/lib/validation';
+
+const transactionTypes = ['Credit', 'Debit'] as const;
 
 export async function PUT(
   req: NextRequest,
@@ -15,42 +18,64 @@ export async function PUT(
     const { id } = await params;
     const { type, description, amount, date, category, accountId, clientId, notes } = await req.json();
 
-    const updates: any = {};
-    if (type) {
-      if (type !== 'Credit' && type !== 'Debit') {
-        return NextResponse.json(
-          { error: 'Type must be either Credit or Debit' },
-          { status: 400 }
-        );
-      }
-      updates.type = type;
+    const updates: {
+      type?: 'Credit' | 'Debit';
+      description?: string;
+      amount?: number;
+      date?: string;
+      category?: string;
+      accountId?: string;
+      clientId?: string;
+      notes?: string;
+    } = {};
+    if (type !== undefined) {
+      const cleanType = validateEnum(type, 'Type', transactionTypes);
+      if (cleanType instanceof NextResponse) return cleanType;
+      updates.type = cleanType;
     }
 
     if (description !== undefined) {
-      updates.description = description;
+      const cleanDescription = validateString(description, 'Description', { min: 1, max: 160 });
+      if (cleanDescription instanceof NextResponse) return cleanDescription;
+      updates.description = cleanDescription;
     }
 
     if (amount !== undefined) {
-      const parsedAmount = Number(amount);
-      if (isNaN(parsedAmount) || parsedAmount <= 0) {
-        return NextResponse.json(
-          { error: 'Amount must be a positive number' },
-          { status: 400 }
-        );
-      }
-      updates.amount = parsedAmount;
+      const cleanAmount = validateAmount(amount);
+      if (cleanAmount instanceof NextResponse) return cleanAmount;
+      updates.amount = cleanAmount;
     }
 
-    if (date) {
-      updates.date = date;
+    if (date !== undefined) {
+      const cleanDate = validateDateString(date);
+      if (cleanDate instanceof NextResponse) return cleanDate;
+      updates.date = cleanDate;
     }
 
     if (category !== undefined) {
-      updates.category = category;
+      const cleanCategory = validateString(category, 'Category', { max: 80, required: false });
+      if (cleanCategory instanceof NextResponse) return cleanCategory;
+      updates.category = cleanCategory;
     }
-    if (accountId !== undefined) updates.accountId = accountId;
-    if (clientId !== undefined) updates.clientId = clientId;
-    if (notes !== undefined) updates.notes = notes;
+    if (accountId !== undefined) {
+      const cleanAccountId = validateString(accountId, 'Account ID', { max: 120, required: false });
+      if (cleanAccountId instanceof NextResponse) return cleanAccountId;
+      updates.accountId = cleanAccountId;
+    }
+    if (clientId !== undefined) {
+      const cleanClientId = validateString(clientId, 'Client ID', { max: 120, required: false });
+      if (cleanClientId instanceof NextResponse) return cleanClientId;
+      updates.clientId = cleanClientId;
+    }
+    if (notes !== undefined) {
+      const cleanNotes = validateString(notes, 'Notes', { max: 1000, required: false });
+      if (cleanNotes instanceof NextResponse) return cleanNotes;
+      updates.notes = cleanNotes;
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json({ error: 'No valid transaction fields provided' }, { status: 400 });
+    }
 
     const success = await updateTransaction(id, session.tenantId, updates);
     if (!success) {
@@ -63,7 +88,7 @@ export async function PUT(
     await createLog(session.username, 'Edit Record', `Updated transaction (ID: ${id})`, session.tenantId);
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Update transaction error:', error);
     return NextResponse.json(
       { error: 'An error occurred updating the transaction' },
@@ -95,7 +120,7 @@ export async function DELETE(
     await createLog(session.username, 'Delete Record', `Deleted transaction (ID: ${id})`, session.tenantId);
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Delete transaction error:', error);
     return NextResponse.json(
       { error: 'An error occurred deleting the transaction' },

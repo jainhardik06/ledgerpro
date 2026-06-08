@@ -30,10 +30,14 @@ export async function POST(req: NextRequest) {
     if (!targetUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
+    const targetUserId = targetUser.id || targetUser._id?.toString();
+    if (!targetUserId) {
+      throw new Error('Target user is missing an identifier');
+    }
 
     // Generate a token as the target user, but flag it as impersonated
     const token = generateToken({
-      userId: targetUser.id || targetUser._id.toString(),
+      userId: targetUserId,
       username: targetUser.username,
       role: targetUser.role,
       tenantId: targetUser.tenantId,
@@ -51,10 +55,10 @@ export async function POST(req: NextRequest) {
       path: '/',
     });
 
-    await createLog(session.username, 'Impersonate', `Impersonated user ${targetUser.username} (${targetUser.id})`);
+    await createLog(session.username, 'Impersonate', `Impersonated user ${targetUser.username} (${targetUserId})`);
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error) {
     logError('Impersonation error', error);
     return NextResponse.json({ error: 'Failed to impersonate user' }, { status: 500 });
   }

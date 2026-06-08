@@ -11,7 +11,7 @@ export async function GET() {
 
     const subscribers = await getNewsletterSubscribers();
     return NextResponse.json(subscribers);
-  } catch (error: any) {
+  } catch (error) {
     console.error('Fetch subscribers error:', error);
     return NextResponse.json({ error: 'Failed to fetch subscribers' }, { status: 500 });
   }

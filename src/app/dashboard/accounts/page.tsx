@@ -29,7 +29,7 @@ export default function AccountsPage() {
     return () => window.removeEventListener('open-new-account', handleOpen);
   }, []);
 
-  const fetchData = async () => {
+  async function fetchData() {
     try {
       const [accRes, txRes] = await Promise.all([
         fetch('/api/accounts'), fetch('/api/transactions')
@@ -41,7 +41,7 @@ export default function AccountsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,13 +75,13 @@ export default function AccountsPage() {
     } catch (e) {}
   };
 
-  const openNew = () => {
+  function openNew() {
     setSelectedAccount(null);
     setAccName('');
     setAccType('Checking');
     setAccBalance('0');
     setIsDrawerOpen(true);
-  };
+  }
 
   const openEdit = (acc: any) => {
     setSelectedAccount(acc);

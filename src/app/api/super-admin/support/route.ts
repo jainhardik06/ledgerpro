@@ -12,7 +12,7 @@ export async function GET() {
     const tickets = await getSupportTickets();
 
     return NextResponse.json(tickets);
-  } catch (error: any) {
+  } catch (error) {
     console.error('Support fetch error:', error);
     return NextResponse.json({ error: 'Failed to fetch support tickets' }, { status: 500 });
   }
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
 
     const ticket = await createSupportTicket({ subject, tenantId, status: 'OPEN', priority: priority || 'LOW' });
     return NextResponse.json(ticket, { status: 201 });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Ticket creation error:', error);
     return NextResponse.json({ error: 'Failed to create support ticket' }, { status: 500 });
   }
@@ -56,7 +56,7 @@ export async function PATCH(req: Request) {
     } else {
       return NextResponse.json({ error: 'Ticket not found or update failed' }, { status: 404 });
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Ticket resolution error:', error);
     return NextResponse.json({ error: 'Failed to resolve support ticket' }, { status: 500 });
   }

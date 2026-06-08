@@ -48,7 +48,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error) {
     logError('Update user error', error);
     return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });
   }
@@ -78,7 +78,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     await createLog(session.username, 'Delete User', `Deleted user: ${user.username}`, session.tenantId);
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error) {
     logError('Delete user error', error);
     return NextResponse.json({ error: 'Failed to delete user' }, { status: 500 });
   }

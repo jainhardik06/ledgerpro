@@ -32,8 +32,8 @@ export default function ReportsFeature() {
              </div>
              {/* Fake Area Chart */}
              <div className="w-full h-40 flex items-end gap-1 relative opacity-80">
-                {Array.from({length: 20}).map((_, i) => (
-                  <div key={i} className="flex-1 bg-indigo-500/20 rounded-t-sm" style={{ height: `${20 + Math.random() * 80}%` }} />
+                {[42, 68, 35, 74, 58, 86, 49, 63, 91, 52, 77, 44, 69, 83, 56, 72, 38, 64, 88, 61].map((height, i) => (
+                  <div key={i} className="flex-1 bg-indigo-500/20 rounded-t-sm" style={{ height: `${height}%` }} />
                 ))}
              </div>
            </div>

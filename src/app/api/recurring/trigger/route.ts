@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ success: true, triggered: triggeredCount });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Trigger recurring error:', error);
     return NextResponse.json({ error: 'Failed to trigger recurring transactions' }, { status: 500 });
   }

@@ -27,7 +27,7 @@ export default function BudgetsPage() {
     return () => window.removeEventListener('open-new-budget', handleOpen);
   }, [categories]);
 
-  const fetchData = async () => {
+  async function fetchData() {
     try {
       const [budRes, txRes, catRes] = await Promise.all([
         fetch('/api/budgets'), fetch('/api/transactions'), fetch('/api/categories')
@@ -40,7 +40,7 @@ export default function BudgetsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,12 +74,12 @@ export default function BudgetsPage() {
     } catch (e) {}
   };
 
-  const openNew = () => {
+  function openNew() {
     setSelectedBudget(null);
     setBCategory('');
     setBLimit('');
     setIsDrawerOpen(true);
-  };
+  }
 
   const openEdit = (bud: any) => {
     setSelectedBudget(bud);

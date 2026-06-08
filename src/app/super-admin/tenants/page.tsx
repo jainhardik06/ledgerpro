@@ -1,9 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Search, Building2, MoreHorizontal, UserSquare2, ShieldAlert } from 'lucide-react';
 
 export default function TenantsPage() {
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const [tenants, setTenants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,7 +37,7 @@ export default function TenantsPage() {
         body: JSON.stringify({ tenantId }),
       });
       if (res.ok) {
-        window.location.href = '/dashboard';
+        router.push('/dashboard');
       }
     } catch (e) {
       console.error("Failed to impersonate tenant", e);

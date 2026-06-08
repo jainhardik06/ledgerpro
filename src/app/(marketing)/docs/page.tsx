@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { 
@@ -16,17 +16,11 @@ function DocsContent() {
   const searchParams = useSearchParams();
   const activeId = searchParams.get('id') || 'introduction';
 
-  const [activeArticle, setActiveArticle] = useState<SupportArticle>(DOCS_ARTICLES[0]);
   const [searchOpen, setSearchOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [voted, setVoted] = useState<boolean | null>(null);
-
-  // Synchronize active article with URL query param
-  useEffect(() => {
-    const article = DOCS_ARTICLES.find(a => a.id === activeId) || DOCS_ARTICLES[0];
-    setActiveArticle(article);
-    setVoted(null);
-  }, [activeId]);
+  const [votesByArticle, setVotesByArticle] = useState<Record<string, boolean>>({});
+  const activeArticle = DOCS_ARTICLES.find(a => a.id === activeId) || DOCS_ARTICLES[0];
+  const voted = votesByArticle[activeArticle.id] ?? null;
 
   // Copy link handler
   const handleCopyLink = () => {
@@ -234,13 +228,13 @@ function DocsContent() {
               {voted === null ? (
                 <>
                   <button 
-                    onClick={() => setVoted(true)} 
+                    onClick={() => setVotesByArticle(prev => ({ ...prev, [activeArticle.id]: true }))} 
                     className="h-8 w-14 rounded border border-white/[0.08] hover:border-white/[0.15] bg-white/[0.02] flex items-center justify-center gap-1.5 text-neutral-400 hover:text-white transition-colors text-[11px]"
                   >
                     <ThumbsUp className="w-3.5 h-3.5" /> Yes
                   </button>
                   <button 
-                    onClick={() => setVoted(false)} 
+                    onClick={() => setVotesByArticle(prev => ({ ...prev, [activeArticle.id]: false }))} 
                     className="h-8 w-14 rounded border border-white/[0.08] hover:border-white/[0.15] bg-white/[0.02] flex items-center justify-center gap-1.5 text-neutral-400 hover:text-white transition-colors text-[11px]"
                   >
                     <ThumbsDown className="w-3.5 h-3.5" /> No

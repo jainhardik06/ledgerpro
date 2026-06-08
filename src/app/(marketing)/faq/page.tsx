@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { 
@@ -22,16 +22,7 @@ function FaqContent() {
 
   const categories = ['All', 'Account', 'Transactions', 'Teams', 'Security', 'Reports'];
 
-  // Handle query parameter for deep linking to specific FAQs
-  useEffect(() => {
-    if (activeId) {
-      setExpandedFaq(activeId);
-      const matchedFaq = SUPPORT_FAQS.find(f => f.id === activeId);
-      if (matchedFaq) {
-        setActiveCategory('All');
-      }
-    }
-  }, [activeId]);
+  const currentExpandedFaq = expandedFaq ?? activeId;
 
   // Fuzzy filter list of FAQs
   const filteredFaqs = SUPPORT_FAQS.filter(faq => {
@@ -103,7 +94,7 @@ function FaqContent() {
         <div className="space-y-4">
           {filteredFaqs.length > 0 ? (
             filteredFaqs.map(faq => {
-              const isExpanded = expandedFaq === faq.id;
+              const isExpanded = currentExpandedFaq === faq.id;
               const hasVoted = !!votedFaqs[faq.id];
               return (
                 <div 

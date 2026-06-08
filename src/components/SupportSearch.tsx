@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Search, FileText, BookOpen, HelpCircle, History, Sparkles, X, CornerDownLeft } from 'lucide-react';
@@ -16,33 +16,26 @@ interface SearchResult {
 
 export function SupportSearch({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [recent, setRecent] = useState<string[]>([]);
+  const [recent, setRecent] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return [];
+    const stored = localStorage.getItem('moneyos_recent_searches');
+    return stored ? JSON.parse(stored) : [];
+  });
   const [selectedIndex, setSelectedIndex] = useState(0);
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
-
-  // Load recent searches
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('moneyos_recent_searches');
-      if (stored) setRecent(JSON.parse(stored));
-    }
-  }, [isOpen]);
 
   // Handle auto-focus
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 50);
-      setSelectedIndex(0);
     }
   }, [isOpen]);
 
   // Fuzzy search matching logic
-  useEffect(() => {
+  const results = useMemo(() => {
     if (!query.trim()) {
-      setResults([]);
-      return;
+      return [];
     }
 
     const cleanQuery = query.toLowerCase();
@@ -87,8 +80,7 @@ export function SupportSearch({ isOpen, onClose }: { isOpen: boolean; onClose: (
       }
     });
 
-    setResults(matches.slice(0, 8));
-    setSelectedIndex(0);
+    return matches.slice(0, 8);
   }, [query]);
 
   // Keyboard controls
@@ -116,7 +108,7 @@ export function SupportSearch({ isOpen, onClose }: { isOpen: boolean; onClose: (
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, results, selectedIndex]);
 
-  const navigate = (result: SearchResult) => {
+  function navigate(result: SearchResult) {
     // Add to recents
     const nextRecents = [query.trim() || result.title, ...recent.filter(r => r !== (query.trim() || result.title))].slice(0, 4);
     setRecent(nextRecents);
@@ -124,10 +116,11 @@ export function SupportSearch({ isOpen, onClose }: { isOpen: boolean; onClose: (
 
     onClose();
     router.push(result.url);
-  };
+  }
 
   const handleRecentClick = (text: string) => {
     setQuery(text);
+    setSelectedIndex(0);
   };
 
   const clearRecent = (e: React.MouseEvent) => {
@@ -153,11 +146,14 @@ export function SupportSearch({ isOpen, onClose }: { isOpen: boolean; onClose: (
             type="text"
             placeholder="Search docs, guides, FAQs..."
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setSelectedIndex(0);
+            }}
             className="flex-1 bg-transparent border-0 outline-none text-[13px] text-white placeholder-neutral-500 py-2 h-full"
           />
           {query && (
-            <button onClick={() => setQuery('')} className="p-1 text-neutral-500 hover:text-white transition-colors">
+            <button onClick={() => { setQuery(''); setSelectedIndex(0); }} className="p-1 text-neutral-500 hover:text-white transition-colors">
               <X className="w-3.5 h-3.5" />
             </button>
           )}
@@ -199,7 +195,7 @@ export function SupportSearch({ isOpen, onClose }: { isOpen: boolean; onClose: (
                   {['Double-Entry', 'Invite Team', 'Budget Thresholds', 'Reports & CSV'].map((term) => (
                     <button
                       key={term}
-                      onClick={() => setQuery(term)}
+                      onClick={() => { setQuery(term); setSelectedIndex(0); }}
                       className="px-2.5 py-1 text-[12px] bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.05] hover:border-white/[0.1] text-neutral-300 hover:text-white rounded-md transition-all font-medium"
                     >
                       {term}
@@ -259,7 +255,7 @@ export function SupportSearch({ isOpen, onClose }: { isOpen: boolean; onClose: (
               </p>
               <div className="flex gap-2">
                 <button
-                  onClick={() => setQuery('getting started')}
+                  onClick={() => { setQuery('getting started'); setSelectedIndex(0); }}
                   className="px-2.5 py-1 text-[11px] bg-white/[0.03] border border-white/[0.05] text-neutral-300 rounded hover:bg-white/[0.08] transition-colors"
                 >
                   Getting Started

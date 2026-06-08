@@ -13,7 +13,7 @@ export async function GET() {
     const logs = await getLogs(undefined);
 
     return NextResponse.json(logs);
-  } catch (error: any) {
+  } catch (error) {
     console.error('Audit logs fetch error:', error);
     return NextResponse.json({ error: 'Failed to fetch global audit logs' }, { status: 500 });
   }

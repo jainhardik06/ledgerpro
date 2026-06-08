@@ -38,6 +38,10 @@ export async function POST(req: NextRequest) {
     // Create the tenant admin
     const passwordHash = await bcrypt.hash(cleanPassword, 12);
     const newAdmin = await createUser(cleanUsername, passwordHash, 'TENANT_ADMIN', newTenant.id!);
+    const newAdminId = newAdmin.id || newAdmin._id?.toString();
+    if (!newAdminId) {
+      throw new Error('Created tenant admin is missing an identifier');
+    }
 
     // Pre-seed Accounts
     await createAccount(newTenant.id!, 'Cash', 'CASH', 0);
@@ -46,7 +50,7 @@ export async function POST(req: NextRequest) {
     // Pre-seed Smart Categories
     const defaultCategories = ['Food', 'Travel', 'Shopping', 'Bills', 'Entertainment', 'Salary', 'Marketing', 'Rent', 'Software', 'Client Revenue', 'Tax'];
     for (const cat of defaultCategories) {
-      await createCategory(newTenant.id!, newAdmin.id || newAdmin._id.toString(), cat);
+      await createCategory(newTenant.id!, newAdminId, cat);
     }
 
     const ipAddress = firstClientIp(req);
@@ -54,7 +58,7 @@ export async function POST(req: NextRequest) {
 
     // Auto-Login
     const token = generateToken({
-      userId: newAdmin.id || newAdmin._id.toString(),
+      userId: newAdminId,
       username: newAdmin.username,
       role: newAdmin.role,
       tenantId: newAdmin.tenantId,
@@ -79,7 +83,7 @@ export async function POST(req: NextRequest) {
         tenantId: newAdmin.tenantId,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     logError('Signup error', error);
     return NextResponse.json(
       { error: 'An error occurred during sign up' },

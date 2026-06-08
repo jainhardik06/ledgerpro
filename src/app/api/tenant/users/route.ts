@@ -21,7 +21,7 @@ export async function GET() {
       createdAt: u.createdAt,
     }));
     return NextResponse.json({ success: true, users: safeUsers });
-  } catch (error: any) {
+  } catch (error) {
     logError('Fetch users error', error);
     return NextResponse.json({ error: 'An error occurred fetching users' }, { status: 500 });
   }
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
         role: newUser.role,
       } 
     });
-  } catch (error: any) {
+  } catch (error) {
     logError('Create user error', error);
     return NextResponse.json(
       { error: 'An error occurred creating the user' },
