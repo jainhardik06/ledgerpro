@@ -1,15 +1,13 @@
 import type { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.startsWith('http')
-    ? process.env.NEXT_PUBLIC_APP_URL
-    : `https://${process.env.NEXT_PUBLIC_APP_URL || 'ledger.webasthetic.in'}`;
+  const baseUrl = 'https://moneyos.webasthetic.in';
 
   return {
     rules: {
-      userAgent: '*',
+      userAgent: ['Googlebot', 'Bingbot', 'GPTBot', 'ClaudeBot', 'PerplexityBot', 'CCBot', 'OAI-SearchBot'],
       allow: '/',
-      disallow: ['/dashboard', '/super-admin', '/api'],
+      disallow: ['/dashboard/', '/admin/', '/superadmin/', '/api/auth/'],
     },
     sitemap: `${baseUrl}/sitemap.xml`,
   };

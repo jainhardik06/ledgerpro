@@ -60,6 +60,10 @@ It is designed specifically for **Small Businesses, Freelancers, Student Clubs, 
     <h3>👥 Role-Based Access Control</h3>
     <p>Hierarchical access model: Super Admin (Global Mission Control) > Tenant Admin (Organization Management) > User (Ledger Operations). Usernames are strictly guaranteed to be globally unique.</p>
   </div>
+  <div style="border: 1px solid #10b98130; padding: 15px; border-radius: 12px; background: rgba(16, 185, 129, 0.05);">
+    <h3>📈 Measurement Infrastructure</h3>
+    <p>Integrated GA4 and PostHog for real-time traffic and behavioral analytics. Includes UTM persistence, a dedicated Growth Dashboard, and full SEO configuration (dynamic sitemap, tailored robots.txt).</p>
+  </div>
 </div>
 
 ### More Superpowers
@@ -176,6 +180,12 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 # Super Admin Dashboard Credentials (hash generated with bcrypt)
 SUPER_ADMIN_USERNAME=admin
 SUPER_ADMIN_PASSWORD_HASH=$2b$12$replace_this_with_a_bcrypt_hash
+
+# Analytics & Measurement Infrastructure
+NEXT_PUBLIC_GA_MEASUREMENT_ID=G-JZ0LD0YTJE
+NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION=your-google-verification-code
+NEXT_PUBLIC_POSTHOG_KEY=phc_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
 ```
 
 Generate a local Super Admin hash:
