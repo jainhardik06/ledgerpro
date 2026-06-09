@@ -20,6 +20,9 @@ export const metadata: Metadata = {
   description: "Secure, encrypted, and designed-for-purpose financial command center for modern teams.",
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+    other: {
+      "msvalidate.01": "F614BC6EF94226D68CEEFCFD3ED65C36",
+    },
   },
 };
 
