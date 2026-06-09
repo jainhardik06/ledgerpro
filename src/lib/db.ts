@@ -37,6 +37,7 @@ export interface Tenant {
     maxUsers: number;
   };
   appMode?: 'Standard' | 'Student_Club' | 'Agency';
+  attribution?: Record<string, string>;
   createdAt: Date;
 }
 
@@ -48,6 +49,7 @@ export interface User {
   role: 'TENANT_ADMIN' | 'USER';
   tenantId: string;
   status: 'ACTIVE' | 'LOCKED';
+  attribution?: Record<string, string>;
   createdAt: Date;
 }
 
@@ -468,7 +470,7 @@ export async function getTenantById(id: string): Promise<Tenant | null> {
   return null;
 }
 
-export async function createTenant(name: string): Promise<Tenant> {
+export async function createTenant(name: string, attribution?: Record<string, string>): Promise<Tenant> {
   const { db } = await connectDb();
   const newTenant = { 
     name, 
@@ -476,6 +478,7 @@ export async function createTenant(name: string): Promise<Tenant> {
     plan: 'FREE' as const,
     settings: {},
     limits: { maxUsers: 5 },
+    attribution,
     createdAt: new Date() 
   };
   
@@ -636,9 +639,9 @@ export async function getAllUsers(): Promise<User[]> {
   return data.users.map(u => ({ ...u, status: u.status || 'ACTIVE' }));
 }
 
-export async function createUser(username: string, passwordHash: string, role: 'TENANT_ADMIN' | 'USER', tenantId: string): Promise<User> {
+export async function createUser(username: string, passwordHash: string, role: 'TENANT_ADMIN' | 'USER', tenantId: string, attribution?: Record<string, string>): Promise<User> {
   const { db } = await connectDb();
-  const newUser = { username, passwordHash, role, tenantId, status: 'ACTIVE' as const, createdAt: new Date() };
+  const newUser = { username, passwordHash, role, tenantId, status: 'ACTIVE' as const, attribution, createdAt: new Date() };
   if (db) {
     try {
       const result = await db.collection('users').insertOne(newUser);

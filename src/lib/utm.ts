@@ -36,3 +36,34 @@ export const getUTMs = (): Record<string, string> | null => {
   }
   return null;
 };
+
+export const getAttribution = () => {
+  const utms = getUTMs();
+  
+  if (!utms || Object.keys(utms).length === 0) {
+    return { channel: 'Direct', utms: null };
+  }
+
+  const source = (utms.utm_source || '').toLowerCase();
+  const medium = (utms.utm_medium || '').toLowerCase();
+
+  let channel = 'Unknown';
+
+  if (medium.includes('cpc') || medium.includes('ppc') || medium.includes('paidsearch')) {
+    channel = 'Paid Search';
+  } else if (medium.includes('paidsocial') || (['facebook', 'instagram', 'linkedin', 'twitter'].includes(source) && medium === 'cpc')) {
+    channel = 'Paid Social';
+  } else if (source.includes('google') || source.includes('bing') || source.includes('yahoo')) {
+    channel = 'Organic Search';
+  } else if (['linkedin', 'twitter', 'reddit', 'facebook', 'instagram'].includes(source)) {
+    channel = 'Organic Social';
+  } else if (medium.includes('email') || medium.includes('newsletter')) {
+    channel = 'Email';
+  } else if (medium === 'referral' || source.includes('producthunt') || source.includes('directory')) {
+    channel = 'Referral';
+  } else {
+    channel = 'Other';
+  }
+
+  return { channel, utms };
+};

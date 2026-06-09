@@ -33,12 +33,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const cookieStore = await cookies();
+    const utmCookie = cookieStore.get('money_os_utm');
+    let attribution: Record<string, string> | undefined = undefined;
+    if (utmCookie && utmCookie.value) {
+      try {
+        attribution = JSON.parse(utmCookie.value);
+      } catch (e) {
+        // Ignore invalid json
+      }
+    }
+
     // Create the tenant
-    const newTenant = await createTenant(cleanTenantName);
+    const newTenant = await createTenant(cleanTenantName, attribution);
 
     // Create the tenant admin
     const passwordHash = await bcrypt.hash(cleanPassword, 12);
-    const newAdmin = await createUser(cleanUsername, passwordHash, 'TENANT_ADMIN', newTenant.id!);
+    const newAdmin = await createUser(cleanUsername, passwordHash, 'TENANT_ADMIN', newTenant.id!, attribution);
     const newAdminId = newAdmin.id || newAdmin._id?.toString();
     if (!newAdminId) {
       throw new Error('Created tenant admin is missing an identifier');
@@ -62,12 +73,12 @@ export async function POST(req: NextRequest) {
     posthog.capture({
       distinctId: newAdminId,
       event: 'USER_SIGNUP',
-      properties: { email: cleanUsername, userId: newAdminId }
+      properties: { email: cleanUsername, userId: newAdminId, ...attribution }
     });
     posthog.capture({
       distinctId: newAdminId,
       event: 'WORKSPACE_CREATED',
-      properties: { workspaceId: newTenant.id, workspaceName: cleanTenantName }
+      properties: { workspaceId: newTenant.id, workspaceName: cleanTenantName, ...attribution }
     });
 
     // Auto-Login
@@ -78,7 +89,6 @@ export async function POST(req: NextRequest) {
       tenantId: newAdmin.tenantId,
     });
 
-    const cookieStore = await cookies();
     cookieStore.set({
       name: 'token',
       value: token,
