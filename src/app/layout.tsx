@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { GoogleAnalytics } from "@/components/analytics/google-analytics";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { PostHogProvider } from "@/components/PostHogProvider";
 import ClientInitialization from "@/components/ClientInitialization";
 
@@ -36,7 +36,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <ClientInitialization />
         <PostHogProvider>{children}</PostHogProvider>
-        <GoogleAnalytics />
+        <GoogleAnalytics gaId="G-JZ0LD0YTJE" />
       </body>
     </html>
   );
