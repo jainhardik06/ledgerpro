@@ -33,6 +33,7 @@ import {
   Cell, 
   Legend 
 } from 'recharts';
+import { captureEvent } from '@/lib/posthog';
 
 export default function ReportsPage() {
   const [loading, setLoading] = useState(true);
@@ -108,6 +109,17 @@ export default function ReportsPage() {
     };
     fetchData();
   }, []);
+
+  // Track Report Views
+  useEffect(() => {
+    if (!loading && transactions.length > 0) {
+      captureEvent('REPORT_VIEWED', { 
+        tab: activeTab, 
+        dateRange, 
+        compareEnabled 
+      });
+    }
+  }, [loading, activeTab, dateRange, compareEnabled, transactions.length]);
 
   // Helper date generators
   const getPeriodRange = (range: string, customS?: string, customE?: string) => {
@@ -436,6 +448,7 @@ export default function ReportsPage() {
 
   // Exporters
   const handleExportCSV = () => {
+    captureEvent('REPORT_EXPORTED', { format: 'CSV', tab: activeTab, rowCount: filteredCurrent.length });
     const headers = ['Date', 'Description', 'Category', 'Account', 'Client', 'Type', 'Amount (INR)'];
     const rows = filteredCurrent.map(t => {
       const acc = accounts.find(a => a.id === t.accountId);
@@ -463,6 +476,7 @@ export default function ReportsPage() {
   };
 
   const handlePrintPDF = () => {
+    captureEvent('REPORT_EXPORTED', { format: 'PDF', tab: activeTab });
     window.print();
   };
 

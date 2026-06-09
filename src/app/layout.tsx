@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
-import { PostHogProvider } from "@/components/PostHogProvider";
+import { PostHogProvider } from "@/components/analytics/posthog-provider";
 import ClientInitialization from "@/components/ClientInitialization";
 
 const geistSans = Geist({

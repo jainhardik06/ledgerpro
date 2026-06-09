@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
 import { getBudgets, createBudget, createLog } from '@/lib/db';
+import PostHogClient from '@/lib/posthog-server';
 
 export async function GET(req: NextRequest) {
   try {
@@ -30,6 +31,19 @@ export async function POST(req: NextRequest) {
 
     const newBudget = await createBudget(session.tenantId, category, Number(limitAmount), month);
     await createLog(session.username, 'Set Budget', `Set ${category} budget to ₹${limitAmount} for ${month}`, session.tenantId);
+
+    // Analytics
+    const posthog = PostHogClient();
+    posthog.capture({
+      distinctId: session.userId,
+      event: 'BUDGET_CREATED',
+      properties: { 
+        budgetId: newBudget.id || newBudget._id?.toString(),
+        amount: Number(limitAmount),
+        period: month,
+        workspaceId: session.tenantId
+      }
+    });
 
     return NextResponse.json({ success: true, budget: newBudget });
   } catch (error) {

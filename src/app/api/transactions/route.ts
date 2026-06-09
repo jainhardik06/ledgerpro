@@ -3,6 +3,7 @@ import { getSessionUser } from '@/lib/auth';
 import { getTransactions, createTransaction, createLog } from '@/lib/db';
 import { logError } from '@/lib/logger';
 import { validateAmount, validateDateString, validateString } from '@/lib/validation';
+import PostHogClient from '@/lib/posthog-server';
 
 export async function GET(req: NextRequest) {
   try {
@@ -70,6 +71,19 @@ export async function POST(req: NextRequest) {
     });
 
     await createLog(session.username, 'Add Record', `Added ${type} record: ${cleanDescription} (${parsedAmount})`, session.tenantId);
+
+    // Analytics
+    const posthog = PostHogClient();
+    posthog.capture({
+      distinctId: session.userId,
+      event: 'TRANSACTION_CREATED',
+      properties: { 
+        transactionId: newTx.id || newTx._id?.toString(),
+        amount: parsedAmount,
+        type: type,
+        workspaceId: session.tenantId
+      }
+    });
 
     return NextResponse.json({ success: true, transaction: newTx });
   } catch (error) {

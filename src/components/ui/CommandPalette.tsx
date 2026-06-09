@@ -7,6 +7,7 @@ import {
   Settings, Shield, X, CornerDownLeft, FileText, HelpCircle, Building2, 
   User, Plus, LogOut, ShieldAlert, Sparkles, TerminalSquare
 } from 'lucide-react';
+import { captureEvent } from '@/lib/posthog';
 
 export function CommandPalette() {
   const [isOpen, setIsOpen] = useState(false);
@@ -26,14 +27,20 @@ export function CommandPalette() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setIsOpen(prev => !prev);
+        setIsOpen(prev => {
+          if (!prev) captureEvent('COMMAND_PALETTE_OPENED', { trigger: 'shortcut' });
+          return !prev;
+        });
       }
       if (e.key === 'Escape') {
         setIsOpen(false);
       }
     };
     
-    const handleOpenEvent = () => setIsOpen(true);
+    const handleOpenEvent = () => {
+      setIsOpen(true);
+      captureEvent('COMMAND_PALETTE_OPENED', { trigger: 'event' });
+    };
     
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('open-command-palette', handleOpenEvent);
@@ -251,6 +258,7 @@ export function CommandPalette() {
         section: cmd.section,
         icon: cmd.icon,
         action: () => {
+          captureEvent('COMMAND_EXECUTED', { commandName: cmd.name, section: cmd.section });
           cmd.action();
           setIsOpen(false);
           setQuery('');

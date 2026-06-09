@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
 import { deleteBudget, updateBudget, createLog } from '@/lib/db';
 import { validateAmount } from '@/lib/validation';
+import PostHogClient from '@/lib/posthog-server';
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -28,6 +29,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const success = await updateBudget(id, session.tenantId, cleanLimitAmount);
     if (success) {
       await createLog(session.username, 'Edit Budget', `Edited budget ID: ${id}`, session.tenantId);
+      
+      const posthog = PostHogClient();
+      posthog.capture({
+        distinctId: session.userId,
+        event: 'BUDGET_UPDATED',
+        properties: { budgetId: id, workspaceId: session.tenantId }
+      });
+      
       return NextResponse.json({ success: true });
     }
     return NextResponse.json({ error: 'Not found' }, { status: 404 });

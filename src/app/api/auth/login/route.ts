@@ -6,6 +6,7 @@ import { generateToken } from '@/lib/auth';
 import { checkRateLimit } from '@/lib/rateLimit';
 import { firstClientIp, validatePassword, validateString } from '@/lib/validation';
 import { logError } from '@/lib/logger';
+import PostHogClient from '@/lib/posthog-server';
 
 const LOGIN_LIMIT = 10;
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
@@ -75,6 +76,14 @@ export async function POST(req: NextRequest) {
       await setSessionCookie(token);
       await createLog(username, 'Login', 'Super Admin successfully logged in', undefined, ipAddress);
 
+      // Analytics
+      const posthog = PostHogClient();
+      posthog.capture({
+        distinctId: 'super_admin',
+        event: 'USER_LOGIN',
+        properties: { email: superAdminUsername, role: 'SUPER_ADMIN' }
+      });
+
       return NextResponse.json({
         success: true,
         user: { username: superAdminUsername, role: 'SUPER_ADMIN' },
@@ -117,6 +126,18 @@ export async function POST(req: NextRequest) {
     });
     await setSessionCookie(token);
     await createLog(user.username, 'Login', 'User successfully logged in', user.tenantId, ipAddress);
+
+    // Analytics
+    const posthog = PostHogClient();
+    posthog.capture({
+      distinctId: persistedUserId,
+      event: 'USER_LOGIN',
+      properties: { 
+        email: user.username, 
+        role: user.role, 
+        tenantId: user.tenantId 
+      }
+    });
 
     return NextResponse.json({
       success: true,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
 import { updateTransaction, deleteTransaction, createLog } from '@/lib/db';
 import { validateAmount, validateDateString, validateEnum, validateString } from '@/lib/validation';
+import PostHogClient from '@/lib/posthog-server';
 
 const transactionTypes = ['Credit', 'Debit'] as const;
 
@@ -87,6 +88,18 @@ export async function PUT(
 
     await createLog(session.username, 'Edit Record', `Updated transaction (ID: ${id})`, session.tenantId);
 
+    // Analytics
+    const posthog = PostHogClient();
+    posthog.capture({
+      distinctId: session.userId,
+      event: 'TRANSACTION_UPDATED',
+      properties: { 
+        transactionId: id,
+        workspaceId: session.tenantId,
+        updates: Object.keys(updates)
+      }
+    });
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Update transaction error:', error);
@@ -118,6 +131,17 @@ export async function DELETE(
     }
 
     await createLog(session.username, 'Delete Record', `Deleted transaction (ID: ${id})`, session.tenantId);
+
+    // Analytics
+    const posthog = PostHogClient();
+    posthog.capture({
+      distinctId: session.userId,
+      event: 'TRANSACTION_DELETED',
+      properties: { 
+        transactionId: id,
+        workspaceId: session.tenantId
+      }
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

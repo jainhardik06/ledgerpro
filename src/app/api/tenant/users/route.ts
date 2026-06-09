@@ -5,6 +5,8 @@ import bcrypt from 'bcryptjs';
 import { validatePassword, validateString } from '@/lib/validation';
 import { logError } from '@/lib/logger';
 
+import PostHogClient from '@/lib/posthog-server';
+
 export async function GET() {
   try {
     const session = await getSessionUser();
@@ -53,6 +55,18 @@ export async function POST(req: NextRequest) {
     const newUser = await createUser(cleanUsername, passwordHash, 'USER', session.tenantId);
 
     await createLog(session.username, 'Add User', `Created user: ${cleanUsername}`, session.tenantId);
+
+    // Analytics
+    const posthog = PostHogClient();
+    posthog.capture({
+      distinctId: session.userId,
+      event: 'TEAM_MEMBER_INVITED',
+      properties: { 
+        workspaceId: session.tenantId,
+        inviteeEmail: cleanUsername,
+        role: 'USER'
+      }
+    });
 
     return NextResponse.json({ 
       success: true, 

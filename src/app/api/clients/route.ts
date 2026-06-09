@@ -3,6 +3,7 @@ import { getSessionUser } from '@/lib/auth';
 import { getClients, createClient, createLog } from '@/lib/db';
 import { logError } from '@/lib/logger';
 import { validateString } from '@/lib/validation';
+import PostHogClient from '@/lib/posthog-server';
 
 export async function GET(req: NextRequest) {
   try {
@@ -38,6 +39,17 @@ export async function POST(req: NextRequest) {
 
     const newClient = await createClient(session.tenantId, cleanName, cleanEmail || undefined);
     await createLog(session.username, 'Add Client', `Added client: ${cleanName}`, session.tenantId);
+
+    // Analytics
+    const posthog = PostHogClient();
+    posthog.capture({
+      distinctId: session.userId,
+      event: 'CLIENT_CREATED',
+      properties: { 
+        clientId: newClient.id || newClient._id?.toString(),
+        workspaceId: session.tenantId 
+      }
+    });
 
     return NextResponse.json({ success: true, client: newClient });
   } catch (error) {

@@ -12,6 +12,7 @@ import {
 import { generateToken } from '@/lib/auth';
 import { firstClientIp, validatePassword, validateString } from '@/lib/validation';
 import { logError } from '@/lib/logger';
+import PostHogClient from '@/lib/posthog-server';
 
 export async function POST(req: NextRequest) {
   try {
@@ -55,6 +56,19 @@ export async function POST(req: NextRequest) {
 
     const ipAddress = firstClientIp(req);
     await createLog(cleanUsername, 'Sign Up', `New tenant created: ${cleanTenantName}`, newTenant.id!, ipAddress);
+
+    // Analytics
+    const posthog = PostHogClient();
+    posthog.capture({
+      distinctId: newAdminId,
+      event: 'USER_SIGNUP',
+      properties: { email: cleanUsername, userId: newAdminId }
+    });
+    posthog.capture({
+      distinctId: newAdminId,
+      event: 'WORKSPACE_CREATED',
+      properties: { workspaceId: newTenant.id, workspaceName: cleanTenantName }
+    });
 
     // Auto-Login
     const token = generateToken({
