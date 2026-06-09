@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
 
     const cleanTenantName = validateString(tenantName, 'Organization name', { min: 2, max: 100 });
     if (cleanTenantName instanceof NextResponse) return cleanTenantName;
-    const cleanUsername = validateString(username, 'Username', { min: 3, max: 32 });
+    const cleanUsername = validateString(username, 'Username', { min: 3, max: 255 });
     if (cleanUsername instanceof NextResponse) return cleanUsername;
     const cleanPassword = validatePassword(password);
     if (cleanPassword instanceof NextResponse) return cleanPassword;

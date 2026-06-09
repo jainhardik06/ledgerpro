@@ -39,7 +39,11 @@ export async function POST(req: NextRequest) {
   const ipAddress = firstClientIp(req);
 
   try {
-    const rate = checkRateLimit(`login:${ipAddress}`, LOGIN_LIMIT, LOGIN_WINDOW_MS);
+    const body = await req.json();
+    const username = validateString(body.username, 'Username', { min: 3, max: 255 });
+    if (username instanceof NextResponse) return username;
+
+    const rate = checkRateLimit(`login:${ipAddress}:${username}`, LOGIN_LIMIT, LOGIN_WINDOW_MS);
     if (!rate.allowed) {
       return NextResponse.json(
         { error: 'Too many login attempts. Please try again later.' },
@@ -47,17 +51,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = await req.json();
-    const username = validateString(body.username, 'Username', { min: 3, max: 32 });
-    if (username instanceof NextResponse) return username;
     const password = validatePassword(body.password);
     if (password instanceof NextResponse) return password;
 
     const superAdminUsername = process.env.SUPER_ADMIN_USERNAME;
     const superAdminHash = requireSuperAdminHash();
 
+    console.log('[DEBUG] Super Admin login attempt:', { username, superAdminUsername, hashExists: !!superAdminHash, hashLength: superAdminHash?.length });
+
     if (superAdminUsername && superAdminHash && username === superAdminUsername) {
       const isAdminMatch = await bcrypt.compare(password, superAdminHash);
+      console.log('[DEBUG] Password match result:', isAdminMatch);
       if (!isAdminMatch) {
         await createLog(username, 'FAILED_LOGIN', 'Super Admin: incorrect password', undefined, ipAddress);
         return NextResponse.json({ error: 'Invalid username or password' }, { status: 401 });

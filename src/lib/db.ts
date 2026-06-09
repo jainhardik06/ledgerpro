@@ -344,10 +344,53 @@ export async function connectDb() {
       await db.collection('logs').createIndex({ action: 1, timestamp: -1 });
       await db.collection('clients').createIndex({ tenantId: 1, createdAt: -1 });
       await db.collection('budgets').createIndex({ tenantId: 1, category: 1, month: 1 }, { unique: true });
-      await db.collection('users').createIndex(
-        { username: 1 },
-        { unique: true, collation: { locale: 'en', strength: 2 } }
-      );
+
+      // Handle username unique index with duplicate cleanup
+      try {
+        await db.collection('users').createIndex(
+          { username: 1 },
+          { unique: true, collation: { locale: 'en', strength: 2 } }
+        );
+      } catch (indexError: any) {
+        if (indexError.code === 11000) {
+          // Drop the problematic index if it exists
+          try {
+            await db.collection('users').dropIndex('username_1');
+          } catch (dropError) {
+            // Index might not exist, ignore
+          }
+
+          // Remove duplicate usernames, keeping the first occurrence
+          const users = await db.collection('users').find({}).toArray();
+          const seenUsernames = new Set<string>();
+          const duplicates: any[] = [];
+
+          for (const user of users) {
+            const lowerUsername = user.username?.toLowerCase();
+            if (lowerUsername) {
+              if (seenUsernames.has(lowerUsername)) {
+                duplicates.push(user._id);
+              } else {
+                seenUsernames.add(lowerUsername);
+              }
+            }
+          }
+
+          // Delete duplicates
+          if (duplicates.length > 0) {
+            await db.collection('users').deleteMany({ _id: { $in: duplicates } });
+            console.log(`[Database] Removed ${duplicates.length} duplicate username entries`);
+          }
+
+          // Retry index creation
+          await db.collection('users').createIndex(
+            { username: 1 },
+            { unique: true, collation: { locale: 'en', strength: 2 } }
+          );
+        } else {
+          throw indexError;
+        }
+      }
     } catch (e) {
       console.warn('[Database] Failed to create indexes', e);
     }
