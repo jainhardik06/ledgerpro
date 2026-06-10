@@ -9,6 +9,7 @@ export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [accounts, setAccounts] = useState<any[]>([]);
+  const [clients, setClients] = useState<any[]>([]);
   
   const [search, setSearch] = useState('');
   
@@ -17,6 +18,7 @@ export default function TransactionsPage() {
   const [filterType, setFilterType] = useState<'all' | 'Credit' | 'Debit'>('all');
   const [filterAccountId, setFilterAccountId] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
+  const [filterClientId, setFilterClientId] = useState('all');
   const [filterDateRange, setFilterDateRange] = useState<'all' | 'this-month' | 'last-30' | 'this-year'>('all');
   const [filterMinAmount, setFilterMinAmount] = useState('');
   const [filterMaxAmount, setFilterMaxAmount] = useState('');
@@ -32,6 +34,7 @@ export default function TransactionsPage() {
   const [txDate, setTxDate] = useState(new Date().toISOString().split('T')[0]);
   const [txCategory, setTxCategory] = useState('');
   const [txAccountId, setTxAccountId] = useState('');
+  const [txClientId, setTxClientId] = useState('');
   const [txNotes, setTxNotes] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -47,11 +50,12 @@ export default function TransactionsPage() {
 
   async function fetchData() {
     try {
-      const [txRes, catRes, accRes] = await Promise.all([
-        fetch('/api/transactions'), fetch('/api/categories'), fetch('/api/accounts')
+      const [txRes, catRes, accRes, clientRes] = await Promise.all([
+        fetch('/api/transactions'), fetch('/api/categories'), fetch('/api/accounts'), fetch('/api/clients')
       ]);
       if (txRes.ok) setTransactions((await txRes.json()).transactions);
       if (catRes.ok) setCategories((await catRes.json()).categories);
+      if (clientRes.ok) setClients((await clientRes.json()).clients);
       if (accRes.ok) {
         const accs = (await accRes.json()).accounts;
         setAccounts(accs);
@@ -72,7 +76,7 @@ export default function TransactionsPage() {
       const method = selectedTx ? 'PUT' : 'POST';
       const res = await fetch(url, {
         method, headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: txType, amount: Number(txAmount), description: txDesc, date: txDate, category: txCategory, accountId: txAccountId, notes: txNotes })
+        body: JSON.stringify({ type: txType, amount: Number(txAmount), description: txDesc, date: txDate, category: txCategory, accountId: txAccountId, clientId: txClientId, notes: txNotes })
       });
       if (res.ok) {
         setIsDrawerOpen(false);
@@ -105,6 +109,7 @@ export default function TransactionsPage() {
     setTxDesc('');
     setTxDate(new Date().toISOString().split('T')[0]);
     setTxCategory('');
+    setTxClientId('');
     setTxNotes('');
     setIsDrawerOpen(true);
   }
@@ -117,6 +122,7 @@ export default function TransactionsPage() {
     setTxDate(tx.date);
     setTxCategory(tx.category || '');
     setTxAccountId(tx.accountId);
+    setTxClientId(tx.clientId || '');
     setTxNotes(tx.notes || '');
     setIsDrawerOpen(true);
   };
@@ -125,6 +131,7 @@ export default function TransactionsPage() {
     filterType !== 'all' || 
     filterAccountId !== 'all' || 
     filterCategory !== 'all' || 
+    filterClientId !== 'all' || 
     filterDateRange !== 'all' || 
     filterMinAmount !== '' || 
     filterMaxAmount !== '';
@@ -133,6 +140,7 @@ export default function TransactionsPage() {
     setFilterType('all');
     setFilterAccountId('all');
     setFilterCategory('all');
+    setFilterClientId('all');
     setFilterDateRange('all');
     setFilterMinAmount('');
     setFilterMaxAmount('');
@@ -154,6 +162,9 @@ export default function TransactionsPage() {
 
     // 4. Category filter
     if (filterCategory !== 'all' && t.category !== filterCategory) return false;
+
+    // 4.5. Client filter
+    if (filterClientId !== 'all' && t.clientId !== filterClientId) return false;
 
     // 5. Min / Max Amount filter
     if (filterMinAmount !== '' && t.amount < Number(filterMinAmount)) return false;
@@ -218,7 +229,7 @@ export default function TransactionsPage() {
             </button>
 
             {isFilterOpen && (
-              <div className="absolute right-0 sm:right-auto mt-2 w-[280px] sm:w-80 bg-[#0a0a0a] border border-white/[0.08] rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] p-4 sm:p-5 z-50 space-y-4 text-left animate-in fade-in slide-in-from-top-1 duration-150">
+              <div className="absolute right-0 mt-2 w-[280px] sm:w-80 bg-[#0a0a0a] border border-white/[0.08] rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] p-4 sm:p-5 z-50 space-y-4 text-left animate-in fade-in slide-in-from-top-1 duration-150">
                 <div className="flex items-center justify-between border-b border-white/[0.05] pb-2">
                   <span className="text-[12px] font-semibold text-white">Filters</span>
                   {isFilterActive && (
@@ -289,6 +300,21 @@ export default function TransactionsPage() {
                   </select>
                 </div>
 
+                {/* Filter by Client */}
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">Client / Sponsor</label>
+                  <select 
+                    value={filterClientId} 
+                    onChange={e => setFilterClientId(e.target.value)} 
+                    className="w-full h-9 sm:h-8 bg-white/[0.02] border border-white/[0.05] rounded-md px-2 text-[12px] text-white focus:border-white/[0.2] outline-none [&>option]:bg-[#000000]"
+                  >
+                    <option value="all">All Clients/Sponsors</option>
+                    {clients.map(client => (
+                      <option key={client.id} value={client.id}>{client.name}</option>
+                    ))}
+                  </select>
+                </div>
+
                 {/* Filter by Date Range */}
                 <div className="space-y-1.5">
                   <label className="block text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">Date Period</label>
@@ -349,6 +375,7 @@ export default function TransactionsPage() {
             <tr>
               <th className="px-4 sm:px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest w-full sm:w-1/3">Transaction</th>
               <th className="hidden sm:table-cell px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest">Category</th>
+              <th className="hidden lg:table-cell px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest">Client / Sponsor</th>
               <th className="hidden sm:table-cell px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest">Date</th>
               <th className="hidden md:table-cell px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest">Account</th>
               <th className="px-4 sm:px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest text-right shrink-0">Amount</th>
@@ -357,7 +384,7 @@ export default function TransactionsPage() {
           <tbody className="divide-y divide-white/[0.02]">
             {filtered.length === 0 ? (
                <tr>
-                 <td colSpan={5} className="px-6 py-16 text-center">
+                 <td colSpan={6} className="px-6 py-16 text-center">
                     <div className="flex flex-col items-center">
                       <div className="w-12 h-12 rounded-full bg-white/[0.02] flex items-center justify-center mb-4">
                         <FileText className="w-5 h-5 text-neutral-500" />
@@ -382,6 +409,7 @@ export default function TransactionsPage() {
                            <span className="shrink-0">{tx.date.substring(5)}</span>
                            <span className="shrink-0">•</span>
                            <span className="truncate">{tx.category || 'Uncat.'}</span>
+                           {tx.clientId && <><span className="shrink-0">•</span><span className="truncate">{clients.find(c=>c.id===tx.clientId)?.name || 'Unknown'}</span></>}
                          </div>
                        </div>
                      </div>
@@ -390,6 +418,9 @@ export default function TransactionsPage() {
                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-white/[0.05] bg-white/[0.02] text-[11px] font-medium text-neutral-400">
                        <Tag className="w-3 h-3" /> {tx.category || 'Uncategorized'}
                      </span>
+                   </td>
+                   <td className="hidden lg:table-cell px-6 py-3 align-middle">
+                     <span className="text-[12px] text-neutral-400">{tx.clientId ? (clients.find(c=>c.id===tx.clientId)?.name || 'Unknown') : '-'}</span>
                    </td>
                    <td className="hidden sm:table-cell px-6 py-3 align-middle">
                      <span className="text-[12px] text-neutral-500 font-mono flex items-center gap-1.5"><Calendar className="w-3 h-3"/> {tx.date}</span>
@@ -442,12 +473,21 @@ export default function TransactionsPage() {
                </div>
              </div>
 
-             <div>
-               <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">Category</label>
-               <select value={txCategory} onChange={e=>setTxCategory(e.target.value)} className="w-full h-9 bg-white/[0.02] border border-white/[0.05] rounded-md px-2 text-[13px] text-white focus:border-white/[0.2] outline-none [&>option]:bg-[#000000]">
-                 <option value="">Uncategorized</option>
-                 {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-               </select>
+             <div className="grid grid-cols-2 gap-4">
+               <div>
+                 <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">Category</label>
+                 <select value={txCategory} onChange={e=>setTxCategory(e.target.value)} className="w-full h-9 bg-white/[0.02] border border-white/[0.05] rounded-md px-2 text-[13px] text-white focus:border-white/[0.2] outline-none [&>option]:bg-[#000000]">
+                   <option value="">Uncategorized</option>
+                   {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                 </select>
+               </div>
+               <div>
+                 <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">Client / Sponsor</label>
+                 <select value={txClientId} onChange={e=>setTxClientId(e.target.value)} className="w-full h-9 bg-white/[0.02] border border-white/[0.05] rounded-md px-2 text-[13px] text-white focus:border-white/[0.2] outline-none [&>option]:bg-[#000000]">
+                   <option value="">None</option>
+                   {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                 </select>
+               </div>
              </div>
 
              <div>

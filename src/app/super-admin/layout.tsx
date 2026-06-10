@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { 
   Building2, Users, LineChart, ShieldAlert, FileText, 
   ToggleLeft, LifeBuoy, Megaphone, Settings, Search,
@@ -32,7 +32,14 @@ const supportNav = [
 
 export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [cmdOpen, setCmdOpen] = useState(false);
+
+  const handleExitConsole = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    router.push('/');
+    router.refresh();
+  };
 
   return (
     <div className="min-h-screen bg-[#000000] text-[#ededed] font-sans selection:bg-neutral-800 selection:text-white flex">
@@ -106,9 +113,9 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
         </div>
 
         <div className="p-4 border-t border-white/[0.05] shrink-0">
-          <Link href="/" className="flex items-center gap-2 text-[12px] font-medium text-neutral-500 hover:text-white transition-colors">
+          <button onClick={handleExitConsole} className="flex items-center gap-2 text-[12px] font-medium text-neutral-500 hover:text-white transition-colors">
             <ArrowLeft className="w-3.5 h-3.5" /> Exit Console
-          </Link>
+          </button>
         </div>
       </aside>
 
