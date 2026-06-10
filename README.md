@@ -194,7 +194,11 @@ NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
 # Growth Intelligence Center API Keys (Server-Side)
 POSTHOG_PERSONAL_API_KEY=phx_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 POSTHOG_PROJECT_ID=463167
+
+# Google Cloud API Credentials for GA4 and Search Console API
+# Provide the absolute path to your Google Service Account JSON key file
 GOOGLE_APPLICATION_CREDENTIALS=path/to/your/google-service-account.json
+GA4_PROPERTY_ID=540972599
 ```
 
 Generate a local Super Admin hash:

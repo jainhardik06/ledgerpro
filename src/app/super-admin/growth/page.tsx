@@ -7,19 +7,7 @@ export const metadata = {
   title: 'Growth Intelligence | Money OS Super Admin',
 };
 
-// --- Dummy data for charts to make it look like the PRD until enough real data flows in ---
-const mockTrafficTrend = [
-  { name: 'Mon', visitors: 120 }, { name: 'Tue', visitors: 132 }, { name: 'Wed', visitors: 101 },
-  { name: 'Thu', visitors: 145 }, { name: 'Fri', visitors: 190 }, { name: 'Sat', visitors: 210 }, { name: 'Sun', visitors: 250 }
-];
-
-const mockFunnel = [
-  { step: 'Visitor', value: 1200 },
-  { step: 'Signup', value: 450 },
-  { step: 'Workspace', value: 380 },
-  { step: 'First Tx', value: 310 },
-  { step: 'First Budget', value: 150 },
-];
+// Mock data removed in favor of real API aggregations
 
 export default async function GrowthIntelligencePage() {
   // Fetch real data
@@ -34,9 +22,18 @@ export default async function GrowthIntelligencePage() {
     sourceData.push({ name: 'Direct/Unknown', value: growthMetrics.signups || 1 });
   }
 
-  // We attempt to fetch external APIs. If they return null, we show "Configuration Required" states
-  const hasPostHog = await fetchPostHogFunnels() !== null;
-  const hasGA4 = await fetchGA4Traffic() !== null;
+  // Fetch actual data from APIs
+  const postHogFunnels = await fetchPostHogFunnels();
+  const ga4Traffic = await fetchGA4Traffic();
+  const gscSearch = await fetchGSCSearch();
+
+  const hasPostHog = postHogFunnels !== null;
+  const hasGA4 = ga4Traffic !== null;
+  const hasGSC = gscSearch !== null;
+
+  // Use the fetched data, or an empty array if null
+  const realTrafficTrend = ga4Traffic || [];
+  const realFunnel = postHogFunnels || [];
 
   return (
     <div className="p-8 max-w-[1600px] mx-auto text-zinc-100 min-h-screen font-sans">
@@ -72,8 +69,12 @@ export default async function GrowthIntelligencePage() {
           <h2 className="text-lg font-medium text-white mb-6">2. Acquisition Intelligence</h2>
           <div className="grid grid-cols-2 gap-6 mb-6">
             <div>
-              <h3 className="text-sm font-medium text-zinc-400 mb-2">Traffic Trend (Real DB Proxy)</h3>
-              <GrowthAreaChart data={mockTrafficTrend} dataKey="visitors" name="Visitors" />
+              <h3 className="text-sm font-medium text-zinc-400 mb-2">Traffic Trend (GA4)</h3>
+              {realTrafficTrend.length > 0 ? (
+                <GrowthAreaChart data={realTrafficTrend} dataKey="visitors" name="Visitors" />
+              ) : (
+                <div className="flex items-center justify-center h-[250px] border border-dashed border-zinc-800 rounded-lg text-zinc-500 text-sm">No GA4 data found</div>
+              )}
             </div>
             <div>
               <h3 className="text-sm font-medium text-zinc-400 mb-2">Top Sources (UTM DB)</h3>
@@ -85,9 +86,13 @@ export default async function GrowthIntelligencePage() {
 
         {/* SECTION 3: ACTIVATION FUNNEL */}
         <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-          <h2 className="text-lg font-medium text-white mb-6">3. Activation Funnel</h2>
+          <h2 className="text-lg font-medium text-white mb-6">3. Activation Funnel (PostHog)</h2>
           <div className="mb-4">
-            <AcquisitionFunnelChart data={mockFunnel} />
+             {realFunnel.length > 0 ? (
+               <AcquisitionFunnelChart data={realFunnel} />
+             ) : (
+               <div className="flex items-center justify-center h-[300px] border border-dashed border-zinc-800 rounded-lg text-zinc-500 text-sm">No PostHog funnel data found</div>
+             )}
           </div>
           {!hasPostHog && <ConfigWarning service="PostHog API" varName="POSTHOG_PERSONAL_API_KEY" />}
         </section>
