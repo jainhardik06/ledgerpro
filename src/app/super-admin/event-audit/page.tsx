@@ -10,7 +10,7 @@ export default async function EventAuditPage() {
   const hasEvents = events && events.length > 0;
 
   return (
-    <div className="p-8 max-w-[1600px] mx-auto text-zinc-100 min-h-screen font-sans">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto text-zinc-100 font-sans">
       <div className="mb-8 flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight text-white mb-2">Event Validation Suite</h1>
@@ -18,7 +18,7 @@ export default async function EventAuditPage() {
         </div>
       </div>
 
-      <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 overflow-hidden">
+      <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 sm:p-6 overflow-hidden">
         {hasEvents ? (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-zinc-400">

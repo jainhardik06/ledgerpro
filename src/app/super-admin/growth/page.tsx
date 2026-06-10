@@ -1,5 +1,5 @@
 import React from 'react';
-import { getGrowthMetrics, getFinancialAggregates, getWorkspaceHealth, getUTMAcquisitionStats } from '@/lib/db';
+import { getGrowthMetrics, getFinancialAggregates, getWorkspaceHealth, getUTMAcquisitionStats, connectDb } from '@/lib/db';
 import { fetchPostHogFunnels, fetchPostHogRetention, fetchGA4Traffic, fetchGSCSearch } from '@/lib/external-apis';
 import { GrowthAreaChart, AcquisitionFunnelChart, SourcePieChart } from './components/GrowthCharts';
 
@@ -11,6 +11,9 @@ export const metadata = {
 
 export default async function GrowthIntelligencePage() {
   // Fetch real data
+  const { db } = await connectDb();
+  const isDbHealthy = !!db;
+
   const growthMetrics = await getGrowthMetrics();
   const financialMetrics = await getFinancialAggregates();
   const workspaceHealth = await getWorkspaceHealth();
@@ -36,7 +39,7 @@ export default async function GrowthIntelligencePage() {
   const realFunnel = postHogFunnels || [];
 
   return (
-    <div className="p-8 max-w-[1600px] mx-auto text-zinc-100 min-h-screen font-sans">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto text-zinc-100 font-sans">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight text-white mb-2">Growth Intelligence Center</h1>
@@ -51,23 +54,23 @@ export default async function GrowthIntelligencePage() {
       </div>
 
       {/* SECTION 1: EXECUTIVE OVERVIEW */}
-      <section className="mb-12">
+      <section className="mb-8 sm:mb-12">
         <h2 className="text-lg font-medium text-white mb-4 border-b border-zinc-800 pb-2">1. Executive Overview</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <MetricCard title="Signups" value={growthMetrics.signups} trend="+12%" />
-          <MetricCard title="Workspaces" value={growthMetrics.newWorkspaces} trend="+8%" />
-          <MetricCard title="Transactions" value={growthMetrics.transactionsCreated} trend="+24%" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+          <MetricCard title="Signups" value={growthMetrics.signups} />
+          <MetricCard title="Workspaces" value={growthMetrics.newWorkspaces} />
+          <MetricCard title="Transactions" value={growthMetrics.transactionsCreated} />
           <MetricCard title="Budgets" value={growthMetrics.budgetsCreated} />
           <MetricCard title="Reports Exported" value={growthMetrics.reportsGenerated} />
           <MetricCard title="Team Invites" value={growthMetrics.teamInvitesSent} />
         </div>
       </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12">
         {/* SECTION 2: ACQUISITION */}
-        <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-          <h2 className="text-lg font-medium text-white mb-6">2. Acquisition Intelligence</h2>
-          <div className="grid grid-cols-2 gap-6 mb-6">
+        <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 sm:p-6">
+          <h2 className="text-lg font-medium text-white mb-4 sm:mb-6">2. Acquisition Intelligence</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
             <div>
               <h3 className="text-sm font-medium text-zinc-400 mb-2">Traffic Trend (GA4)</h3>
               {realTrafficTrend.length > 0 ? (
@@ -85,9 +88,9 @@ export default async function GrowthIntelligencePage() {
         </section>
 
         {/* SECTION 3: ACTIVATION FUNNEL */}
-        <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-          <h2 className="text-lg font-medium text-white mb-6">3. Activation Funnel (PostHog)</h2>
-          <div className="mb-4">
+        <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 sm:p-6">
+          <h2 className="text-lg font-medium text-white mb-4 sm:mb-6">3. Activation Funnel (PostHog)</h2>
+          <div className="mb-4 overflow-x-auto">
              {realFunnel.length > 0 ? (
                <AcquisitionFunnelChart data={realFunnel} />
              ) : (
@@ -98,10 +101,10 @@ export default async function GrowthIntelligencePage() {
         </section>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12">
         {/* SECTION 6: WORKSPACE INTELLIGENCE */}
-        <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-          <h2 className="text-lg font-medium text-white mb-6">6. Workspace Intelligence</h2>
+        <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 sm:p-6">
+          <h2 className="text-lg font-medium text-white mb-4 sm:mb-6">6. Workspace Intelligence</h2>
           <div className="space-y-4">
             <div className="flex justify-between items-center pb-3 border-b border-zinc-800/50">
               <span className="text-zinc-400">Health Score</span>
@@ -123,8 +126,8 @@ export default async function GrowthIntelligencePage() {
         </section>
 
         {/* SECTION 7: FINANCIAL INTELLIGENCE */}
-        <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-          <h2 className="text-lg font-medium text-white mb-6">7. Financial Intelligence</h2>
+        <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 sm:p-6">
+          <h2 className="text-lg font-medium text-white mb-4 sm:mb-6">7. Financial Intelligence</h2>
           <div className="space-y-4">
             <div className="flex justify-between items-center pb-3 border-b border-zinc-800/50">
               <span className="text-zinc-400">Platform Transaction Vol</span>
@@ -146,10 +149,10 @@ export default async function GrowthIntelligencePage() {
         </section>
 
         {/* SECTION 10: SYSTEM HEALTH */}
-        <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-          <h2 className="text-lg font-medium text-white mb-6">10. System Health</h2>
+        <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 sm:p-6 md:col-span-2 xl:col-span-1">
+          <h2 className="text-lg font-medium text-white mb-4 sm:mb-6">10. System Health</h2>
           <div className="space-y-4">
-            <HealthRow name="Internal Database" status="healthy" />
+            <HealthRow name="Internal Database" status={isDbHealthy ? 'healthy' : 'error'} />
             <HealthRow name="PostHog Event Pipeline" status={process.env.NEXT_PUBLIC_POSTHOG_KEY ? 'healthy' : 'warning'} />
             <HealthRow name="GA4 Pipeline" status={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ? 'healthy' : 'warning'} />
             <HealthRow name="PostHog API (Queries)" status={hasPostHog ? 'healthy' : 'error'} />

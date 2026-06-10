@@ -37,15 +37,15 @@ export default async function AnalyticsDiagnosticsPage() {
   }
 
   return (
-    <div className="p-8 max-w-5xl mx-auto text-zinc-100 min-h-screen font-sans">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto text-zinc-100 font-sans">
       <div className="mb-8">
         <h1 className="text-3xl font-semibold tracking-tight text-white mb-2">Analytics Diagnostics</h1>
         <p className="text-zinc-400">Environment validation and integration health checks.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8">
         {/* Environment Validation */}
-        <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 md:col-span-2">
+        <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 sm:p-6 md:col-span-2">
           <h2 className="text-lg font-medium text-white mb-4 border-b border-zinc-800 pb-2">Environment Validation</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {Object.entries(envStatus).map(([key, isValid]) => (
@@ -61,7 +61,7 @@ export default async function AnalyticsDiagnosticsPage() {
         </section>
 
         {/* GA4 */}
-        <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+        <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 sm:p-6">
           <h2 className="text-lg font-medium text-white mb-4 border-b border-zinc-800 pb-2">Google Analytics 4</h2>
           <div className="space-y-3">
             <DiagnosticRow label="Connected?" status={envStatus.NEXT_PUBLIC_GA_MEASUREMENT_ID ? 'Yes' : 'No'} isGood={envStatus.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
@@ -71,7 +71,7 @@ export default async function AnalyticsDiagnosticsPage() {
         </section>
 
         {/* Search Console */}
-        <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+        <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 sm:p-6">
           <h2 className="text-lg font-medium text-white mb-4 border-b border-zinc-800 pb-2">Search Console</h2>
           <div className="space-y-3">
             <DiagnosticRow label="Connected?" status={envStatus.GOOGLE_APPLICATION_CREDENTIALS ? 'Yes' : 'No'} isGood={envStatus.GOOGLE_APPLICATION_CREDENTIALS} />
@@ -80,7 +80,7 @@ export default async function AnalyticsDiagnosticsPage() {
         </section>
 
         {/* PostHog */}
-        <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+        <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 sm:p-6">
           <h2 className="text-lg font-medium text-white mb-4 border-b border-zinc-800 pb-2">PostHog</h2>
           <div className="space-y-3">
             <DiagnosticRow label="Client Connected?" status={envStatus.NEXT_PUBLIC_POSTHOG_KEY ? 'Yes' : 'No'} isGood={envStatus.NEXT_PUBLIC_POSTHOG_KEY} />
@@ -90,7 +90,7 @@ export default async function AnalyticsDiagnosticsPage() {
         </section>
 
         {/* Local Tracking & Bots */}
-        <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+        <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 sm:p-6">
           <h2 className="text-lg font-medium text-white mb-4 border-b border-zinc-800 pb-2">Internal Telemetry</h2>
           <div className="space-y-3">
             <DiagnosticRow label="UTMs Captured" value={utmCapturedToday.toString()} />

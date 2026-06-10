@@ -1,33 +1,72 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Activity, Users, Target, ArrowUpRight, MousePointerClick, RefreshCw } from 'lucide-react';
+import { ArrowUpRight, TrendingDown, Target, Building2 } from 'lucide-react';
+import { getSessionUser } from '@/lib/auth';
+import { connectDb, initLocalDb } from '@/lib/db';
+import { redirect } from 'next/navigation';
 
-export default function GrowthDashboard() {
-  // In a real implementation, these metrics would be fetched from PostHog/Internal DB
+export default async function GrowthDashboard() {
+  const session = await getSessionUser();
+  if (!session || !session.tenantId) {
+    redirect('/login');
+  }
+  const tenantId = session.tenantId;
+
+  // Fetch real data for the tenant
+  const { db } = await connectDb();
+  let totalIncome = 0;
+  let totalExpense = 0;
+  let totalTransactions = 0;
+  let totalClients = 0;
+  let activeBudgets = 0;
+  let activeRecurring = 0;
+
+  if (db) {
+    const txs = await db.collection('transactions').find({ tenantId }).toArray();
+    totalTransactions = txs.length;
+    txs.forEach((tx: any) => {
+      if (tx.type === 'Credit') totalIncome += Number(tx.amount || 0);
+      if (tx.type === 'Debit') totalExpense += Number(tx.amount || 0);
+    });
+    totalClients = await db.collection('clients').countDocuments({ tenantId });
+    activeBudgets = await db.collection('budgets').countDocuments({ tenantId });
+    activeRecurring = await db.collection('recurring').countDocuments({ tenantId });
+  } else {
+    // Local DB fallback
+    const localDb = initLocalDb();
+    const txs = localDb.transactions.filter((t: any) => t.tenantId === tenantId);
+    totalTransactions = txs.length;
+    txs.forEach((tx: any) => {
+      if (tx.type === 'Credit') totalIncome += Number(tx.amount || 0);
+      if (tx.type === 'Debit') totalExpense += Number(tx.amount || 0);
+    });
+    totalClients = localDb.clients.filter((c: any) => c.tenantId === tenantId).length;
+    activeBudgets = localDb.budgets.filter((b: any) => b.tenantId === tenantId).length;
+    activeRecurring = localDb.recurring.filter((r: any) => r.tenantId === tenantId).length;
+  }
+
   const metrics = [
-    { title: "Total Visitors", value: "12,450", trend: "+12%", icon: Users },
-    { title: "Signups", value: "842", trend: "+5.2%", icon: ArrowUpRight },
-    { title: "Activation Rate", value: "45%", trend: "+2.1%", icon: Activity },
-    { title: "Retention (30d)", value: "68%", trend: "-1.4%", icon: RefreshCw },
+    { title: "Total Income", value: `$${totalIncome.toLocaleString(undefined, {minimumFractionDigits: 2})}`, icon: ArrowUpRight },
+    { title: "Total Expenses", value: `$${totalExpense.toLocaleString(undefined, {minimumFractionDigits: 2})}`, icon: TrendingDown },
+    { title: "Total Clients", value: totalClients.toString(), icon: Building2 },
+    { title: "Transactions", value: totalTransactions.toString(), icon: Target },
   ];
 
   const funnels = [
-    { label: "Workspace Creation Rate", value: "85%" },
-    { label: "First Transaction Rate", value: "62%" },
-    { label: "First Budget Rate", value: "41%" },
-    { label: "First Report Rate", value: "35%" },
-    { label: "Team Invite Rate", value: "22%" },
+    { label: "Active Budgets", value: activeBudgets.toString() },
+    { label: "Recurring Setups", value: activeRecurring.toString() },
+    { label: "Avg Transaction Size", value: totalTransactions > 0 ? `$${((totalIncome + totalExpense) / totalTransactions).toFixed(2)}` : "$0.00" },
   ];
 
   return (
-    <div className="p-8 space-y-8 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 max-w-7xl mx-auto">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Growth Dashboard</h1>
-        <p className="text-muted-foreground mt-2">
-          Monitor your acquisition, activation, and retention metrics. Single source of truth.
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Growth & Financials</h1>
+        <p className="text-muted-foreground mt-2 text-sm sm:text-base">
+          Monitor your organization's financial growth, client acquisition, and overall activity.
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {metrics.map((metric) => (
           <Card key={metric.title}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -36,53 +75,24 @@ export default function GrowthDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{metric.value}</div>
-              <p className="text-xs text-muted-foreground">
-                <span className={metric.trend.startsWith('+') ? 'text-green-500' : 'text-red-500'}>
-                  {metric.trend}
-                </span>{' '}
-                from last month
-              </p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Card>
           <CardHeader>
-            <CardTitle>Activation Funnel</CardTitle>
+            <CardTitle>Workspace Engagement</CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
-            <div className="space-y-8 mt-4">
+            <div className="space-y-6 mt-2">
               {funnels.map((funnel) => (
                 <div key={funnel.label} className="flex items-center">
                   <div className="ml-4 space-y-1 flex-1">
                     <p className="text-sm font-medium leading-none">{funnel.label}</p>
                   </div>
-                  <div className="ml-auto font-medium">{funnel.value}</div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="col-span-3">
-          <CardHeader>
-            <CardTitle>Top Acquisition Sources</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-8 mt-4">
-              {[
-                { source: "Google Organic", users: "4,210" },
-                { source: "Twitter / X", users: "1,840" },
-                { source: "Direct", users: "1,200" },
-                { source: "Newsletter", users: "850" },
-              ].map((item) => (
-                <div key={item.source} className="flex items-center">
-                  <MousePointerClick className="h-4 w-4 text-muted-foreground mr-4" />
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium leading-none">{item.source}</p>
-                  </div>
-                  <div className="font-medium">{item.users}</div>
+                  <div className="ml-auto font-medium pr-4">{funnel.value}</div>
                 </div>
               ))}
             </div>

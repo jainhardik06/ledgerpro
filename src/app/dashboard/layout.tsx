@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { DashboardProvider, useDashboardContext } from '@/components/dashboard/DashboardProvider';
 import { 
   Home, Activity, Wallet, PieChart, Repeat, Users, 
-  BarChart3, Shield, Settings, Search, Bell, Plus, FileText
+  BarChart3, Shield, Settings, Search, Bell, Plus, FileText, TrendingUp
 } from 'lucide-react';
 import { CommandPalette } from '@/components/ui/CommandPalette';
 import { BrandMark } from '@/components/ui/BrandMark';
@@ -32,6 +32,7 @@ function Sidebar({ isMobile, isOpen, onClose }: { isMobile?: boolean; isOpen?: b
 
   const adminItems = [
     { name: 'Team Workspace', path: '/dashboard/team', icon: Shield },
+    { name: 'Growth Metrics', path: '/dashboard/growth', icon: TrendingUp },
     { name: 'Audit Log', path: '/dashboard/audit', icon: FileText },
     { name: 'Settings', path: '/dashboard/settings', icon: Settings },
   ];

@@ -25,7 +25,7 @@ export default async function AttributionPage() {
   const organicTenants = tenants.filter(t => !t.utm);
 
   return (
-    <div className="p-8 max-w-[1600px] mx-auto text-zinc-100 min-h-screen font-sans">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto text-zinc-100 font-sans">
       <div className="mb-8 flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight text-white mb-2">Attribution Verification</h1>
@@ -33,22 +33,22 @@ export default async function AttributionPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 sm:p-6">
           <h3 className="text-zinc-400 text-sm mb-2">Total Workspaces (Last 100)</h3>
           <p className="text-3xl font-bold text-white">{tenants.length}</p>
         </div>
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 border-l-4 border-l-emerald-500">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 sm:p-6 border-l-4 border-l-emerald-500">
           <h3 className="text-zinc-400 text-sm mb-2">UTM Attributed</h3>
           <p className="text-3xl font-bold text-white">{attributedTenants.length}</p>
         </div>
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 border-l-4 border-l-zinc-500">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 sm:p-6 border-l-4 border-l-zinc-500">
           <h3 className="text-zinc-400 text-sm mb-2">Organic / Direct</h3>
           <p className="text-3xl font-bold text-white">{organicTenants.length}</p>
         </div>
       </div>
 
-      <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 overflow-hidden">
+      <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 sm:p-6 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-zinc-400">
             <thead className="text-xs text-zinc-500 uppercase bg-zinc-950/50">
