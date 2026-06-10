@@ -1191,6 +1191,130 @@ export async function getGlobalAnalytics() {
   };
 }
 
+// ---- GROWTH INTELLIGENCE AGGREGATIONS ----
+
+export async function getGrowthMetrics() {
+  const { db } = await connectDb();
+  let signups = 0, newWorkspaces = 0, transactionsCreated = 0, budgetsCreated = 0, reportsGenerated = 0, teamInvitesSent = 0;
+  
+  if (db) {
+    try {
+      signups = await db.collection('users').countDocuments();
+      newWorkspaces = await db.collection('tenants').countDocuments();
+      transactionsCreated = await db.collection('transactions').countDocuments();
+      budgetsCreated = await db.collection('budgets').countDocuments();
+      reportsGenerated = await db.collection('logs').countDocuments({ action: 'Report Exported' });
+      teamInvitesSent = await db.collection('logs').countDocuments({ action: 'Team Member Invited' });
+    } catch (e) {}
+  } else {
+    const data = initLocalDb();
+    signups = data.users.length;
+    newWorkspaces = data.tenants.length;
+    transactionsCreated = data.transactions.length;
+    budgetsCreated = data.budgets.length;
+    reportsGenerated = data.logs.filter(l => l.action === 'Report Exported').length;
+    teamInvitesSent = data.logs.filter(l => l.action === 'Team Member Invited').length;
+  }
+  
+  return { signups, newWorkspaces, transactionsCreated, budgetsCreated, reportsGenerated, teamInvitesSent };
+}
+
+export async function getFinancialAggregates() {
+  const { db } = await connectDb();
+  let totalTransactions = 0, totalVolume = 0, totalBudgets = 0, totalReports = 0, totalClients = 0, recurringTransactions = 0;
+
+  if (db) {
+    try {
+      totalTransactions = await db.collection('transactions').countDocuments();
+      const volAgg = await db.collection('transactions').aggregate([{ $group: { _id: null, total: { $sum: '$amount' } } }]).toArray();
+      totalVolume = volAgg.length > 0 ? volAgg[0].total : 0;
+      totalBudgets = await db.collection('budgets').countDocuments();
+      totalReports = await db.collection('logs').countDocuments({ action: 'Report Exported' });
+      totalClients = await db.collection('clients').countDocuments();
+      recurringTransactions = await db.collection('recurring').countDocuments();
+    } catch (e) {}
+  } else {
+    const data = initLocalDb();
+    totalTransactions = data.transactions.length;
+    totalVolume = data.transactions.reduce((sum, t) => sum + t.amount, 0);
+    totalBudgets = data.budgets.length;
+    totalReports = data.logs.filter(l => l.action === 'Report Exported').length;
+    totalClients = data.clients.length;
+    recurringTransactions = data.recurring.length;
+  }
+
+  return { totalTransactions, totalVolume, totalBudgets, totalReports, totalClients, recurringTransactions };
+}
+
+export async function getWorkspaceHealth() {
+  const { db } = await connectDb();
+  let totalWorkspaces = 0, activeWorkspaces = 0, dormantWorkspaces = 0, avgUsersPerWorkspace = 0, avgAgeDays = 0;
+
+  if (db) {
+    try {
+      totalWorkspaces = await db.collection('tenants').countDocuments();
+      const active = await db.collection('logs').distinct('tenantId', { timestamp: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } });
+      activeWorkspaces = active.length;
+      dormantWorkspaces = Math.max(0, totalWorkspaces - activeWorkspaces);
+      
+      const usersCount = await db.collection('users').countDocuments();
+      avgUsersPerWorkspace = totalWorkspaces > 0 ? usersCount / totalWorkspaces : 0;
+      
+      const tenants = await db.collection('tenants').find({}).toArray();
+      const now = Date.now();
+      const totalAgeMs = tenants.reduce((sum, t) => sum + (now - new Date(t.createdAt).getTime()), 0);
+      avgAgeDays = tenants.length > 0 ? (totalAgeMs / tenants.length) / (1000 * 60 * 60 * 24) : 0;
+    } catch (e) {}
+  } else {
+    const data = initLocalDb();
+    totalWorkspaces = data.tenants.length;
+    const activeThreshold = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    const activeTenantIds = new Set(data.logs.filter(l => new Date(l.timestamp).getTime() >= activeThreshold).map(l => l.tenantId));
+    activeWorkspaces = activeTenantIds.size;
+    dormantWorkspaces = Math.max(0, totalWorkspaces - activeWorkspaces);
+    avgUsersPerWorkspace = totalWorkspaces > 0 ? data.users.length / totalWorkspaces : 0;
+    
+    const now = Date.now();
+    const totalAgeMs = data.tenants.reduce((sum, t) => sum + (now - new Date(t.createdAt).getTime()), 0);
+    avgAgeDays = totalWorkspaces > 0 ? (totalAgeMs / totalWorkspaces) / (1000 * 60 * 60 * 24) : 0;
+  }
+
+  const healthScore = totalWorkspaces > 0 ? Math.round((activeWorkspaces / totalWorkspaces) * 100) : 0;
+
+  return { totalWorkspaces, activeWorkspaces, dormantWorkspaces, workspacesCreated: totalWorkspaces, workspacesDeleted: 0, avgAgeDays, avgUsersPerWorkspace, healthScore };
+}
+
+export async function getUTMAcquisitionStats() {
+  const { db } = await connectDb();
+  const sources: Record<string, number> = {};
+  const mediums: Record<string, number> = {};
+  const campaigns: Record<string, number> = {};
+
+  if (db) {
+    try {
+      const tenants = await db.collection('tenants').find({ attribution: { $exists: true } }).toArray();
+      tenants.forEach(t => {
+        const attr = t.attribution || {};
+        if (attr.utm_source) sources[attr.utm_source] = (sources[attr.utm_source] || 0) + 1;
+        if (attr.utm_medium) mediums[attr.utm_medium] = (mediums[attr.utm_medium] || 0) + 1;
+        if (attr.utm_campaign) campaigns[attr.utm_campaign] = (campaigns[attr.utm_campaign] || 0) + 1;
+      });
+    } catch (e) {}
+  } else {
+    const data = initLocalDb();
+    data.tenants.forEach(t => {
+      if (t.attribution) {
+        if (t.attribution.utm_source) sources[t.attribution.utm_source] = (sources[t.attribution.utm_source] || 0) + 1;
+        if (t.attribution.utm_medium) mediums[t.attribution.utm_medium] = (mediums[t.attribution.utm_medium] || 0) + 1;
+        if (t.attribution.utm_campaign) campaigns[t.attribution.utm_campaign] = (campaigns[t.attribution.utm_campaign] || 0) + 1;
+      }
+    });
+  }
+  
+  return { sources, mediums, campaigns };
+}
+
+
 
 type AccountUpdate = Partial<Omit<Account, 'id' | '_id' | 'tenantId' | 'createdAt'>>;
 

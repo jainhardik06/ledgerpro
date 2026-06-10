@@ -64,6 +64,10 @@ It is designed specifically for **Small Businesses, Freelancers, Student Clubs, 
     <h3>📈 Measurement Infrastructure</h3>
     <p>Integrated GA4 and PostHog for real-time traffic and behavioral analytics. Includes UTM persistence, a dedicated Growth Dashboard, and full SEO configuration (dynamic sitemap, tailored robots.txt).</p>
   </div>
+  <div style="border: 1px solid #14b8a630; padding: 15px; border-radius: 12px; background: rgba(20, 184, 166, 0.05);">
+    <h3>🧠 Growth Intelligence Center</h3>
+    <p>A founder-grade mission control center pulling from real DB aggregations, PostHog Funnels, GA4, and Google Search Console. Includes Real-time AI crawler detection via Next.js Proxy.</p>
+  </div>
 </div>
 
 ### More Superpowers
@@ -186,6 +190,11 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=G-JZ0LD0YTJE
 NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION=your-google-verification-code
 NEXT_PUBLIC_POSTHOG_KEY=phc_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
+
+# Growth Intelligence Center API Keys (Server-Side)
+POSTHOG_PERSONAL_API_KEY=phx_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+POSTHOG_PROJECT_ID=463167
+GOOGLE_APPLICATION_CREDENTIALS=path/to/your/google-service-account.json
 ```
 
 Generate a local Super Admin hash:
