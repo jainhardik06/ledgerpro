@@ -201,9 +201,12 @@ export interface SystemMaintenance {
 }
 
 const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_GROWTH_URI = process.env.MONGODB_GROWTH_URI;
 
 let mongoClient: MongoClient | null = null;
+let mongoGrowthClient: MongoClient | null = null;
 let useLocalDb = false;
+let useLocalGrowthDb = false;
 
 const DATA_DIR = path.join(process.cwd(), '.data');
 const DB_FILE = path.join(DATA_DIR, 'local_db.json');
@@ -404,6 +407,49 @@ export async function connectDb() {
       throw error;
     }
     useLocalDb = true;
+    initLocalDb();
+    return { client: null, db: null };
+  }
+}
+
+export async function connectGrowthDb() {
+  if (useLocalGrowthDb) return { client: null, db: null };
+  if (mongoGrowthClient) return { client: mongoGrowthClient, db: mongoGrowthClient.db() };
+
+  if (!MONGODB_GROWTH_URI) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('[FATAL] MONGODB_GROWTH_URI is not set. Refusing to start production with local JSON storage.');
+    }
+    console.warn('[Database] MONGODB_GROWTH_URI not set. Using local file-based database at .data/local_db.json for growth data');
+    useLocalGrowthDb = true;
+    initLocalDb(); // Reusing the local db logic for simplicity in dev when no uri is provided
+    return { client: null, db: null };
+  }
+
+  try {
+    mongoGrowthClient = new MongoClient(MONGODB_GROWTH_URI, {
+      connectTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 10000,
+    });
+    await mongoGrowthClient.connect();
+    const db = mongoGrowthClient.db();
+
+    // Create indexes for growth collections
+    try {
+      await db.collection('directories').createIndex({ status: 1 });
+      await db.collection('directory_submissions').createIndex({ directoryId: 1, submittedAt: -1 });
+      await db.collection('social_profiles').createIndex({ platform: 1 }, { unique: true });
+    } catch (e) {
+      console.warn('[Database] Failed to create growth indexes', e);
+    }
+
+    return { client: mongoGrowthClient, db };
+  } catch (error) {
+    mongoGrowthClient = null;
+    if (process.env.NODE_ENV === 'production') {
+      throw error;
+    }
+    useLocalGrowthDb = true;
     initLocalDb();
     return { client: null, db: null };
   }

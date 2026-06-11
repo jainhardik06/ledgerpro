@@ -18,6 +18,7 @@ const primaryNav = [
   { name: 'Global Users', href: '/super-admin/users', icon: Users },
   { name: 'Revenue', href: '/super-admin/revenue', icon: LineChart },
   { name: 'Growth & Funnels', href: '/super-admin/growth', icon: TrendingUp },
+  { name: 'Discovery Engine', href: '/super-admin/discovery', icon: Search },
   { name: 'Attribution', href: '/super-admin/attribution', icon: Activity },
 ];
 
