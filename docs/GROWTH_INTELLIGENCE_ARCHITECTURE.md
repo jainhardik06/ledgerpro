@@ -5,22 +5,16 @@ The Growth Intelligence Center acts as an aggregation and visualization layer on
 
 ## Architectural Components
 
-### 1. Aggregation API Layer
-**Path**: `src/app/api/super-admin/growth/route.ts`
-- **Role**: Serves as the central data orchestrator. It fetches, sanitizes, and aggregates data from the Database, PostHog, GA4, and Google Search Console APIs.
-- **Endpoints**:
-  - `GET /api/super-admin/growth/executive`
-  - `GET /api/super-admin/growth/acquisition`
-  - `GET /api/super-admin/growth/funnel`
-  - `GET /api/super-admin/growth/retention`
-  - `GET /api/super-admin/growth/usage`
-  - `GET /api/super-admin/growth/workspaces`
-  - `GET /api/super-admin/growth/financials`
-  - `GET /api/super-admin/growth/seo`
-  - `GET /api/super-admin/growth/ai-discovery`
-  - `GET /api/super-admin/growth/health`
-  - `GET /api/super-admin/growth/realtime`
-  - `GET /api/super-admin/growth/predictive`
+### 1. Data Aggregation Layer
+**Path**: `src/lib/external-apis.ts`
+- **Role**: Serves as the central data orchestrator for Growth Intelligence. It exposes asynchronous server functions that fetch, sanitize, and aggregate data from PostHog, GA4, and Google Search Console APIs.
+- **Functions**:
+  - `fetchPostHogFunnels()`
+  - `fetchPostHogRetention()`
+  - `fetchGA4Traffic()`
+  - `fetchPostHogEvents()`
+  - `fetchGSCSearch()`
+- **Usage**: These functions are called directly within Next.js Server Components (e.g., `src/app/super-admin/growth/page.tsx`) to render dashboards, rather than exposing an intermediate REST API.
 
 ### 2. External API Clients
 - **PostHog Client**: Utilizes the PostHog REST API (via Personal API Key) to fetch funnel conversions, retention cohorts, feature usage metrics, and active user stats.

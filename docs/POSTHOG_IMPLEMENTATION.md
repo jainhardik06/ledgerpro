@@ -15,11 +15,13 @@ We track both client-side and server-side events to ensure reliable capture of c
 
 ## Code Structure
 
-### 1. `src/lib/posthog.ts`
-Provides a unified interface for analytics, separating client-side logic from server-side singletons.
+### 1. `src/lib/posthog.ts` (Client)
+Provides a unified interface for analytics on the client side using `posthog-js`.
 - `captureEvent(eventName, properties)`
 - `identifyUser(userId, traits)`
-- Server-side `PostHogClient()` instantiation for reliable Node.js tracking.
+
+### 2. `src/lib/posthog-server.ts` (Server)
+Provides a server-side `PostHogClient()` instantiation using `posthog-node` for reliable Node.js tracking. It is used in Next.js API Routes and Server Components.
 
 ### 2. `src/components/analytics/posthog-provider.tsx`
 Wraps the application in a `PostHogProvider` ensuring client-side initialization via `posthog-js/react`. Disables automatic pageview capture.
@@ -34,7 +36,7 @@ Handled by `PostHogPageView` (integrated with App Router) which manually trigger
 
 1. Install `posthog-node` for server-side event capture.
 2. Refactor existing `PostHogProvider` to `src/components/analytics/posthog-provider.tsx`.
-3. Create `src/lib/posthog.ts` wrapper.
+3. Create `src/lib/posthog.ts` wrapper for client logic and `src/lib/posthog-server.ts` for server logic.
 4. Integrate `captureEvent` into core API Routes (auth, transactions, budgets, etc.) using `posthog-node` for high reliability.
 5. Integrate `captureEvent` into frontend components (`CommandPalette`, `Reports`) using `posthog-js`.
 6. Ensure duplicate events are mitigated by only triggering upon successful API actions (e.g. tracking `TRANSACTION_CREATED` only after DB insertion succeeds).

@@ -3,6 +3,19 @@
 ## Overview
 Money OS is evolving from a single-tenant application into a full SaaS platform. To manage and accelerate this growth, the Super Admin requires a "Growth Intelligence Center" – a founder-grade command center that consolidates data from internal databases, PostHog, GA4, Google Search Console, and Bing Webmaster Tools.
 
+## Current Implementation Status
+> **Note**: This is a Product Requirements Document (PRD). Not all features listed below are currently implemented.
+> 
+> **Currently Built & Active**:
+> - PostHog Funnels and Retention cohorts via `fetchPostHogFunnels()` and `fetchPostHogRetention()`
+> - Google Analytics 4 active traffic via `fetchGA4Traffic()`
+> - Google Search Console organic queries via `fetchGSCSearch()`
+> 
+> **Aspirational / Backlog**:
+> - Real-time Websockets for live operations feeds
+> - Predictive ML models for projection metrics
+> - Granular AI crawler/bot identification logs
+
 ## Core Objectives
 - Answer key growth questions: Where do users come from? What do they do? What converts? What retains?
 - Provide actionable, dense, and beautifully visualized data using real metrics only.
