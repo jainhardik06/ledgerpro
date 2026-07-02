@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import TopNav from '../components/TopNav.astro';
+import BrandMark from '../components/BrandMark.astro';
 ---
 
 <Layout
@@ -30,7 +31,7 @@ import TopNav from '../components/TopNav.astro';
 
       <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
         <a
-          href="https://moneyos.webasthetic.in/register"
+          href="https://moneyos.webasthetic.in/signup"
           class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-white text-black text-[14px] font-medium rounded-lg hover:bg-neutral-200 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black"
         >
           Start for free →
@@ -189,7 +190,7 @@ import TopNav from '../components/TopNav.astro';
         Start free. No credit card. No trial period. The core features are always free.
       </p>
       <a
-        href="https://moneyos.webasthetic.in/register"
+        href="https://moneyos.webasthetic.in/signup"
         class="inline-flex items-center px-6 py-3 bg-white text-black text-[14px] font-medium rounded-lg hover:bg-neutral-200 transition-colors duration-150"
       >
         Create your free account →
@@ -199,10 +200,8 @@ import TopNav from '../components/TopNav.astro';
     <!-- ── FOOTER ── -->
     <footer class="border-t border-neutral-900 py-10">
       <div class="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div class="flex items-center gap-2">
-          <div class="w-5 h-5 bg-white rounded-sm flex items-center justify-center">
-            <span class="text-black text-[10px] font-bold leading-none">M</span>
-          </div>
+        <div class="flex items-center gap-2 text-neutral-400">
+          <BrandMark size={16} />
           <span class="text-[13px] text-neutral-400">Money OS</span>
         </div>
         <div class="flex items-center gap-5 text-[13px] text-neutral-600">
@@ -210,7 +209,7 @@ import TopNav from '../components/TopNav.astro';
           <a href="/blog" class="hover:text-neutral-400 transition-colors">Blog</a>
           <a href="/changelog" class="hover:text-neutral-400 transition-colors">Changelog</a>
           <a href="/comparisons" class="hover:text-neutral-400 transition-colors">Compare</a>
-          <a href="https://moneyos.webasthetic.in/register" class="hover:text-neutral-400 transition-colors">Sign up</a>
+          <a href="https://moneyos.webasthetic.in/signup" class="hover:text-neutral-400 transition-colors">Sign up</a>
         </div>
       </div>
     </footer>

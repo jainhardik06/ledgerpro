@@ -11,7 +11,8 @@
  * Usage: npm run growth:topics [-- --count=10]
  */
 import { connect } from './lib/growth.mjs';
-import { complete, parseJson, hasApiKey } from './lib/llm.mjs';
+import { parseJson, hasApiKey } from './lib/llm.mjs';
+import { generateStage } from './lib/rate-limit.mjs';
 import { BLOG_CATEGORIES } from './lib/content.mjs';
 
 const countArg = process.argv.find((a) => a.startsWith('--count='));
@@ -41,7 +42,9 @@ async function main() {
       .map((d) => d.primaryKeyword);
 
     console.log(`Discovering ${COUNT} topics (avoiding ${existing.length} existing)...`);
-    const raw = await complete({ system: SYSTEM, prompt: prompt(existing), maxTokens: 3000, temperature: 0.9, json: true });
+    const raw = await generateStage('discover-topics', {
+      system: SYSTEM, prompt: prompt(existing), maxTokens: 4000, temperature: 0.9, json: true,
+    });
     const { topics } = parseJson(raw);
 
     let inserted = 0;

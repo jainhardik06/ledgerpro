@@ -3,12 +3,16 @@ name: Auto Blog (Money OS Discovery)
 # Publishes one new blog post roughly every 3 days via the Content Engine.
 # GitHub cron has no native "every 3 days", so we run on days 1,4,7,…,28 at
 # 09:00 UTC — an even ~3-day cadence that resets cleanly each month.
+#
+# Generation is deliberately paced against Groq's free-tier rate limits (see
+# scripts/lib/rate-limit.mjs) — a single run takes a few minutes, not seconds.
+# That's fine: there is no time pressure on a ~3-day publishing cadence.
 on:
   schedule:
     - cron: '0 9 1,4,7,10,13,16,19,22,25,28 * *'
   workflow_dispatch: {}   # allow manual runs from the Actions tab
 
-# The workflow commits the generated MDX back to the repo.
+# The workflow commits the generated MDX back to this repo.
 permissions:
   contents: write
 
@@ -19,9 +23,7 @@ concurrency:
 jobs:
   generate:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: money-os-discovery
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,7 +33,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: money-os-discovery/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci

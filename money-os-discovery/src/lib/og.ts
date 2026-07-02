@@ -77,11 +77,43 @@ export async function renderOgImage({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#000000',
-              fontSize: '26px',
-              fontWeight: 700,
             },
-            'M'
+            // The Money OS brand mark ("Dynamic Ledger Gate": interlocking
+            // offset chevrons) — identical paths to BrandMark.astro / the
+            // root product's BrandMark.tsx, so OG cards match the brand.
+            {
+              type: 'svg',
+              props: {
+                width: 26,
+                height: 26,
+                viewBox: '0 0 32 32',
+                fill: 'none',
+                style: { display: 'flex' },
+                children: [
+                  {
+                    type: 'path',
+                    props: {
+                      d: 'M 6 11 L 16 21 L 26 11',
+                      stroke: '#000000',
+                      strokeWidth: 3.2,
+                      strokeLinecap: 'round',
+                      strokeLinejoin: 'round',
+                    },
+                  },
+                  {
+                    type: 'path',
+                    props: {
+                      d: 'M 6 21 L 16 11 L 26 21',
+                      stroke: '#000000',
+                      strokeWidth: 3.2,
+                      strokeLinecap: 'round',
+                      strokeLinejoin: 'round',
+                      opacity: 0.5,
+                    },
+                  },
+                ],
+              },
+            }
           ),
           el(
             'div',

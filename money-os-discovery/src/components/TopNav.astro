@@ -1,4 +1,6 @@
 ---
+import BrandMark from './BrandMark.astro';
+
 const currentPath = Astro.url.pathname;
 
 const navLinks = [
@@ -20,9 +22,9 @@ function isActive(href: string) {
   <div class="max-w-7xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between gap-4">
 
     <!-- Logo -->
-    <a href="/" class="flex items-center gap-2 shrink-0" aria-label="Money OS home">
-      <div class="w-6 h-6 bg-white rounded-sm flex items-center justify-center">
-        <span class="text-black text-[11px] font-bold leading-none">M</span>
+    <a href="/" class="flex items-center gap-2.5 shrink-0 group" aria-label="Money OS home">
+      <div class="p-1.5 rounded-md bg-white/[0.04] border border-white/[0.04] group-hover:bg-white/[0.08] group-hover:border-white/[0.08] transition-all duration-200 flex items-center justify-center text-white">
+        <BrandMark size={16} />
       </div>
       <span class="text-[13px] font-semibold text-white tracking-tight">Money OS</span>
       <span class="text-[11px] text-neutral-600 font-medium border border-neutral-800 rounded px-1.5 py-0.5 hidden sm:inline">docs</span>
@@ -53,7 +55,7 @@ function isActive(href: string) {
         Sign in
       </a>
       <a
-        href="https://moneyos.webasthetic.in/register"
+        href="https://moneyos.webasthetic.in/signup"
         class="inline-flex items-center px-3 py-1.5 bg-white text-black text-[13px] font-medium rounded-md hover:bg-neutral-200 transition-colors duration-150 focus:outline-none focus:ring-1 focus:ring-white focus:ring-offset-1 focus:ring-offset-black"
       >
         Start free

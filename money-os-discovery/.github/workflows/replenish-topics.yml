@@ -15,16 +15,14 @@ on:
 jobs:
   replenish:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: money-os-discovery
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: money-os-discovery/package-lock.json
+          cache-dependency-path: package-lock.json
       - run: npm ci
       - name: Discover topics
         env:

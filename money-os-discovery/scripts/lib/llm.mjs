@@ -13,7 +13,11 @@ export function getClient() {
   if (!hasApiKey()) {
     throw new Error('GROQ_API_KEY is not set. Add it to .env.local or CI secrets.');
   }
-  return new Groq({ apiKey: process.env.GROQ_API_KEY });
+  // maxRetries: 0 — retry/backoff/pacing is handled explicitly by
+  // scripts/lib/rate-limit.mjs so we have full visibility and control over
+  // timing (the SDK's built-in retries would otherwise retry silently and
+  // unpredictably, fighting with our own pacing).
+  return new Groq({ apiKey: process.env.GROQ_API_KEY, maxRetries: 0 });
 }
 
 export function getModel() {
@@ -26,6 +30,15 @@ export function getModel() {
 /**
  * Call the model and return the assistant text.
  * Set `json: true` to request strict JSON output (model must support it).
+ *
+ * `openai/gpt-oss-120b` (our default model) is a reasoning model: some of its
+ * `max_tokens` budget is spent on hidden reasoning before the visible answer,
+ * which — combined with an undersized budget — silently truncates output
+ * mid-sentence instead of erroring. We fix this two ways: request
+ * `reasoning_effort: 'low'` to minimize that overhead, and return
+ * `finishReason` so callers can detect truncation (`finish_reason ===
+ * 'length'`) and retry with a bigger budget rather than publish a cut-off
+ * sentence.
  */
 export async function complete({ system, prompt, maxTokens = 4096, temperature = 0.7, json = false }) {
   const client = getClient();
@@ -38,9 +51,14 @@ export async function complete({ system, prompt, maxTokens = 4096, temperature =
     messages,
     max_tokens: maxTokens,
     temperature,
+    reasoning_effort: 'low',
     ...(json ? { response_format: { type: 'json_object' } } : {}),
   });
-  return (res.choices?.[0]?.message?.content ?? '').trim();
+  const choice = res.choices?.[0];
+  return {
+    text: (choice?.message?.content ?? '').trim(),
+    finishReason: choice?.finish_reason ?? null,
+  };
 }
 
 /**

@@ -36,6 +36,30 @@ export function readingTime(markdown) {
   return Math.max(1, Math.round(words / 220));
 }
 
+/**
+ * Normalize "smart" typography the model tends to emit (curly quotes,
+ * non-breaking/en/em dashes, ellipsis character, non-ASCII space variants
+ * before "%" signs) to plain ASCII. A prompt instruction alone isn't
+ * reliable enough — this is a deterministic fix applied to every generated
+ * string before it's written to disk.
+ */
+export function normalizeTypography(text) {
+  return String(text)
+    // curly single/double quotes -> straight quotes
+    .replace(/[‘’]/g, "'")
+    .replace(/[“”]/g, '"')
+    // hyphen / non-breaking hyphen / figure dash / en dash -> plain hyphen
+    .replace(/[‐‑‒–]/g, '-')
+    // em dash -> spaced hyphen
+    .replace(/—/g, ' - ')
+    // ellipsis character -> three periods
+    .replace(/…/g, '...')
+    // any Unicode space variant (non-breaking, thin, narrow no-break,
+    // ideographic, etc.) -> plain space
+    .replace(/[  -   　]/g, ' ')
+    .replace(/[ \t]{2,}/g, ' ');
+}
+
 /** YAML-escape a scalar string (double-quoted form). */
 function yamlStr(s) {
   return `"${String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
