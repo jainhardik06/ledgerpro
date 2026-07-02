@@ -1,0 +1,52 @@
+---
+title: "Accounts"
+description: "How to set up and use accounts in Money OS to separate checking, savings, credit cards, and client-specific funds within one workspace."
+keywords: ["accounts", "money os accounts", "multiple bank accounts", "financial account tracking"]
+category: "Getting Started"
+author: "Money OS Team"
+publishDate: 2026-06-20
+status: "published"
+sidebarPosition: 8
+relatedPages: ["managing-transactions", "creating-workspace"]
+faq:
+  - question: "How many accounts can I add?"
+    answer: "There's no hard limit on the free tier for account count. Add one per real-world bank account, credit card, or wallet you want to track separately."
+  - question: "Does Money OS connect directly to my bank?"
+    answer: "No — Money OS doesn't do live bank connections (Plaid-style). You create an account manually with a starting balance, then import transactions via CSV or log them by hand. This is intentional: it works in regions and for banks where automated connections aren't available."
+  - question: "What account types are supported?"
+    answer: "Account type is a free-text field, not a fixed list — common values are Checking, Savings, Credit Card, and Cash, but you can name it whatever matches your real-world account."
+  - question: "Can I have both business and personal accounts in one workspace?"
+    answer: "Yes, but it's not recommended for tax clarity. Most freelancers keep a dedicated workspace or dedicated accounts strictly for business, since mixing personal and business transactions makes tax-time reporting far harder."
+  - question: "What happens to an account's transaction history if I delete it?"
+    answer: "Deleting an account is a destructive action — the transactions tied to it are affected. Archive an account instead of deleting it if you want to stop using it but keep its history intact."
+---
+
+## What an account represents
+
+An account in Money OS mirrors a real-world place your money lives: a checking account, a savings account, a credit card, or a cash float. Every transaction you log or import belongs to exactly one account. This is what lets Money OS show you an accurate balance per account, not just a single blended number for your whole business.
+
+## Creating an account
+
+1. Go to **Accounts** in your workspace sidebar.
+2. Click **New Account**.
+3. Enter:
+   - **Name** — e.g. "Business Checking", "Amex Business Card"
+   - **Type** — free text; use whatever matches how you think about it (Checking, Savings, Credit Card, Cash)
+   - **Initial Balance** — the account's real balance on the day you start tracking it in Money OS
+
+The initial balance is the anchor point. Every transaction you add after that adjusts the running balance from there — Money OS doesn't reach out to your bank to verify it, so accuracy depends on you entering the correct starting number.
+
+## Why multiple accounts matter
+
+A freelancer with one card for business and one for personal expenses should create two accounts — even if only the business one gets tracked closely. An agency might have a primary operating account plus a separate account for client trust funds. Splitting by account, rather than dumping everything into one ledger, is what makes per-account balances and per-account reporting meaningful instead of a single number that mixes contexts.
+
+## No live bank connections — why, and what to do instead
+
+Money OS does not use Plaid or a similar service to pull transactions automatically. This is a deliberate trade-off: automated bank connections are unavailable or unreliable for many banks outside the US, and they add a recurring cost that would have to be passed on. Instead:
+
+- **Import via CSV.** Export your bank statement and import it — see [Managing Transactions](/docs/managing-transactions) for the exact format.
+- **Log manually.** For accounts with low transaction volume, manual entry takes under a minute per transaction.
+
+## Account balances in reports
+
+Every report that breaks down spending (Expense Summary, Cash Flow) can be filtered by account, so you can answer questions like "what did the business credit card cost me this quarter" without manually filtering your entire transaction list. If you only ever use one account, this filtering is invisible — it only becomes useful once you're tracking more than one.

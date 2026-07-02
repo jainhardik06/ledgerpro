@@ -1,0 +1,36 @@
+---
+import UseCaseLayout from '../../layouts/UseCaseLayout.astro';
+---
+
+<UseCaseLayout
+  title="Nonprofit Expense Tracking Software — Free for Small Organizations | Money OS"
+  headline="Financial transparency your board and donors can actually see."
+  subheadline="Track grants, donations, and program expenses with the clarity a nonprofit needs at audit time — without accounting software built for corporations."
+  description="Money OS is a free expense tracking tool for small nonprofits and community organizations — separate accounts for restricted and unrestricted funds, role-based board access, and audit-ready reports."
+  audience="Nonprofits & Community Organizations"
+  slug="nonprofit-expense-tracking"
+  benefits={[
+    "Separate accounts for restricted grant funds vs. general operating funds",
+    "Role-based access lets board members view finances without editing them",
+    "Full audit trail of every transaction — required for grant compliance reviews",
+    "Category budgets keep program spending within grant-approved limits",
+    "Generate a clean financial summary for board meetings in minutes, not hours",
+    "Free tier covers the core features a small nonprofit actually needs",
+  ]}
+  features={[
+    { name: 'Fund Separation via Accounts', desc: 'Create a distinct account for each restricted grant and one for general operating funds. Every transaction posts to the right account, so you can prove restricted money was spent on what it was restricted for.' },
+    { name: 'Board-Level Viewer Access', desc: 'Invite board members and grant officers with Viewer role — full financial visibility, zero risk of an accidental edit. Treasurers keep Admin access for actual bookkeeping.' },
+    { name: 'Immutable Audit Log', desc: 'Every transaction edit, budget change, and account update is recorded permanently. When a grantor asks "who approved this expense and when," the answer is already there.' },
+    { name: 'Program Budget Tracking', desc: 'Set a budget per program or grant category. Get an alert before program spending exceeds what the grant actually approved — catch it before the grant report does.' },
+    { name: 'Board-Ready Reports', desc: 'Generate an Expense Summary or Cash Flow report scoped to any date range in one click — the numbers a board meeting or annual report actually needs, without a manual spreadsheet rebuild.' },
+    { name: 'CSV Import From Any Bank', desc: 'Nonprofit bank accounts rarely have fancy integrations. Import a CSV export directly — works with virtually any bank or credit union statement format.' },
+  ]}
+  faqs={[
+    { question: 'Can Money OS track restricted vs. unrestricted funds separately?', answer: 'Yes — create a separate account for each restricted grant. Every transaction against that grant posts to its own account, so the balance and history are isolated from your general operating funds.' },
+    { question: 'Is Money OS a replacement for full nonprofit accounting software?', answer: 'No. Money OS handles day-to-day expense tracking, budgeting, and transparency reporting. For fund accounting with formal journal entries and 990 preparation, you still need dedicated nonprofit accounting software or an accountant — Money OS exports cleanly to hand that data off.' },
+    { question: 'Can our board members see the finances without being able to change anything?', answer: 'Yes. Assign board members the Viewer role. They see every transaction, budget, and report in real time but cannot edit or delete anything.' },
+    { question: 'How does this help with grant compliance reporting?', answer: 'The combination of a dedicated account per grant, category budgets matching approved line items, and a full audit trail gives you exactly what most grant officers ask for: proof that restricted funds were spent as approved, with a paper trail for every transaction.' },
+    { question: 'Is there a nonprofit discount?', answer: 'The core features freelancers and small teams use — unlimited transaction tracking, budgets, reports, and up to 3 team members — are free on every workspace, nonprofit or not. There is no separate nonprofit pricing tier because the free tier already covers what a small organization needs.' },
+  ]}
+  ctaHeadline="Give your board the clarity they're asking for."
+/>

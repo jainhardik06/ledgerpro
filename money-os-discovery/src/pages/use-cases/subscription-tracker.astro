@@ -1,0 +1,36 @@
+---
+import UseCaseLayout from '../../layouts/UseCaseLayout.astro';
+---
+
+<UseCaseLayout
+  title="Subscription Tracker for Freelancers & Small Teams | Money OS"
+  headline="Every subscription, tracked automatically. No more surprise renewals."
+  subheadline="Set up your software subscriptions and recurring bills once — Money OS logs them automatically on schedule, so you always know what's draining your account every month."
+  description="Money OS is a free subscription tracker that automates recurring expense logging — Daily, Weekly, or Monthly schedules — so software subscriptions, retainers, and rent never fall through the cracks."
+  audience="Freelancers & Small Teams"
+  slug="subscription-tracker"
+  benefits={[
+    "Set up a subscription once — it logs itself automatically on schedule",
+    "See your total monthly recurring spend in one number, not scattered across statements",
+    "Catch price increases immediately by comparing this month's charge to last",
+    "Recurring expenses count toward category budgets automatically, same as manual entries",
+    "Cancel a subscription and stop future charges from generating with one click",
+    "Works for recurring income too — track retainers and subscription revenue the same way",
+  ]}
+  features={[
+    { name: 'Automated Recurring Logging', desc: 'Set the amount, category, account, and schedule once. Money OS generates the transaction automatically on Daily, Weekly, or Monthly intervals — no manual re-entry, ever.' },
+    { name: 'Total Recurring Spend View', desc: 'See every active subscription and its monthly cost in one list. Most freelancers underestimate their total software spend until they see it added up in one place.' },
+    { name: 'Price Change Detection', desc: 'Because each subscription is a defined amount, a price increase shows up as a variance the moment you update the schedule after a renewal notice — instead of getting buried in a bank statement.' },
+    { name: 'Budget Integration', desc: 'Recurring transactions post to the same categories as manual expenses and count against category budgets automatically. Your "Software & Subscriptions" budget reflects reality without extra work.' },
+    { name: 'One-Click Cancellation', desc: 'Stop a subscription schedule any time. Past transactions it already generated stay in your ledger — only future occurrences stop.' },
+    { name: 'Recurring Income Tracking', desc: 'The same feature tracks recurring revenue: client retainers, subscription income, or recurring project fees post automatically on their billing schedule.' },
+  ]}
+  faqs={[
+    { question: 'What counts as a good use case for a recurring transaction?', answer: 'Anything with a fixed amount and fixed schedule: software subscriptions, rent, retainers, payroll. If the amount changes every time (like a utility bill), log it manually instead — a wrong fixed amount will silently misstate your budget every cycle.' },
+    { question: 'How is this different from my bank\'s subscription tracking feature?', answer: 'Bank-level subscription detection only sees what hits one account and often mislabels irregular charges. Money OS recurring transactions are something you define deliberately, so the amount, category, and schedule are always exactly what you intended.' },
+    { question: 'Does Money OS cancel my actual subscriptions for me?', answer: 'No — Money OS tracks and logs the expense, it does not have access to cancel your Adobe, Figma, or hosting account. Stopping the Money OS schedule only stops it from logging future transactions.' },
+    { question: 'Can I track subscriptions across multiple accounts?', answer: 'Yes. Every recurring transaction is linked to a specific account, so you can track subscriptions on a business card separately from ones on a personal card if you use both.' },
+    { question: 'What happens if a subscription price changes?', answer: 'Edit the recurring transaction and update the amount — the change applies from the next scheduled run forward. Past generated transactions keep their original amount, so your historical records stay accurate.' },
+  ]}
+  ctaHeadline="Stop re-typing the same expense every month."
+/>

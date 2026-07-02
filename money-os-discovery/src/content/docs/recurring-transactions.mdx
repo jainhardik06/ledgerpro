@@ -1,0 +1,61 @@
+---
+title: "Recurring Transactions"
+description: "Automate repeating income and expenses in Money OS — subscriptions, retainers, rent, and payroll — with daily, weekly, or monthly schedules."
+keywords: ["recurring transactions", "subscription tracking", "automated expenses", "money os"]
+category: "Core Features"
+author: "Money OS Team"
+publishDate: 2026-06-20
+status: "published"
+sidebarPosition: 7
+relatedPages: ["managing-transactions", "budgets"]
+faq:
+  - question: "What schedules does Money OS support for recurring transactions?"
+    answer: "Daily, Weekly, and Monthly. There is no custom interval (e.g. every 10 days) — for those, log the transaction manually or set it as monthly and adjust the amount when it runs."
+  - question: "Do recurring transactions run automatically, or do I need to trigger them?"
+    answer: "They run automatically on their scheduled next-run date. Money OS also exposes a manual trigger endpoint for testing or catching up a missed run."
+  - question: "Can a recurring transaction be linked to a specific account?"
+    answer: "Yes — every recurring transaction is tied to one account, the same as a manual transaction. If you track separate business and personal accounts, make sure you pick the right one when creating the schedule."
+  - question: "What happens if I delete a recurring transaction?"
+    answer: "Future occurrences stop being generated. Transactions that were already created from that schedule remain in your ledger — deleting the schedule does not retroactively remove past transactions."
+  - question: "Can I use recurring transactions for both income and expenses?"
+    answer: "Yes. Set the type to Credit for recurring income (retainers, rent collected) or Debit for recurring expenses (software subscriptions, payroll, rent paid)."
+---
+
+## Why recurring transactions matter
+
+If you pay for Figma every month, you have two choices: type the same $15 expense into Money OS on the same day every month, or set it up once as a recurring transaction and never think about it again. The second option is why this feature exists.
+
+Recurring transactions are for anything that repeats on a predictable schedule — software subscriptions, retainer income from a client, monthly rent, payroll, or a weekly freelancer payment. Set it up once; Money OS generates the actual transaction automatically when it's due.
+
+## Setting up a recurring transaction
+
+1. Go to **Recurring** in your workspace sidebar.
+2. Click **New Recurring Transaction**.
+3. Fill in:
+   - **Type** — Credit (money in) or Debit (money out)
+   - **Description** — what it is, e.g. "Adobe Creative Cloud" or "Client X Retainer"
+   - **Amount** — the fixed amount that recurs
+   - **Account** — which account this transaction posts to
+   - **Category** — for reporting and budget tracking (optional but recommended)
+   - **Interval** — Daily, Weekly, or Monthly
+   - **Next Run Date** — the next date this should generate a transaction
+
+Once saved, Money OS automatically creates a matching transaction on each scheduled date, exactly as if you'd logged it manually — it shows up in your transaction list, counts against any budget in its category, and appears in reports.
+
+## What counts as "recurring" vs. what doesn't
+
+Use recurring transactions for anything with a **fixed amount and fixed schedule**: subscriptions, rent, retainers, payroll. If the amount varies each time (like a utility bill), log it manually each month instead — a recurring schedule with the wrong amount will silently misstate your budget and reports every cycle until you catch it.
+
+## Interval behavior
+
+- **Daily** — generates a transaction every day. Rarely useful outside of automated systems; most teams use Weekly or Monthly.
+- **Weekly** — generates on the same day of the week as the next-run date you set.
+- **Monthly** — generates on the same day of the month. If you set a next-run date of the 31st and a month has 30 days, Money OS runs it on the last day of that shorter month.
+
+## Editing and stopping a schedule
+
+Open any recurring transaction from the Recurring list to change its amount, category, or interval — useful when a subscription price changes. To stop it permanently, delete the schedule. This does not touch transactions it already generated; your historical ledger stays intact.
+
+## How this affects budgets and reports
+
+Every transaction a recurring schedule generates is a normal transaction — it counts against category budgets the same way a manually logged expense does, and it appears in every report (Expense Summary, P&L, Cash Flow) exactly like any other entry. There's no separate "recurring" bucket to check; it's just part of your ledger.

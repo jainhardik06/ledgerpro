@@ -34,4 +34,6 @@ export const useCases: UseCaseEntry[] = [
   { slug: 'budget-tracker-agencies', audience: 'Agencies', ogTitle: 'Agency budgets that prevent scope creep.', blurb: 'Project and overhead budgets with real-time client spend and margin analysis.', group: 'Keyword' },
   { slug: 'club-finance-management', audience: 'Clubs & Organizations', ogTitle: 'Club finances that every member can trust.', blurb: 'Transparent fund tracking, event budgets, and a complete year-end financial record.', group: 'Keyword' },
   { slug: 'team-expense-management', audience: 'Teams', ogTitle: 'Team expenses. One workspace. Zero chaos.', blurb: 'Role-based access, direct expense logging, and a real-time team-wide picture.', group: 'Keyword' },
+  { slug: 'subscription-tracker', audience: 'Freelancers & Small Teams', ogTitle: 'Every subscription, tracked automatically.', blurb: 'Set up recurring expenses once — Money OS logs them on schedule, no surprise renewals.', group: 'Keyword' },
+  { slug: 'nonprofit-expense-tracking', audience: 'Nonprofits & Community Organizations', ogTitle: 'Financial transparency your board can see.', blurb: 'Restricted-fund accounts, board-level viewer access, and audit-ready reports.', group: 'Keyword' },
 ];
