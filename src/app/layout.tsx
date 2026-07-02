@@ -16,6 +16,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  // Required so relative OG/Twitter image paths resolve to absolute URLs
+  // site-wide. Per-page canonical tags are set individually via each page's
+  // own `alternates.canonical` — a blanket canonical here would incorrectly
+  // claim the homepage as canonical for every other page on the site.
+  metadataBase: new URL("https://moneyos.webasthetic.in"),
   title: "Money OS - Your Financial Operating System",
   description: "Secure, encrypted, and designed-for-purpose financial command center for modern teams.",
   verification: {
