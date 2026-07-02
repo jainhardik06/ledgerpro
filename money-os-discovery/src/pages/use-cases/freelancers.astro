@@ -1,0 +1,35 @@
+---
+import UseCaseLayout from '../../layouts/UseCaseLayout.astro';
+---
+
+<UseCaseLayout
+  title="Money OS for Freelancers — Expense Tracker & Finance Manager"
+  headline="Your freelance finances. Finally organized."
+  subheadline="Track every deductible expense, set budgets that hold, and generate a tax-ready report in seconds. Stop guessing what you owe in April."
+  description="Money OS is the financial command center for freelancers. Track business expenses, manage client billing, and generate tax-ready reports — all in one place."
+  audience="Freelancers"
+  slug="freelancers"
+  benefits={[
+    "Log business expenses the moment they happen — on any device",
+    "Auto-categorize purchases by type: software, travel, home office, equipment",
+    "See exactly which clients are profitable and which are draining time",
+    "Generate a complete tax-ready expense summary in under 60 seconds",
+    "Set monthly budgets per category with alerts before you overspend",
+    "Invite your accountant as a Viewer — no data entry on their end",
+  ]}
+  features={[
+    { name: 'Expense Categorization', desc: 'Pre-loaded with freelancer-specific categories: Software & Tools, Home Office, Equipment, Travel, Professional Development, Marketing. Customize to match your workflow.' },
+    { name: 'Tax Summary Report', desc: 'Every expense categorized and totaled, grouped by deductible category. Export as PDF or CSV. Hand directly to your accountant — no translation required.' },
+    { name: 'Client-Tagged Expenses', desc: 'Tag expenses to specific clients. Track reimbursable costs automatically. Export a billing summary to attach to your invoice.' },
+    { name: 'Budget Alerts', desc: 'Set monthly limits for your highest-spend categories. Get an email at 80% before you blow the budget.' },
+    { name: 'CSV Import', desc: 'Export a CSV from your bank or credit card. Import in 3 clicks. Money OS maps your columns automatically and de-duplicates entries.' },
+    { name: 'Accountant Access', desc: 'Invite your accountant as a Viewer. They see everything, export what they need, and never touch your live data.' },
+  ]}
+  faqs={[
+    { question: 'What expenses can I track for tax deductions?', answer: 'Freelancers can deduct home office costs, software subscriptions, equipment, professional development, travel for client work, internet and phone (proportional), and marketing expenses. Money OS categorizes all of these automatically.' },
+    { question: 'How does Money OS handle multiple income sources?', answer: 'Tag each income transaction with a category (Consulting, Design, Writing) and optionally a client. The Income Summary report breaks down revenue by source and client.' },
+    { question: 'Do I need accounting software if I use Money OS?', answer: 'Money OS handles day-to-day tracking and client billing. Your accountant still needs accounting software (QuickBooks, Xero) for tax filing. Money OS exports data in formats compatible with both.' },
+    { question: 'How is Money OS better than a spreadsheet?', answer: 'Spreadsheets require manual entry for everything and break under volume. Money OS imports your bank CSV automatically, categorizes transactions, tracks budgets in real time, and generates reports in seconds — without any formula maintenance.' },
+    { question: 'Is my financial data secure?', answer: 'Yes. All data is encrypted at rest (AES-256) and in transit (TLS 1.3). Money OS does not sell or share your financial data. See the Security docs for full details.' },
+  ]}
+/>

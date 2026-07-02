@@ -1,0 +1,81 @@
+---
+import { getCollection, render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import TopNav from '../../components/TopNav.astro';
+import AdSlot from '../../components/AdSlot.astro';
+
+export async function getStaticPaths() {
+  const resources = await getCollection('resources', ({ data }) => data.status === 'published');
+  return resources.map((r) => ({ params: { slug: r.id }, props: { resource: r } }));
+}
+
+const { resource } = Astro.props;
+const { Content } = await render(resource);
+const { data } = resource;
+
+const typeLabels: Record<string, string> = {
+  tool: 'Tool', template: 'Template', calculator: 'Calculator', guide: 'Guide', checklist: 'Checklist',
+};
+
+const faqSchema = data.faq && data.faq.length > 0 ? {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: data.faq.map((f: { question: string; answer: string }) => ({ '@type': 'Question', name: f.question, acceptedAnswer: { '@type': 'Answer', text: f.answer } })),
+} : undefined;
+---
+
+<Layout title={`${data.title} | Money OS`} description={data.description} ogImage={`/og/resources/${resource.id}.png`}>
+  <TopNav />
+
+  <main class="max-w-2xl mx-auto px-4 sm:px-6 py-14">
+    <nav class="flex items-center gap-1.5 text-[13px] text-neutral-500 mb-8">
+      <a href="/" class="hover:text-neutral-300 transition-colors">Home</a>
+      <span class="text-neutral-700">/</span>
+      <a href="/resources" class="hover:text-neutral-300 transition-colors">Resources</a>
+      <span class="text-neutral-700">/</span>
+      <span class="text-neutral-300 font-medium truncate">{data.title}</span>
+    </nav>
+
+    <header class="mb-8">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">{typeLabels[data.resourceType] ?? data.resourceType}</span>
+        {data.isFree && <span class="text-[10px] font-medium text-emerald-400 border border-emerald-900/60 rounded px-1.5 py-0.5">Free</span>}
+      </div>
+      <h1 class="text-[30px] sm:text-[36px] font-semibold text-neutral-100 tracking-tight leading-[1.15] mb-4">{data.title}</h1>
+      <p class="text-[16px] text-neutral-400 leading-relaxed mb-6">{data.description}</p>
+      {(data.downloadUrl || data.externalUrl) && (
+        <a href={data.downloadUrl ?? data.externalUrl} class="inline-flex items-center px-4 py-2 bg-white text-black text-[13px] font-medium rounded-md hover:bg-neutral-200 transition-colors">
+          {data.downloadUrl ? 'Download' : 'Open resource'} →
+        </a>
+      )}
+      <div class="border-t border-neutral-800 mt-8"></div>
+    </header>
+
+    <article
+      class="prose prose-invert prose-sm max-w-none
+        prose-headings:font-semibold prose-headings:tracking-tight
+        prose-h2:text-[22px] prose-h2:mt-10 prose-h2:mb-4 prose-h2:text-neutral-100
+        prose-h3:text-[17px] prose-h3:mt-7 prose-h3:mb-3 prose-h3:text-neutral-200
+        prose-p:text-[15px] prose-p:text-neutral-300 prose-p:leading-[1.8] prose-p:my-5
+        prose-a:text-white prose-a:underline prose-a:underline-offset-2
+        prose-strong:text-neutral-100 prose-ul:text-neutral-300 prose-li:my-1.5 prose-li:marker:text-neutral-600
+        prose-table:text-[14px] prose-th:text-neutral-300 prose-td:text-neutral-400"
+    >
+      <Content />
+    </article>
+
+    <AdSlot adSlot={import.meta.env.PUBLIC_ADSENSE_SLOT_BLOG} />
+
+    <div class="mt-12 p-6 rounded-xl border border-neutral-800 bg-neutral-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div>
+        <div class="text-[15px] font-medium text-neutral-100 mb-1">Skip the template — use Money OS</div>
+        <div class="text-[13px] text-neutral-500">Everything this resource does, automated and free.</div>
+      </div>
+      <a href="https://moneyos.webasthetic.in/register" class="shrink-0 inline-flex items-center px-4 py-2 bg-white text-black text-[13px] font-medium rounded-md hover:bg-neutral-200 transition-colors">
+        Start free →
+      </a>
+    </div>
+  </main>
+
+  {faqSchema && <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />}
+</Layout>

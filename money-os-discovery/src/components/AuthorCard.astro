@@ -1,0 +1,19 @@
+---
+interface Props {
+  author: string;
+}
+const { author } = Astro.props;
+const initials = author.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
+---
+
+<div class="mt-12 flex items-center gap-4 rounded-xl border border-neutral-800 bg-neutral-950 p-5">
+  <div class="w-11 h-11 rounded-full bg-neutral-800 flex items-center justify-center text-[13px] font-semibold text-neutral-300 shrink-0">
+    {initials}
+  </div>
+  <div class="min-w-0">
+    <div class="text-[13px] font-medium text-neutral-200">{author}</div>
+    <div class="text-[12px] text-neutral-500 leading-relaxed">
+      Written by the team building Money OS — the free financial command center for freelancers, agencies, and small teams.
+    </div>
+  </div>
+</div>

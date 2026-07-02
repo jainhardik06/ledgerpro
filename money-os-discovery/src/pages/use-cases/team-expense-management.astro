@@ -1,0 +1,36 @@
+---
+import UseCaseLayout from '../../layouts/UseCaseLayout.astro';
+---
+
+<UseCaseLayout
+  title="Team Expense Management Software — Collaborative & Auditable | Money OS"
+  headline="Team expenses. One workspace. Zero spreadsheet chaos."
+  subheadline="Give every team member a role, let them log expenses directly, and see the complete picture in real time — without chasing receipts, sharing logins, or reconciling spreadsheets."
+  description="Money OS is team expense management software for small teams and growing companies. Role-based access, multi-user expense logging, real-time budget tracking, and a full audit trail."
+  audience="Teams"
+  slug="team-expense-management"
+  benefits={[
+    "Each team member logs their own expenses directly — no central bottleneck",
+    "Role-based access: Admins manage settings, Members log expenses, Viewers observe",
+    "Real-time expense visibility across the entire team without shared logins",
+    "Budget limits per category prevent departments from overspending independently",
+    "Full audit trail — every expense, change, and action logged immutably by user",
+    "Export team expense reports by date range, category, or team member",
+  ]}
+  features={[
+    { name: 'Role-Based Access', desc: 'Admins manage workspace settings, budgets, and team members. Members add and categorize transactions. Viewers (executives, accountants, investors) have read-only access to all data.' },
+    { name: 'Multi-User Logging', desc: 'No shared login. Each team member uses their own account. Their expenses are tagged to them. You see all expenses with attribution in the main transaction view.' },
+    { name: 'Department Budgets', desc: 'Set budgets per department: Engineering, Marketing, Sales, Operations. Each department sees their own budget progress. Alerts fire to the right people when limits approach.' },
+    { name: 'Expense Approval (Coming Soon)', desc: 'The expense approval workflow is on the roadmap: Members submit expenses, Admins approve or reject, approved expenses post to the main ledger. Track progress in the changelog.' },
+    { name: 'Team Expense Reports', desc: 'Export expense reports filtered by team member, date range, or category. Run the report at month-end. Share with your accountant or CFO without any additional formatting.' },
+    { name: 'Audit Log', desc: 'Every action in the workspace is recorded: who added an expense, who edited it, who changed a budget. The audit log is immutable and exportable. Compliance-ready by design.' },
+  ]}
+  faqs={[
+    { question: 'How many team members can we add to Money OS?', answer: 'The free tier includes unlimited team members. Add every employee who needs to log expenses or view financial data without any per-seat fees.' },
+    { question: 'Can team members see each other\'s expenses?', answer: 'By default, Members see all workspace transactions. This is intentional — expense transparency reduces fraud and simplifies reconciliation. If you need isolated views per member, request it via feedback.' },
+    { question: 'Is there an expense approval workflow?', answer: 'Not yet. Expense approval (submit → review → approve/reject) is on the product roadmap. Currently, Admins review submitted expenses in the main transaction view and can annotate or delete incorrect entries.' },
+    { question: 'How do we handle employee reimbursements?', answer: 'Mark employee-paid expenses as reimbursable when logging. The reimbursable total is tracked separately. Export the reimbursable report at payroll time to process reimbursements accurately.' },
+    { question: 'Can we use Money OS alongside our existing accounting software?', answer: 'Yes. Money OS handles day-to-day team expense tracking and budget visibility. Export data at month-end to your accounting software (QuickBooks, Xero, Tally) for formal bookkeeping.' },
+  ]}
+  ctaHeadline="Every team member. Every expense. One clean system."
+/>

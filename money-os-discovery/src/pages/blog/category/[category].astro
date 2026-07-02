@@ -1,0 +1,57 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../../layouts/Layout.astro';
+import TopNav from '../../../components/TopNav.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => data.status === 'published');
+  const categories = [...new Set(posts.map((p) => p.data.category).filter(Boolean))] as string[];
+  return categories.map((category) => ({
+    params: { category },
+    props: {
+      posts: posts
+        .filter((p) => p.data.category === category)
+        .sort((a, b) => +b.data.publishDate - +a.data.publishDate),
+    },
+  }));
+}
+
+const { category } = Astro.params;
+const { posts } = Astro.props;
+
+const categoryLabels: Record<string, string> = {
+  'expense-tracking': 'Expense Tracking',
+  budgeting: 'Budgeting',
+  'freelance-finance': 'Freelance Finance',
+  'agency-finance': 'Agency Finance',
+  'startup-finance': 'Startup Finance',
+  'tax-tips': 'Tax Tips',
+  'product-updates': 'Product Updates',
+  'tools-and-resources': 'Tools & Resources',
+};
+const label = categoryLabels[category!] ?? category;
+const fmt = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+---
+
+<Layout title={`${label} — Money OS Blog`} description={`Money OS articles on ${label?.toLowerCase()}.`}>
+  <TopNav />
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-16">
+    <nav class="flex items-center gap-1.5 text-[13px] text-neutral-500 mb-8">
+      <a href="/blog" class="hover:text-neutral-300 transition-colors">Blog</a>
+      <span class="text-neutral-700">/</span>
+      <span class="text-neutral-300 font-medium">{label}</span>
+    </nav>
+
+    <h1 class="text-[36px] font-semibold text-neutral-100 tracking-tight mb-10">{label}</h1>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {posts.map((post) => (
+        <a href={`/blog/${post.id}`} class="group flex flex-col p-6 rounded-xl border border-neutral-800 bg-neutral-950 hover:border-neutral-700 hover:bg-neutral-900 transition-colors">
+          <h3 class="text-[15px] font-semibold text-neutral-200 group-hover:text-white leading-snug mb-2 flex-1">{post.data.title}</h3>
+          <p class="text-[13px] text-neutral-500 leading-relaxed mb-4">{post.data.description}</p>
+          <div class="text-[11px] text-neutral-600">{fmt(post.data.publishDate)}</div>
+        </a>
+      ))}
+    </div>
+  </main>
+</Layout>

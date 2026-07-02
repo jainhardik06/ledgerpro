@@ -1,0 +1,54 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import TopNav from '../../components/TopNav.astro';
+import { getCollection } from 'astro:content';
+
+const resources = (await getCollection('resources', ({ data }) => data.status === 'published'))
+  .sort((a, b) => +b.data.publishDate - +a.data.publishDate);
+
+const typeLabels: Record<string, string> = {
+  tool: 'Tool',
+  template: 'Template',
+  calculator: 'Calculator',
+  guide: 'Guide',
+  checklist: 'Checklist',
+};
+---
+
+<Layout
+  title="Resources — Templates, Calculators & Guides | Money OS"
+  description="Free finance templates, calculators, checklists, and guides for freelancers, agencies, and small teams. Download and use immediately — no signup required."
+>
+  <TopNav />
+
+  <main class="max-w-4xl mx-auto px-4 sm:px-6 py-16">
+    <div class="mb-12">
+      <div class="text-[11px] font-medium text-neutral-600 uppercase tracking-wider mb-3">Resources</div>
+      <h1 class="text-[40px] sm:text-[48px] font-semibold text-neutral-100 tracking-tight leading-tight mb-4">
+        Free tools you can use today.
+      </h1>
+      <p class="text-[16px] text-neutral-400 leading-relaxed max-w-xl">
+        Templates, calculators, and checklists for tracking money — built to be useful on their own, whether or not you use Money OS.
+      </p>
+    </div>
+
+    {resources.length === 0 ? (
+      <div class="rounded-xl border border-neutral-800 bg-neutral-950 p-10 text-center">
+        <p class="text-[14px] text-neutral-400">New resources are publishing soon.</p>
+      </div>
+    ) : (
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {resources.map((r) => (
+          <a href={`/resources/${r.id}`} class="group flex flex-col p-6 rounded-xl border border-neutral-800 bg-neutral-950 hover:border-neutral-700 hover:bg-neutral-900 transition-colors">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">{typeLabels[r.data.resourceType] ?? r.data.resourceType}</span>
+              {r.data.isFree && <span class="text-[10px] font-medium text-emerald-400 border border-emerald-900/60 rounded px-1.5 py-0.5">Free</span>}
+            </div>
+            <div class="text-[15px] font-semibold text-neutral-200 group-hover:text-white mb-2">{r.data.title}</div>
+            <p class="text-[13px] text-neutral-500 leading-relaxed">{r.data.description}</p>
+          </a>
+        ))}
+      </div>
+    )}
+  </main>
+</Layout>

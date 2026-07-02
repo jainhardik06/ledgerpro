@@ -1,0 +1,36 @@
+---
+import UseCaseLayout from '../../layouts/UseCaseLayout.astro';
+---
+
+<UseCaseLayout
+  title="Expense Tracker for Freelancers — Free & Accurate | Money OS"
+  headline="The expense tracker built for how freelancers actually work."
+  subheadline="Import your bank CSV, categorize in seconds, and export a tax-ready report. No manual entry. No spreadsheet formulas. No subscription required."
+  description="Money OS is the best free expense tracker for freelancers. Import transactions, categorize by deductible type, track client expenses, and export for tax time — all in one workspace."
+  audience="Freelancers"
+  slug="expense-tracker-freelancers"
+  benefits={[
+    "Import transactions from any bank CSV in under 2 minutes — no manual entry",
+    "Auto-categorize into freelancer-specific expense categories automatically",
+    "Track which expenses are billable to clients vs. internal business overhead",
+    "Expense Summary report ready for your accountant in one click",
+    "Flag reimbursable client expenses and generate billing summaries per client",
+    "Zero subscription cost — full expense tracking functionality is free",
+  ]}
+  features={[
+    { name: 'Bank CSV Import', desc: 'Export a CSV from your bank or credit card portal. Import it into Money OS in 3 clicks. Duplicate detection prevents double-counting when you import monthly statements.' },
+    { name: 'Freelancer Categories', desc: 'Software & Tools, Home Office, Equipment & Hardware, Client Travel, Professional Development, Marketing & Ads, Contractor Payments. Every freelance deduction is covered.' },
+    { name: 'Client Expense Tags', desc: 'Tag any expense to a specific client. Identify which costs are billable. Export a per-client billing summary to include in your invoice.' },
+    { name: 'Reimbursable Flag', desc: 'Toggle any transaction as reimbursable. Money OS tracks the total outstanding reimbursables across all clients. Never forget to bill a client expense again.' },
+    { name: 'Deductible Totals', desc: 'Expense Summary report groups all transactions by category with totals. Your accountant sees exactly what to deduct — no translation required.' },
+    { name: 'Multi-Period View', desc: 'View expenses by month, quarter, or custom date range. Compare April this year to April last year. Spot trends before they become surprises.' },
+  ]}
+  faqs={[
+    { question: 'Is Money OS really free for freelancers?', answer: 'Yes. The free tier includes unlimited transaction imports, all expense categories, budgets, reports, and accountant Viewer access. No credit card required to start.' },
+    { question: 'Which expense categories are available for freelancers?', answer: 'Software & Tools, Home Office, Equipment, Client Travel, Professional Development, Marketing, Contractor Payments, Meals (client), Internet & Phone (proportional). You can also create custom categories.' },
+    { question: 'Can I import from PayPal, Stripe, or Razorpay?', answer: 'Yes, if they export CSV statements. PayPal, Stripe, and Razorpay all have CSV export in their dashboards. Import those CSVs directly into Money OS.' },
+    { question: 'How does Money OS compare to Wave or Zoho Books for expense tracking?', answer: 'Wave and Zoho Books are accounting platforms with invoicing, payroll, and tax filing. Money OS is focused on expense tracking and financial visibility. For freelancers who only need expense tracking, Money OS is simpler, faster, and free.' },
+    { question: 'Can I use Money OS to prepare for Schedule C (US taxes)?', answer: 'Yes. The Expense Summary report matches Schedule C categories for freelancers: advertising, car and truck, home office, legal and professional services, supplies, travel, utilities. Export it and reference it directly when filing.' },
+  ]}
+  ctaHeadline="Track every expense. Deduct every dollar."
+/>

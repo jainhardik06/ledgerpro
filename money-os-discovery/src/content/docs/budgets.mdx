@@ -1,0 +1,106 @@
+---
+title: "Budgets"
+description: "Create monthly or custom-period budgets in Money OS. Track spending limits per category, get alerts before you overspend, and review budget vs. actual at a glance."
+keywords: ["budgets", "spending limits", "budget tracker", "expense categories", "money os budgets"]
+category: "Core Features"
+author: "Money OS Team"
+publishDate: 2026-01-15
+status: "published"
+sidebarPosition: 4
+relatedPages: ["managing-transactions", "reports"]
+faq:
+  - question: "Can I set budgets per client?"
+    answer: "Client-level budgets are on the roadmap. Currently, budgets operate at the category level across your entire workspace."
+  - question: "What happens when I exceed a budget?"
+    answer: "Money OS marks the budget as 'Over' and highlights it in red on the Budgets dashboard. Email alerts fire at 80% and 100% of the budget limit if alerts are enabled."
+  - question: "Do budgets roll over to the next period?"
+    answer: "No. Budgets reset at the start of each period. Unspent budget does not carry forward. This is intentional — carry-forward budgets often mask recurring overspending."
+  - question: "Can I create an annual budget?"
+    answer: "Yes. When creating a budget, change the period from 'Monthly' to 'Custom' and set a 12-month date range."
+  - question: "How do budgets interact with reports?"
+    answer: "The Budget vs. Actual report compares your budget limits to real spending across any time period. Navigate to Reports → Budget vs. Actual."
+---
+
+## What Budgets Do
+
+A budget in Money OS is a spending limit assigned to one or more categories over a defined period.
+
+When transactions are categorized, Money OS automatically tracks how much of each budget has been consumed in real time.
+
+No manual entry. No reconciliation. The budget fills itself from your transactions.
+
+---
+
+## Creating a Budget
+
+Navigate to **Budgets → New Budget**.
+
+**Required:**
+- **Budget name** — Descriptive and specific. `Monthly Software` is better than `Tech`.
+- **Category** — Select one category, or group multiple into one budget (e.g., `Marketing` + `Advertising` into a single `Marketing Budget`).
+- **Limit** — The maximum amount for this period.
+- **Period** — Monthly (default), quarterly, or custom date range.
+
+**Optional:**
+- **Alert threshold** — Receive an email at X% of the limit. Recommended: 80%.
+- **Notes** — Rationale for the limit. Useful for reviewing at period end.
+
+Save the budget. It immediately begins tracking matching transactions.
+
+---
+
+## Budget Dashboard
+
+The Budgets page shows all active budgets at a glance.
+
+Each budget card displays:
+- **Category name and period**
+- **Progress bar** — Visual representation of spent vs. limit
+- **Spent amount / Limit** — `$342 / $500`
+- **% remaining** — `32% left`
+- **Status badge** — `On Track`, `At Risk` (>80%), or `Over`
+
+Budgets are sorted by status: Over budgets appear first.
+
+---
+
+## Budget Alerts
+
+Enable email alerts in **Settings → Notifications → Budget Alerts**.
+
+Alert triggers:
+| Trigger | Email sent |
+|---|---|
+| 80% of limit reached | "Your [Budget Name] budget is at 80%" |
+| 100% of limit reached | "You've exceeded your [Budget Name] budget" |
+
+Alerts fire once per trigger per period. You won't receive repeated emails once you're over the limit.
+
+---
+
+## Budget vs. Actual Analysis
+
+The most useful budget feature isn't tracking — it's the retrospective.
+
+Navigate to **Reports → Budget vs. Actual**.
+
+This report shows:
+- Every budget for the selected period
+- Total transactions in each budgeted category
+- Variance (over or under, in dollars and %)
+- Month-over-month trend
+
+Use this report monthly to answer:
+1. Which categories consistently overspend?
+2. Which budgets are always underutilized?
+3. Where should limits increase or decrease next period?
+
+---
+
+## Best Practices
+
+**Start with your highest-spend categories.** Don't create 20 budgets on day one. Create budgets for the 3–5 categories where you're most likely to overspend. Add more over time.
+
+**Set limits slightly below reality.** If you've historically spent $500/month on software, set the budget at $450. Friction creates awareness.
+
+**Review monthly, adjust quarterly.** Budget limits that never change stop being useful. Adjust limits every quarter based on actual patterns.

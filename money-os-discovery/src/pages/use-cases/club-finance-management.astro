@@ -1,0 +1,36 @@
+---
+import UseCaseLayout from '../../layouts/UseCaseLayout.astro';
+---
+
+<UseCaseLayout
+  title="Club Finance Management Software — Free for Organizations | Money OS"
+  headline="Club finances that every member can trust."
+  subheadline="Transparent fund tracking, event budgets, and a complete financial record — from the first committee meeting to the year-end handoff. No accounting experience required."
+  description="Money OS is free club finance management software for student clubs, sports teams, nonprofit chapters, and campus organizations. Track dues, event expenses, and fund allocations with full transparency."
+  audience="Clubs & Organizations"
+  slug="club-finance-management"
+  benefits={[
+    "Track every fund movement with a full audit trail visible to all committee members",
+    "Set event budgets and monitor spending in real time as expenses come in",
+    "Give committee members Viewer access to build financial trust",
+    "Record dues payments, sponsorships, and event revenue as income transactions",
+    "Year-end treasurer handoff in minutes — export everything for the incoming officer",
+    "No accounting background required — the interface works for first-time treasurers",
+  ]}
+  features={[
+    { name: 'Fund Balance Tracking', desc: 'Every income (dues, event revenue, sponsorships) and expense (venues, printing, catering) recorded. Current balance always visible. No manual calculation required.' },
+    { name: 'Event Budgets', desc: 'Create a budget per event: Annual Dinner, Tech Fest, Recruitment Drive. Track event-specific expenses against the allocated budget in real time.' },
+    { name: 'Dues Tracking', desc: 'Log membership dues as income transactions. Tag by member name or batch. See at a glance who has paid and total dues collected vs. expected.' },
+    { name: 'Committee Transparency', desc: 'All committee members invited as Viewers see the full financial picture — income, expenses, budgets — without being able to modify records. Builds trust. Prevents disputes.' },
+    { name: 'Audit Trail', desc: 'Every transaction has an immutable record: who added it, when, what changed. Share the audit log with your faculty advisor or university financial office on demand.' },
+    { name: 'Year-End Export', desc: 'Export all transactions as CSV and the financial summary as PDF. The incoming treasurer gets a complete historical record. Year-end handoff becomes a 5-minute operation.' },
+  ]}
+  faqs={[
+    { question: 'Is Money OS free for student clubs?', answer: 'Yes. The free tier supports unlimited transactions, budgets, and reports with up to 3 team members (Admin access). Most clubs need 1-2 treasurers in Admin and the committee in Viewer access, which is included.' },
+    { question: 'How do we handle cash collections like event entry fees?', answer: 'Add a manual income transaction with the amount, date, description ("Annual Fest Entry Fees — 47 participants"), and source category. Attach a note with the head count. The audit log records who entered it.' },
+    { question: 'Can we manage multiple funds or sub-committees separately?', answer: 'Create a category per sub-committee or fund (Events Fund, General Fund, Sponsorship Reserve). Filter transactions by category to see each fund independently.' },
+    { question: 'What if our university requires financial reports in a specific format?', answer: 'Export as CSV and reformat in Excel or Google Sheets for any required university template. The raw data from Money OS is clean and complete — reformatting takes minutes.' },
+    { question: 'How do we transition to the next year\'s treasurer?', answer: 'Export all historical records. Invite the incoming treasurer as Admin. Transfer ownership in Settings. They inherit the full financial history and workspace with zero data loss.' },
+  ]}
+  ctaHeadline="Free for clubs. Powerful enough for organizations."
+/>

@@ -1,0 +1,17 @@
+---
+/**
+ * Renders an affiliate link that routes through /go/<slug> for click tracking,
+ * with the correct rel attributes for FTC/SEO compliance. Pair with
+ * <AffiliateDisclosure /> on any page that uses it.
+ *
+ * Usage in MDX:  <AffiliateLink slug="wise">Wise</AffiliateLink>
+ */
+interface Props {
+  slug: string;
+  class?: string;
+}
+const { slug, class: className = '' } = Astro.props;
+---
+<a href={`/go/${slug}`} rel="sponsored nofollow noopener" target="_blank" class={className}>
+  <slot />
+</a>

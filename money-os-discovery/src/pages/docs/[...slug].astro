@@ -1,0 +1,101 @@
+---
+import { getCollection, render } from 'astro:content';
+import DocLayout from '../../layouts/DocLayout.astro';
+
+export async function getStaticPaths() {
+  const docs = await getCollection('docs', ({ data }) => data.status === 'published');
+  return docs.map(doc => ({
+    params: { slug: doc.id },
+    props: { doc },
+  }));
+}
+
+const { doc } = Astro.props;
+const { Content, headings } = await render(doc);
+
+// Map sidebarPosition to section group name
+const sectionMap: Record<number, string> = {
+  1: 'Getting Started',
+  2: 'Getting Started',
+  3: 'Getting Started',
+  4: 'Core Features',
+  5: 'Core Features',
+  6: 'Core Features',
+  7: 'Teams & Collaboration',
+  8: 'Teams & Collaboration',
+  9: 'Security & Data',
+  10: 'Help',
+};
+
+const section = doc.data.category ?? (doc.data.sidebarPosition ? sectionMap[doc.data.sidebarPosition] : undefined);
+
+// Build JSON-LD FAQ schema from frontmatter faq
+const faqSchema = doc.data.faq && doc.data.faq.length > 0 ? {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: doc.data.faq.map((item: { question: string; answer: string }) => ({
+    '@type': 'Question',
+    name: item.question,
+    acceptedAnswer: { '@type': 'Answer', text: item.answer },
+  })),
+} : undefined;
+
+// Related docs mapping (simple static map for now)
+const relatedMap: Record<string, Array<{ title: string; href: string; description: string }>> = {
+  introduction: [
+    { title: 'Creating a Workspace', href: '/docs/creating-workspace', description: 'Set up your Money OS workspace in under 2 minutes.' },
+    { title: 'Managing Transactions', href: '/docs/managing-transactions', description: 'Add, import, and categorize your first transactions.' },
+  ],
+  'creating-workspace': [
+    { title: 'Introduction', href: '/docs/introduction', description: 'What Money OS is and how it works.' },
+    { title: 'Managing Transactions', href: '/docs/managing-transactions', description: 'Add and categorize your transactions.' },
+  ],
+  'managing-transactions': [
+    { title: 'Budgets', href: '/docs/budgets', description: 'Set spending limits and track them in real time.' },
+    { title: 'Reports', href: '/docs/reports', description: 'Generate expense and income reports.' },
+  ],
+  budgets: [
+    { title: 'Reports', href: '/docs/reports', description: 'Visualize your budget performance in reports.' },
+    { title: 'Managing Transactions', href: '/docs/managing-transactions', description: 'Transactions feed into your budgets automatically.' },
+  ],
+  reports: [
+    { title: 'Budgets', href: '/docs/budgets', description: 'Budget data powers your financial reports.' },
+    { title: 'Clients', href: '/docs/clients', description: 'Generate per-client expense reports.' },
+  ],
+  clients: [
+    { title: 'Reports', href: '/docs/reports', description: 'View reports segmented by client.' },
+    { title: 'Teams', href: '/docs/teams', description: 'Assign team members to client projects.' },
+  ],
+  teams: [
+    { title: 'Audit Logs', href: '/docs/audit-logs', description: 'See a full log of team activity.' },
+    { title: 'Clients', href: '/docs/clients', description: 'Assign clients to team members.' },
+  ],
+  'audit-logs': [
+    { title: 'Teams', href: '/docs/teams', description: 'Manage who can make changes.' },
+    { title: 'Security', href: '/docs/security', description: 'How Money OS protects your data.' },
+  ],
+  security: [
+    { title: 'Audit Logs', href: '/docs/audit-logs', description: 'Every action is recorded.' },
+    { title: 'FAQ', href: '/docs/faq', description: 'Common questions about data and privacy.' },
+  ],
+  faq: [
+    { title: 'Introduction', href: '/docs/introduction', description: 'Start from the beginning.' },
+    { title: 'Security', href: '/docs/security', description: 'Learn how your data is protected.' },
+  ],
+};
+
+const relatedDocs = relatedMap[doc.id] ?? [];
+---
+
+<DocLayout
+  title={doc.data.title}
+  description={doc.data.description}
+  section={section}
+  headings={headings}
+  publishDate={doc.data.publishDate}
+  updatedDate={doc.data.updatedDate}
+  relatedDocs={relatedDocs}
+  schema={faqSchema}
+>
+  <Content />
+</DocLayout>

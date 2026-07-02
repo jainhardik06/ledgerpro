@@ -1,0 +1,23 @@
+---
+/**
+ * FTC-compliant affiliate disclosure. Render at the top of any post/page that
+ * contains affiliate links (via <AffiliateLink> or /go/ links). Required by law
+ * in the US and good practice everywhere.
+ */
+interface Props {
+  compact?: boolean;
+}
+const { compact = false } = Astro.props;
+---
+
+{compact ? (
+  <p class="text-[12px] text-neutral-600 italic mb-6">
+    Some links below are affiliate links. We only recommend tools we'd use ourselves, and it costs you nothing extra.
+  </p>
+) : (
+  <div class="my-6 rounded-lg border border-neutral-900 bg-neutral-950 px-4 py-3 text-[12px] text-neutral-500 leading-relaxed">
+    <strong class="text-neutral-400 font-medium">Disclosure:</strong> This page contains affiliate links. If you sign up
+    for a tool through one of them, Money OS may earn a commission at no additional cost to you. We only recommend tools
+    we have used or would genuinely use ourselves. Recommendations are never paid placements.
+  </div>
+)}

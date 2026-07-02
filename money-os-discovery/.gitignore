@@ -1,5 +1,6 @@
 # build output
 dist/
+.vercel/
 
 # generated types
 .astro/
@@ -13,9 +14,11 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# environment variables
+# environment variables (NEVER commit — contains DB + API secrets)
 .env
-.env.production
+.env.*
+!.env.example
+!.env.production
 
 # macOS-specific files
 .DS_Store

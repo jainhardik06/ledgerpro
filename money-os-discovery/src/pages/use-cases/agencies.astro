@@ -1,0 +1,35 @@
+---
+import UseCaseLayout from '../../layouts/UseCaseLayout.astro';
+---
+
+<UseCaseLayout
+  title="Money OS for Agencies — Multi-Client Finance Management"
+  headline="Run your agency finances without the spreadsheet chaos."
+  subheadline="Track expenses across multiple clients, analyze per-client profitability, and give your team the financial visibility they need — without the complexity of full accounting software."
+  description="Money OS is the financial command center for digital agencies. Manage multi-client expenses, track team spending, and generate client P&L reports in seconds."
+  audience="Agencies"
+  slug="agencies"
+  benefits={[
+    "Track every expense across multiple clients in a single workspace",
+    "See exactly which clients are profitable — margin by client, updated in real time",
+    "Identify reimbursable client expenses and export billing summaries automatically",
+    "Give your team role-based access — Members add expenses, Admins see everything",
+    "Generate client-specific expense reports for stakeholder reviews",
+    "Full audit trail — every transaction change recorded with who did it and when",
+  ]}
+  features={[
+    { name: 'Multi-Client Tracking', desc: 'Tag any transaction to a client. Switch between client views instantly. No separate spreadsheets per client.' },
+    { name: 'Client P&L Reports', desc: 'Revenue minus expenses equals margin. See it per client, per month, and over time. Know exactly which clients to grow and which to reprice.' },
+    { name: 'Reimbursable Expenses', desc: 'Toggle any expense as reimbursable. Export a billing summary per client to attach to your monthly invoice.' },
+    { name: 'Team Access Controls', desc: 'Admins manage billing and settings. Members add and categorize transactions. Viewers (accountants, investors) read everything without touching data.' },
+    { name: 'Audit Logs', desc: 'Every transaction edit, budget change, and team action is recorded immutably. Financial accountability without manual process.' },
+    { name: 'Budget Monitoring', desc: 'Set project budgets or overhead budgets. Real-time tracking against actuals. Alerts before you exceed scope.' },
+  ]}
+  faqs={[
+    { question: 'Can we track expenses for 20+ clients?', answer: 'Yes. There is no limit on the number of clients in Money OS. Each client gets their own dashboard with revenue, expenses, margin, and reimbursable expenses.' },
+    { question: 'How does the team access work?', answer: 'Admins have full access. Members can add and edit transactions. Viewers have read-only access. Roles are assigned per workspace member. No per-seat pricing in the free tier.' },
+    { question: 'Can we separate client finances from internal expenses?', answer: 'Yes. Transactions can be tagged to clients or left untagged (internal overhead). Reports can be filtered to show only client-tagged or only untagged transactions.' },
+    { question: 'Does Money OS generate invoices?', answer: 'Invoicing is on the roadmap. Currently, Money OS generates expense and billing summaries that you attach to invoices created in your invoicing tool (HoneyBook, Bonsai, Wave).' },
+    { question: 'Can our accountant access the data?', answer: 'Yes. Invite them as a Viewer. They see all transactions, reports, and can export data without being able to modify anything.' },
+  ]}
+/>

@@ -3,18 +3,34 @@
   "type": "module",
   "version": "0.0.1",
   "engines": {
-    "node": ">=22.12.0"
+    "node": "22.x"
   },
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "growth:seed": "node scripts/seed-growth-db.mjs",
+    "growth:topics": "node scripts/discover-topics.mjs",
+    "content:generate": "node scripts/generate-post.mjs",
+    "content:plan": "node scripts/generate-post.mjs --dry-run"
   },
   "dependencies": {
     "@astrojs/mdx": "^6.0.3",
+    "@astrojs/rss": "^4.0.18",
+    "@astrojs/sitemap": "^3.7.3",
+    "@astrojs/vercel": "^10.0.8",
+    "@resvg/resvg-js": "^2.6.2",
+    "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.0",
     "astro": "^6.4.6",
+    "groq-sdk": "^1.2.1",
+    "mongodb": "^7.3.0",
+    "satori": "^0.26.0",
     "tailwindcss": "^4.3.0"
+  },
+  "devDependencies": {
+    "dotenv": "^17.4.2",
+    "gray-matter": "^4.0.3"
   }
 }

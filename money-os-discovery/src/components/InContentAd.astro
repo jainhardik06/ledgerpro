@@ -1,0 +1,68 @@
+---
+/**
+ * In-content contextual ad — the highest-value, still-tasteful blog placement.
+ *
+ * Behaviour:
+ *   - Renders NOTHING unless Google AdSense is configured (PUBLIC_ADSENSE_CLIENT).
+ *     (Carbon is a single-unit network; its one placement is the sidebar.)
+ *   - The ad node is injected by script AFTER the 3rd paragraph of the article —
+ *     a natural reading break once the reader is engaged, never mid-sentence and
+ *     never above the first screen of content.
+ *   - Clearly labelled "Advertisement" and given generous whitespace so it reads
+ *     as a deliberate, calm break rather than a spam interruption.
+ *
+ * This keeps blog UX intact while adding a second income stream (display ads)
+ * alongside affiliate links.
+ */
+interface Props {
+  adSlot?: string;
+}
+const { adSlot } = Astro.props;
+
+const ADSENSE_CLIENT = import.meta.env.PUBLIC_ADSENSE_CLIENT;
+const enabled = Boolean(ADSENSE_CLIENT);
+---
+
+{enabled && (
+  <>
+    <template id="incontent-ad-template">
+      <aside class="my-12" aria-label="Advertisement" data-incontent-ad>
+        <div class="text-[10px] uppercase tracking-wider text-neutral-700 mb-2 text-center">Advertisement</div>
+        <div class="rounded-2xl border border-neutral-900 bg-neutral-950/50 p-4">
+          <ins
+            class="adsbygoogle block w-full"
+            style="display:block"
+            data-ad-client={ADSENSE_CLIENT}
+            data-ad-slot={adSlot}
+            data-ad-format="fluid"
+            data-ad-layout="in-article"
+          ></ins>
+        </div>
+      </aside>
+    </template>
+
+    <script is:inline>
+      (() => {
+        const tpl = document.getElementById('incontent-ad-template');
+        const article = document.querySelector('article.prose');
+        if (!tpl || !article) return;
+
+        // Insert after the 3rd block-level child (paragraph/list), or fall back
+        // to just before the second H2 — whichever comes first.
+        const blocks = Array.from(article.children);
+        let anchor = blocks[3] || null;
+        const secondH2 = blocks.filter((el) => el.tagName === 'H2')[1];
+        if (secondH2 && (!anchor || blocks.indexOf(secondH2) < blocks.indexOf(anchor))) {
+          anchor = secondH2;
+        }
+        if (!anchor) return; // article too short — skip the in-content ad
+
+        const node = tpl.content.firstElementChild.cloneNode(true);
+        anchor.parentNode.insertBefore(node, anchor);
+
+        // Initialise this unit (the loader script lives in Layout.astro).
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      })();
+    </script>
+  </>
+)}

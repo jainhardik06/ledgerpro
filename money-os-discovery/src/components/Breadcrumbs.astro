@@ -1,0 +1,22 @@
+---
+interface Props {
+  current: string;
+  section?: string;
+}
+
+const { current, section } = Astro.props;
+---
+
+<nav class="flex items-center gap-1.5 text-[13px] text-neutral-500 mb-8" aria-label="Breadcrumb">
+  <a href="/" class="hover:text-neutral-300 transition-colors duration-150">Home</a>
+  <span class="text-neutral-700">/</span>
+  <a href="/docs" class="hover:text-neutral-300 transition-colors duration-150">Docs</a>
+  {section && (
+    <>
+      <span class="text-neutral-700">/</span>
+      <span class="text-neutral-500">{section}</span>
+    </>
+  )}
+  <span class="text-neutral-700">/</span>
+  <span class="text-neutral-300 font-medium" aria-current="page">{current}</span>
+</nav>

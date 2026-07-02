@@ -1,0 +1,57 @@
+---
+import { getCollection, render } from 'astro:content';
+import BlogLayout from '../../layouts/BlogLayout.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => data.status === 'published');
+
+  return posts.map((post) => {
+    // Related: same category first, then most recent, excluding self. Up to 3.
+    const related = posts
+      .filter((p) => p.id !== post.id)
+      .sort((a, b) => {
+        const sameCat = (p: typeof post) => (p.data.category === post.data.category ? 0 : 1);
+        const catDiff = sameCat(a) - sameCat(b);
+        if (catDiff !== 0) return catDiff;
+        return +b.data.publishDate - +a.data.publishDate;
+      })
+      .slice(0, 3)
+      .map((p) => ({
+        title: p.data.title,
+        href: `/blog/${p.id}`,
+        category: p.data.category,
+        readingTime: p.data.readingTime,
+      }));
+
+    return { params: { slug: post.id }, props: { post, related } };
+  });
+}
+
+const { post, related } = Astro.props;
+const { Content, headings } = await render(post);
+
+// Estimate reading time if not provided in frontmatter (~220 wpm).
+const readingTime =
+  post.data.readingTime ??
+  Math.max(1, Math.round((post.body?.split(/\s+/).length ?? 0) / 220));
+
+const hasAffiliate = post.body?.includes('/go/') ?? false;
+---
+
+<BlogLayout
+  title={post.data.title}
+  description={post.data.description}
+  slug={post.id}
+  category={post.data.category}
+  author={post.data.author}
+  publishDate={post.data.publishDate}
+  updatedDate={post.data.updatedDate}
+  readingTime={readingTime}
+  coverImage={post.data.coverImage}
+  headings={headings}
+  faq={post.data.faq}
+  hasAffiliate={hasAffiliate}
+  relatedPosts={related}
+>
+  <Content />
+</BlogLayout>

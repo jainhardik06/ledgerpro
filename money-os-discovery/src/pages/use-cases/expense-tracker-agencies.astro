@@ -1,0 +1,36 @@
+---
+import UseCaseLayout from '../../layouts/UseCaseLayout.astro';
+---
+
+<UseCaseLayout
+  title="Expense Tracker for Agencies — Multi-Client, Team-Ready | Money OS"
+  headline="Track agency expenses across every client, every team, every project."
+  subheadline="Stop reconciling client expenses in spreadsheets. Tag every transaction to the right client, identify reimbursables instantly, and generate per-client billing summaries in one click."
+  description="Money OS is the best free expense tracker for agencies. Track multi-client expenses, assign team members, flag reimbursables, and generate client expense reports without spreadsheets."
+  audience="Agencies"
+  slug="expense-tracker-agencies"
+  benefits={[
+    "Tag every expense to a client — see exactly what each client is costing you",
+    "Flag reimbursable expenses as you go, not at the end of the month",
+    "Give team members access to log their own expenses without a shared login",
+    "Generate a per-client billing summary to attach to your monthly invoice",
+    "Identify your most and least profitable clients by expense-to-revenue ratio",
+    "Full audit trail — every expense change logged with who made it and when",
+  ]}
+  features={[
+    { name: 'Client-Tagged Expenses', desc: 'Tag any transaction to a client with one click. Filter the expense view by client instantly. See all spend attributed to each client across all time.' },
+    { name: 'Reimbursable Tracking', desc: 'Mark any expense as reimbursable when you add it. Money OS tracks total outstanding reimbursables per client. Export a billing summary to include with your invoice.' },
+    { name: 'Team Expense Logging', desc: 'Invite team members as Members. They log their own client expenses directly. Admins see everything centrally. No more Slack expense screenshots.' },
+    { name: 'Per-Client Reports', desc: 'Client-specific expense reports show total spend, category breakdown, and reimbursable summary. Run it any time before sending invoices.' },
+    { name: 'Overhead vs. Client Split', desc: 'Internal overhead (office, software, salaries) stays untagged. Client costs are tagged. The P&L report separates both, showing true agency economics.' },
+    { name: 'CSV Import per Account', desc: 'Import from your main business account, your business credit card, and contractor payment accounts. All merged into one client-filtered view.' },
+  ]}
+  faqs={[
+    { question: 'How many clients can we track in Money OS?', answer: 'There is no limit on the number of clients. Add every client you have and track expenses at the client level indefinitely.' },
+    { question: 'Can team members see each other\'s expenses?', answer: 'By default, Members see all transactions (they need to for accurate client tagging). If you need isolated team access, use separate workspaces per team or client.' },
+    { question: 'How do we handle expenses shared across multiple clients?', answer: 'Split transactions by adding them twice with the shared portion. Or create an "Overhead — Shared" category for costs that are distributed across clients and prorate in your invoicing.' },
+    { question: 'Can we track contractor payments as client expenses?', answer: 'Yes. Tag contractor payment transactions to the client they delivered work for. They appear in the client expense report and can be marked reimbursable.' },
+    { question: 'Does the expense tracker integrate with our project management tool?', answer: 'Native integrations are on the roadmap. Currently, export expense data from Money OS and reference it in your project management tool or invoicing software.' },
+  ]}
+  ctaHeadline="Every client expense. Tracked, tagged, and billed."
+/>

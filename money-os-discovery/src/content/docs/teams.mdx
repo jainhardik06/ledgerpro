@@ -1,0 +1,85 @@
+---
+title: "Team Members"
+description: "Invite collaborators to your Money OS workspace. Manage roles, permissions, and access levels for your team."
+keywords: ["team members", "collaboration", "roles", "permissions", "workspace access", "money os teams"]
+category: "Teams & Collaboration"
+author: "Money OS Team"
+publishDate: 2026-01-15
+status: "published"
+sidebarPosition: 7
+relatedPages: ["audit-logs", "clients"]
+faq:
+  - question: "How many team members can I invite?"
+    answer: "There is no limit on team members in the current version of Money OS. Invite your entire team."
+  - question: "Can a team member be on multiple workspaces?"
+    answer: "Yes. Each Money OS account can belong to multiple workspaces with different roles in each."
+  - question: "What happens when I remove a team member?"
+    answer: "The team member immediately loses access to the workspace. Their transactions and data remain intact — removing a member does not delete any data."
+  - question: "Can I change a team member's role after inviting them?"
+    answer: "Yes. Go to Settings → Team, find the member, and change their role from the dropdown. The change takes effect immediately."
+  - question: "Does Money OS support SSO?"
+    answer: "SSO (Single Sign-On) via Google is available. Okta and Azure AD SSO are on the enterprise roadmap."
+---
+
+## Team Roles
+
+Money OS has three roles that control what each team member can see and do:
+
+| Role | Transactions | Budgets | Reports | Clients | Settings | Team | Billing |
+|---|---|---|---|---|---|---|---|
+| **Admin** | View + Edit | View + Edit | View + Export | View + Edit | Full access | Manage | Manage |
+| **Member** | View + Edit | View | View + Export | View | No access | No access | No access |
+| **Viewer** | View only | View only | View + Export | View only | No access | No access | No access |
+
+**Admin** — Full access to all workspace features. Typically the workspace owner and their finance lead.
+
+**Member** — Can add, edit, and categorize transactions. Cannot change settings, invite others, or manage billing. Best for bookkeepers and team members who log expenses.
+
+**Viewer** — Read-only access across all data. Best for accountants, external stakeholders, or investors who need visibility without the ability to modify data.
+
+---
+
+## Inviting a Team Member
+
+Navigate to **Settings → Team → Invite Member**.
+
+Enter:
+- **Email address** — The invitee's work email
+- **Role** — Admin, Member, or Viewer
+
+Click **Send Invitation**. The invitee receives an email with a link to accept the invitation. If they don't have a Money OS account, they'll be prompted to create one.
+
+Pending invitations are shown in the Team table with a `Pending` badge. You can resend or revoke pending invitations at any time.
+
+---
+
+## Managing the Team
+
+From **Settings → Team**, you see all active members and pending invitations.
+
+**Actions available per member:**
+- **Change role** — Update permissions immediately
+- **Remove member** — Revoke access immediately. Data is retained.
+- **View activity** — Jump to Audit Logs filtered by this member
+
+---
+
+## Team Activity and Accountability
+
+Every action taken by a team member is recorded in the [Audit Logs](/docs/audit-logs).
+
+You can see exactly:
+- Which team member added, edited, or deleted a transaction
+- Who changed a budget limit
+- Who exported data and when
+
+This creates a complete accountability trail without requiring manual process — the system tracks everything automatically.
+
+---
+
+## Security Best Practices for Teams
+
+- **Principle of least privilege**: Assign the minimum role needed. Most team members should be Members, not Admins.
+- **Review the team list quarterly**: Remove members who have left your organization.
+- **Use Viewer for accountants**: Accountants need to see data, not change it. Viewer is the correct role.
+- **Enable 2FA for all Admins**: Require two-factor authentication for all workspace Admins in Settings → Security.

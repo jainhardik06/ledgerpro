@@ -70,13 +70,19 @@ const comparisonsCollection = defineCollection({
   }),
 });
 
-// 5. Use Cases Collection (e.g. Money OS for Freelancers)
-const useCasesCollection = defineCollection({
-  loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/use-cases" }),
+// Note: Use-case pages are implemented as standalone routes in
+// src/pages/use-cases/*.astro (driven by src/data/use-cases.ts), not as an MDX
+// collection — so there is no `use-cases` content collection here.
+
+// 5. Resources Collection (tools, templates, calculators, guides)
+const resourcesCollection = defineCollection({
+  loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/resources" }),
   schema: baseContentSchema.extend({
-    targetAudience: z.string(),
-    heroImage: z.string().optional(),
-    benefits: z.array(z.string()).optional(),
+    resourceType: z.enum(['tool', 'template', 'calculator', 'guide', 'checklist']),
+    downloadUrl: z.string().optional(),
+    externalUrl: z.string().optional(),
+    isFree: z.boolean().default(true),
+    tags: z.array(z.string()).optional(),
   }),
 });
 
@@ -85,5 +91,5 @@ export const collections = {
   blog: blogCollection,
   changelog: changelogCollection,
   comparisons: comparisonsCollection,
-  'use-cases': useCasesCollection,
+  resources: resourcesCollection,
 };

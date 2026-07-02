@@ -1,11 +1,218 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import TopNav from '../components/TopNav.astro';
 ---
 
-<Layout>
-	<Welcome />
+<Layout
+  title="Money OS — Financial Command Center for Freelancers & Agencies"
+  description="Track expenses, set budgets, manage clients, and generate reports. Money OS is the financial command center built for freelancers, agencies, and small teams."
+  type="website"
+>
+  <TopNav />
+
+  <main>
+    <!-- ── HERO ── -->
+    <section class="max-w-4xl mx-auto px-4 sm:px-6 pt-20 sm:pt-32 pb-20 text-center">
+      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-neutral-800 bg-neutral-950 text-[12px] font-medium text-neutral-400 mb-8">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse inline-block"></span>
+        Free to start — no credit card required
+      </div>
+
+      <h1 class="text-[40px] sm:text-[56px] lg:text-[64px] font-semibold text-neutral-100 tracking-tighter leading-[1.08] mb-6">
+        The financial command center<br class="hidden sm:block" />
+        <span class="text-neutral-500">for serious operators.</span>
+      </h1>
+
+      <p class="text-[16px] sm:text-[18px] text-neutral-400 leading-relaxed max-w-xl mx-auto mb-10">
+        Track every expense. Set budgets that actually hold. Generate reports in seconds.
+        Built for freelancers, agencies, and small teams who need clarity over complexity.
+      </p>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <a
+          href="https://moneyos.webasthetic.in/register"
+          class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-white text-black text-[14px] font-medium rounded-lg hover:bg-neutral-200 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black"
+        >
+          Start for free →
+        </a>
+        <a
+          href="/docs/introduction"
+          class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 border border-neutral-800 text-neutral-300 text-[14px] font-medium rounded-lg hover:border-neutral-700 hover:text-white transition-colors duration-150"
+        >
+          Read the docs
+        </a>
+      </div>
+    </section>
+
+    <!-- ── FEATURE GRID ── -->
+    <section class="max-w-5xl mx-auto px-4 sm:px-6 py-16 border-t border-neutral-900">
+      <div class="text-center mb-12">
+        <div class="text-[11px] font-medium text-neutral-600 uppercase tracking-wider mb-3">What it does</div>
+        <h2 class="text-[28px] sm:text-[32px] font-semibold text-neutral-100 tracking-tight">
+          Everything you need. Nothing you don't.
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {[
+          {
+            title: 'Transaction Tracking',
+            desc: 'Log, import via CSV, and auto-categorize every business expense and income. Search across your full history in milliseconds.',
+            href: '/docs/managing-transactions',
+          },
+          {
+            title: 'Budgets',
+            desc: 'Set monthly or custom-period spending limits per category. Real-time tracking. Alerts at 80% before you overspend.',
+            href: '/docs/budgets',
+          },
+          {
+            title: 'Financial Reports',
+            desc: 'Expense summaries, income breakdowns, tax-ready reports, and client P&L — generated in seconds, not hours.',
+            href: '/docs/reports',
+          },
+          {
+            title: 'Client Management',
+            desc: 'Attach transactions to clients. Track per-client profitability. Export reimbursable expense summaries for invoicing.',
+            href: '/docs/clients',
+          },
+          {
+            title: 'Team Collaboration',
+            desc: 'Invite your team with role-based access. Admin, Member, or Viewer. Complete audit trail for every change.',
+            href: '/docs/teams',
+          },
+          {
+            title: 'Audit Logs',
+            desc: 'Every transaction edit, budget change, and settings update is recorded. Immutable. Exportable. Compliance-ready.',
+            href: '/docs/audit-logs',
+          },
+        ].map(feature => (
+          <a
+            href={feature.href}
+            class="group p-6 rounded-xl border border-neutral-800 bg-neutral-950 hover:border-neutral-700 hover:bg-neutral-900 transition-colors duration-150"
+          >
+            <h3 class="text-[14px] font-semibold text-neutral-200 group-hover:text-white mb-2 flex items-center justify-between">
+              {feature.title}
+              <svg class="w-3.5 h-3.5 text-neutral-700 group-hover:text-neutral-400 transition-colors opacity-0 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </h3>
+            <p class="text-[13px] text-neutral-500 leading-relaxed">{feature.desc}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <!-- ── WHO IT'S FOR ── -->
+    <section class="max-w-5xl mx-auto px-4 sm:px-6 py-16 border-t border-neutral-900">
+      <div class="text-center mb-12">
+        <div class="text-[11px] font-medium text-neutral-600 uppercase tracking-wider mb-3">Use cases</div>
+        <h2 class="text-[28px] sm:text-[32px] font-semibold text-neutral-100 tracking-tight">
+          Built for your type of work.
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {[
+          {
+            audience: 'Freelancers',
+            desc: 'Track every deductible expense. Generate a tax-ready report in seconds at year end. Stop scrambling in April.',
+            href: '/use-cases/freelancers',
+          },
+          {
+            audience: 'Agencies',
+            desc: 'Manage multi-client finances. Track reimbursable expenses. Analyze per-client profitability every quarter.',
+            href: '/use-cases/agencies',
+          },
+          {
+            audience: 'Student Clubs',
+            desc: 'Transparent fund management for dues, events, and allocations. Role-based access for your committee.',
+            href: '/use-cases/student-clubs',
+          },
+          {
+            audience: 'Small Businesses',
+            desc: 'Replace the spreadsheet. Get real-time budget alerts. Give your accountant Viewer access at tax time.',
+            href: '/use-cases/small-businesses',
+          },
+        ].map(item => (
+          <a
+            href={item.href}
+            class="group p-6 rounded-xl border border-neutral-800 bg-neutral-950 hover:border-neutral-700 hover:bg-neutral-900 transition-colors duration-150"
+          >
+            <div class="flex items-center justify-between mb-2">
+              <div class="text-[13px] font-medium text-neutral-300 group-hover:text-white">{item.audience}</div>
+              <svg class="w-3.5 h-3.5 text-neutral-700 group-hover:text-neutral-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+            <p class="text-[13px] text-neutral-500 leading-relaxed">{item.desc}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <!-- ── DOCS QUICK ACCESS ── -->
+    <section class="max-w-5xl mx-auto px-4 sm:px-6 py-16 border-t border-neutral-900">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <div class="text-[11px] font-medium text-neutral-600 uppercase tracking-wider mb-2">Documentation</div>
+          <h2 class="text-[24px] font-semibold text-neutral-100 tracking-tight">Start reading.</h2>
+        </div>
+        <a href="/docs" class="text-[13px] text-neutral-500 hover:text-white transition-colors">All docs →</a>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {[
+          { title: 'Introduction', href: '/docs/introduction', time: '3 min' },
+          { title: 'Creating a Workspace', href: '/docs/creating-workspace', time: '2 min' },
+          { title: 'Managing Transactions', href: '/docs/managing-transactions', time: '4 min' },
+          { title: 'Budgets', href: '/docs/budgets', time: '3 min' },
+          { title: 'Reports', href: '/docs/reports', time: '3 min' },
+          { title: 'FAQ', href: '/docs/faq', time: '5 min' },
+        ].map(doc => (
+          <a
+            href={doc.href}
+            class="group flex items-center justify-between p-4 rounded-xl border border-neutral-800 hover:border-neutral-700 hover:bg-neutral-900 transition-colors duration-150"
+          >
+            <span class="text-[13px] font-medium text-neutral-300 group-hover:text-white">{doc.title}</span>
+            <span class="text-[11px] text-neutral-600 group-hover:text-neutral-400">{doc.time}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <!-- ── FINAL CTA ── -->
+    <section class="max-w-4xl mx-auto px-4 sm:px-6 py-20 sm:py-32 text-center border-t border-neutral-900">
+      <h2 class="text-[32px] sm:text-[40px] font-semibold text-neutral-100 tracking-tight mb-4">
+        Your finances. Organized.
+      </h2>
+      <p class="text-[16px] text-neutral-400 mb-8 max-w-md mx-auto">
+        Start free. No credit card. No trial period. The core features are always free.
+      </p>
+      <a
+        href="https://moneyos.webasthetic.in/register"
+        class="inline-flex items-center px-6 py-3 bg-white text-black text-[14px] font-medium rounded-lg hover:bg-neutral-200 transition-colors duration-150"
+      >
+        Create your free account →
+      </a>
+    </section>
+
+    <!-- ── FOOTER ── -->
+    <footer class="border-t border-neutral-900 py-10">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+          <div class="w-5 h-5 bg-white rounded-sm flex items-center justify-center">
+            <span class="text-black text-[10px] font-bold leading-none">M</span>
+          </div>
+          <span class="text-[13px] text-neutral-400">Money OS</span>
+        </div>
+        <div class="flex items-center gap-5 text-[13px] text-neutral-600">
+          <a href="/docs" class="hover:text-neutral-400 transition-colors">Docs</a>
+          <a href="/blog" class="hover:text-neutral-400 transition-colors">Blog</a>
+          <a href="/changelog" class="hover:text-neutral-400 transition-colors">Changelog</a>
+          <a href="/comparisons" class="hover:text-neutral-400 transition-colors">Compare</a>
+          <a href="https://moneyos.webasthetic.in/register" class="hover:text-neutral-400 transition-colors">Sign up</a>
+        </div>
+      </div>
+    </footer>
+  </main>
 </Layout>

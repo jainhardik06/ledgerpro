@@ -1,0 +1,111 @@
+---
+title: "Reports"
+description: "Generate expense reports, income summaries, tax-ready breakdowns, and budget vs. actual analyses from your Money OS data."
+keywords: ["financial reports", "expense report", "income report", "tax summary", "money os reports"]
+category: "Core Features"
+author: "Money OS Team"
+publishDate: 2026-01-15
+status: "published"
+sidebarPosition: 5
+relatedPages: ["budgets", "clients"]
+faq:
+  - question: "Can I export reports to PDF?"
+    answer: "Yes. On any report page, click Export → PDF. The PDF matches the on-screen layout and is formatted for printing or attaching to accountant emails."
+  - question: "Can I schedule automatic reports?"
+    answer: "Scheduled reports are on the roadmap. Currently, reports are generated on demand."
+  - question: "How far back can I generate reports?"
+    answer: "Reports are available for any date range from your account creation date to today. There is no data retention limit."
+  - question: "Are reports real-time?"
+    answer: "Yes. Reports reflect transactions the moment they are added or categorized. There is no end-of-day sync."
+  - question: "Can my accountant access reports?"
+    answer: "Invite your accountant as a Viewer in Settings → Team. They'll see all reports and can export data without being able to modify transactions."
+---
+
+## Available Reports
+
+Money OS provides six core report types:
+
+| Report | What It Shows |
+|---|---|
+| **Expense Summary** | Total spending by category over any period |
+| **Income Summary** | Total income by source or client |
+| **Budget vs. Actual** | Planned vs. real spending per budget |
+| **Client P&L** | Revenue, expenses, and margin per client |
+| **Tax Summary** | Categorized expenses grouped for tax filing |
+| **Cash Flow** | Monthly income minus expenses, over time |
+
+Navigate to **Reports** in the left sidebar to access all report types.
+
+---
+
+## Expense Summary Report
+
+The most-used report. Answers: *Where did the money go?*
+
+**Configuration:**
+- **Date range** — Any period from a single day to multiple years
+- **Group by** — Category (default), month, week, or day
+- **Filter** — Include/exclude specific categories, clients, or tags
+
+**Export options:**
+- CSV — For spreadsheet analysis
+- PDF — For accountants or stakeholders
+
+The report includes:
+1. Total spend for the period
+2. Top 5 categories by spend (ranked)
+3. Full category breakdown table (amount + % of total)
+4. Month-over-month comparison (if multi-month range selected)
+
+---
+
+## Income Summary Report
+
+Answers: *Where did the money come from?*
+
+Groups income transactions by:
+- **Source** — If transactions have different income categories (Consulting, Products, Royalties)
+- **Client** — If transactions are tagged to clients
+- **Month** — Time-series view
+
+---
+
+## Tax Summary Report
+
+Built for annual tax preparation. Export this and hand it to your accountant.
+
+The Tax Summary shows:
+- All expense categories with totals
+- Transactions flagged as tax-deductible (based on category rules)
+- Income totals by category
+- A "tax-deductible summary" table pre-formatted for Schedule C (US) or equivalent
+
+**Setting up tax categories:**
+Go to **Settings → Categories** and toggle which categories are tax-deductible. Money OS applies these rules to all existing and future transactions in that category.
+
+---
+
+## Client P&L Report
+
+Answers: *Is this client profitable?*
+
+For each client, the report shows:
+- **Revenue** — Transactions tagged to this client as income
+- **Expenses** — Transactions tagged to this client as expenses
+- **Margin** — Revenue minus expenses
+- **Margin %** — Margin as a percentage of revenue
+
+Use this report quarterly to identify:
+- Clients where your margins are below your target
+- Clients generating the most absolute profit
+- Clients with high expenses relative to revenue
+
+---
+
+## Exporting Data
+
+All reports support CSV export. Additionally:
+
+**Full data export**: Settings → Data → Export All Data. Generates a ZIP file containing every transaction as a CSV, categorized by year.
+
+**Accounting software export**: Settings → Integrations → Export for [QuickBooks / Xero / Tally]. Generates a formatted file importable into these tools.

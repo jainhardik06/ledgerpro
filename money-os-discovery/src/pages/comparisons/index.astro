@@ -1,0 +1,42 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import TopNav from '../../components/TopNav.astro';
+import { getCollection } from 'astro:content';
+
+const items = (await getCollection('comparisons', ({ data }) => data.status === 'published'))
+  .sort((a, b) => a.data.competitorName.localeCompare(b.data.competitorName));
+---
+
+<Layout
+  title="Comparisons — Money OS vs Alternatives"
+  description="Honest, feature-by-feature comparisons of Money OS against Expensify, Wave, QuickBooks, spreadsheets, and other expense and budgeting tools."
+>
+  <TopNav />
+
+  <main class="max-w-4xl mx-auto px-4 sm:px-6 py-16">
+    <div class="mb-12">
+      <div class="text-[11px] font-medium text-neutral-600 uppercase tracking-wider mb-3">Comparisons</div>
+      <h1 class="text-[40px] sm:text-[48px] font-semibold text-neutral-100 tracking-tight leading-tight mb-4">
+        Money OS vs the alternatives.
+      </h1>
+      <p class="text-[16px] text-neutral-400 leading-relaxed max-w-xl">
+        Honest, specific comparisons — including where the other tool is the better choice. No loaded language, no fake feature gaps.
+      </p>
+    </div>
+
+    {items.length === 0 ? (
+      <div class="rounded-xl border border-neutral-800 bg-neutral-950 p-10 text-center">
+        <p class="text-[14px] text-neutral-400">Comparisons are publishing soon.</p>
+      </div>
+    ) : (
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {items.map((item) => (
+          <a href={`/comparisons/${item.id}`} class="group flex flex-col p-6 rounded-xl border border-neutral-800 bg-neutral-950 hover:border-neutral-700 hover:bg-neutral-900 transition-colors">
+            <div class="text-[15px] font-semibold text-neutral-200 group-hover:text-white mb-2">Money OS vs {item.data.competitorName}</div>
+            <p class="text-[13px] text-neutral-500 leading-relaxed">{item.data.description}</p>
+          </a>
+        ))}
+      </div>
+    )}
+  </main>
+</Layout>

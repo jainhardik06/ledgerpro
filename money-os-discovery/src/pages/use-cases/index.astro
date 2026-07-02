@@ -1,0 +1,63 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import TopNav from '../../components/TopNav.astro';
+import { useCases } from '../../data/use-cases';
+
+const audiencePages = useCases.filter((u) => u.group === 'Audience');
+const keywordPages = useCases.filter((u) => u.group === 'Keyword');
+---
+
+<Layout
+  title="Use Cases — Money OS"
+  description="See how freelancers, agencies, startups, creators, clubs, and small teams use Money OS to track expenses, set budgets, and stay financially clear."
+>
+  <TopNav />
+
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-16">
+    <div class="mb-12">
+      <div class="text-[11px] font-medium text-neutral-600 uppercase tracking-wider mb-3">Use Cases</div>
+      <h1 class="text-[40px] sm:text-[48px] font-semibold text-neutral-100 tracking-tight leading-tight mb-4">
+        Built for how you actually work.
+      </h1>
+      <p class="text-[16px] text-neutral-400 leading-relaxed max-w-xl">
+        Money OS adapts to your situation — whether you're a solo freelancer, a multi-client agency, or a club treasurer.
+        Find the setup that matches your work.
+      </p>
+    </div>
+
+    <section class="mb-14">
+      <h2 class="text-[18px] font-semibold text-neutral-200 tracking-tight mb-5">By who you are</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {audiencePages.map((u) => (
+          <a href={`/use-cases/${u.slug}`} class="group flex flex-col p-6 rounded-xl border border-neutral-800 bg-neutral-950 hover:border-neutral-700 hover:bg-neutral-900 transition-colors">
+            <div class="text-[13px] font-semibold text-neutral-200 group-hover:text-white mb-2">{u.audience}</div>
+            <p class="text-[13px] text-neutral-500 leading-relaxed">{u.blurb}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <section>
+      <h2 class="text-[18px] font-semibold text-neutral-200 tracking-tight mb-5">By what you need</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {keywordPages.map((u) => (
+          <a href={`/use-cases/${u.slug}`} class="group flex flex-col p-6 rounded-xl border border-neutral-800 bg-neutral-950 hover:border-neutral-700 hover:bg-neutral-900 transition-colors">
+            <div class="text-[11px] font-medium text-neutral-600 mb-2">{u.audience}</div>
+            <div class="text-[14px] font-semibold text-neutral-200 group-hover:text-white mb-1 capitalize">{u.slug.replace(/-/g, ' ')}</div>
+            <p class="text-[13px] text-neutral-500 leading-relaxed">{u.blurb}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <div class="mt-16 pt-10 border-t border-neutral-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div>
+        <div class="text-[14px] font-medium text-neutral-200 mb-1">Don't see your exact situation?</div>
+        <div class="text-[13px] text-neutral-500">The core features work for any kind of money you need to track.</div>
+      </div>
+      <a href="https://moneyos.webasthetic.in/register" class="shrink-0 inline-flex items-center px-4 py-2 bg-white text-black text-[13px] font-medium rounded-md hover:bg-neutral-200 transition-colors">
+        Start free →
+      </a>
+    </div>
+  </main>
+</Layout>

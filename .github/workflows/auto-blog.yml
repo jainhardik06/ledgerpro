@@ -1,0 +1,57 @@
+name: Auto Blog (Money OS Discovery)
+
+# Publishes one new blog post roughly every 3 days via the Content Engine.
+# GitHub cron has no native "every 3 days", so we run on days 1,4,7,…,28 at
+# 09:00 UTC — an even ~3-day cadence that resets cleanly each month.
+on:
+  schedule:
+    - cron: '0 9 1,4,7,10,13,16,19,22,25,28 * *'
+  workflow_dispatch: {}   # allow manual runs from the Actions tab
+
+# The workflow commits the generated MDX back to the repo.
+permissions:
+  contents: write
+
+concurrency:
+  group: auto-blog
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: money-os-discovery
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: money-os-discovery/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate blog post
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GROQ_MODEL: ${{ secrets.GROQ_MODEL }}
+          MONGODB_GROWTH_URI: ${{ secrets.MONGODB_GROWTH_URI }}
+        run: npm run content:generate
+
+      - name: Commit & push new post
+        run: |
+          if [ -z "$(git status --porcelain src/content/blog)" ]; then
+            echo "No new post was generated; nothing to commit."
+            exit 0
+          fi
+          git config user.name  "money-os-content-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add src/content/blog
+          NEWFILE=$(git diff --cached --name-only --diff-filter=A | head -1)
+          git commit -m "content: auto-publish $(basename "$NEWFILE" .mdx)"
+          git push

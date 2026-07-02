@@ -1,0 +1,150 @@
+---
+import Layout from './Layout.astro';
+import TopNav from '../components/TopNav.astro';
+
+interface Props {
+  title: string;
+  headline: string;
+  subheadline: string;
+  description: string;
+  audience: string;
+  slug: string;
+  benefits: string[];
+  features: Array<{ name: string; desc: string }>;
+  faqs: Array<{ question: string; answer: string }>;
+  ctaHeadline?: string;
+}
+
+const {
+  title,
+  headline,
+  subheadline,
+  description,
+  audience,
+  slug,
+  benefits,
+  features,
+  faqs,
+  ctaHeadline = `Start free. Built for ${audience}.`,
+} = Astro.props;
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map(f => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+
+const softwareSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Money OS',
+  description,
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'Web',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+};
+---
+
+<Layout title={title} description={description} ogImage={`/og/use-cases/${slug}.png`}>
+  <TopNav />
+
+  <main>
+    <!-- Hero -->
+    <section class="max-w-3xl mx-auto px-4 sm:px-6 pt-20 sm:pt-28 pb-16 text-center">
+      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-neutral-800 bg-neutral-950 text-[12px] font-medium text-neutral-500 mb-6 uppercase tracking-wider">
+        {audience}
+      </div>
+      <h1 class="text-[36px] sm:text-[48px] font-semibold text-neutral-100 tracking-tight leading-[1.1] mb-5">
+        {headline}
+      </h1>
+      <p class="text-[16px] sm:text-[18px] text-neutral-400 leading-relaxed mb-8 max-w-2xl mx-auto">
+        {subheadline}
+      </p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <a href="https://moneyos.webasthetic.in/register" class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-white text-black text-[14px] font-medium rounded-lg hover:bg-neutral-200 transition-colors duration-150">
+          Start free →
+        </a>
+        <a href="/docs/introduction" class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 border border-neutral-800 text-neutral-400 text-[14px] font-medium rounded-lg hover:text-white hover:border-neutral-700 transition-colors duration-150">
+          Read the docs
+        </a>
+      </div>
+    </section>
+
+    <!-- Benefits -->
+    <section class="border-t border-neutral-900 py-16">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6">
+        <div class="text-[11px] font-medium text-neutral-600 uppercase tracking-wider mb-8 text-center">Why {audience} use Money OS</div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {benefits.map(b => (
+            <div class="flex items-start gap-3 p-4 rounded-xl border border-neutral-800 bg-neutral-950">
+              <span class="text-emerald-400 mt-0.5 shrink-0">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </span>
+              <span class="text-[13px] text-neutral-300 leading-relaxed">{b}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="border-t border-neutral-900 py-16">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6">
+        <div class="text-[11px] font-medium text-neutral-600 uppercase tracking-wider mb-3 text-center">Features</div>
+        <h2 class="text-[28px] font-semibold text-neutral-100 tracking-tight text-center mb-10">Built for how you actually work.</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {features.map(f => (
+            <div class="p-6 rounded-xl border border-neutral-800 bg-neutral-950">
+              <h3 class="text-[14px] font-semibold text-neutral-200 mb-2">{f.name}</h3>
+              <p class="text-[13px] text-neutral-500 leading-relaxed">{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="border-t border-neutral-900 py-16">
+      <div class="max-w-2xl mx-auto px-4 sm:px-6">
+        <h2 class="text-[24px] font-semibold text-neutral-100 tracking-tight mb-8">Common questions</h2>
+        <div class="flex flex-col gap-0 divide-y divide-neutral-800">
+          {faqs.map(faq => (
+            <details class="group py-4 cursor-pointer list-none">
+              <summary class="text-[14px] font-medium text-neutral-300 group-hover:text-white transition-colors flex items-center justify-between gap-4 select-none">
+                {faq.question}
+                <svg class="w-4 h-4 text-neutral-600 shrink-0 group-open:rotate-45 transition-transform duration-150" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+              </summary>
+              <p class="mt-3 text-[13px] text-neutral-500 leading-relaxed">{faq.answer}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="border-t border-neutral-900 py-20 text-center">
+      <div class="max-w-xl mx-auto px-4 sm:px-6">
+        <h2 class="text-[28px] sm:text-[32px] font-semibold text-neutral-100 tracking-tight mb-4">{ctaHeadline}</h2>
+        <p class="text-[14px] text-neutral-500 mb-8">No credit card. No trial period. Free forever on the core plan.</p>
+        <a href="https://moneyos.webasthetic.in/register" class="inline-flex items-center px-6 py-3 bg-white text-black text-[14px] font-medium rounded-lg hover:bg-neutral-200 transition-colors duration-150">
+          Create your free account →
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  <script type="application/ld+json" set:html={JSON.stringify(softwareSchema)} />
+</Layout>
+
+<style>
+  details summary::-webkit-details-marker { display: none; }
+</style>

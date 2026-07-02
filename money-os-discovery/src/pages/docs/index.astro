@@ -1,0 +1,120 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import TopNav from '../../components/TopNav.astro';
+
+const docSections = [
+  {
+    group: 'Getting Started',
+    description: 'Get up and running in minutes.',
+    links: [
+      { label: 'Introduction', href: '/docs/introduction', desc: 'What Money OS is and how it works' },
+      { label: 'Creating a Workspace', href: '/docs/creating-workspace', desc: 'Set up your first workspace' },
+      { label: 'Managing Transactions', href: '/docs/managing-transactions', desc: 'Add, import, and categorize transactions' },
+    ],
+  },
+  {
+    group: 'Core Features',
+    description: 'The tools that run your finances.',
+    links: [
+      { label: 'Budgets', href: '/docs/budgets', desc: 'Create and monitor spending limits' },
+      { label: 'Reports', href: '/docs/reports', desc: 'Expense, income, and tax summaries' },
+      { label: 'Clients', href: '/docs/clients', desc: 'Manage client billing and expenses' },
+    ],
+  },
+  {
+    group: 'Teams & Collaboration',
+    description: 'Bring your team into your financial workflow.',
+    links: [
+      { label: 'Team Members', href: '/docs/teams', desc: 'Invite collaborators and assign roles' },
+      { label: 'Audit Logs', href: '/docs/audit-logs', desc: 'Full activity trail for every change' },
+    ],
+  },
+  {
+    group: 'Security & Data',
+    description: 'How Money OS protects your data.',
+    links: [
+      { label: 'Security', href: '/docs/security', desc: 'Encryption, 2FA, and access controls' },
+    ],
+  },
+  {
+    group: 'Help',
+    description: 'Answers to common questions.',
+    links: [
+      { label: 'FAQ', href: '/docs/faq', desc: 'Frequently asked questions' },
+    ],
+  },
+];
+---
+
+<Layout title="Documentation" description="Complete documentation for Money OS — financial command center for freelancers, agencies, and small teams.">
+  <TopNav />
+
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
+
+    <!-- Header -->
+    <div class="mb-14">
+      <div class="text-[11px] font-medium text-neutral-600 uppercase tracking-wider mb-3">Documentation</div>
+      <h1 class="text-[40px] sm:text-[48px] font-semibold text-neutral-100 tracking-tight leading-tight mb-4">
+        Money OS Docs
+      </h1>
+      <p class="text-[16px] text-neutral-400 leading-relaxed max-w-xl">
+        Everything you need to use Money OS effectively. Guides, references, and tutorials — written to be read in minutes, not hours.
+      </p>
+    </div>
+
+    <!-- Quick links -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-14">
+      {[
+        { label: 'Get started in 5 minutes', href: '/docs/introduction', icon: '→' },
+        { label: 'Import your first transactions', href: '/docs/managing-transactions', icon: '→' },
+        { label: 'Read the FAQ', href: '/docs/faq', icon: '→' },
+      ].map(item => (
+        <a href={item.href} class="group flex items-center justify-between p-4 rounded-xl border border-neutral-800 bg-neutral-950 hover:border-neutral-700 hover:bg-neutral-900 transition-colors duration-150">
+          <span class="text-[13px] font-medium text-neutral-300 group-hover:text-white">{item.label}</span>
+          <span class="text-neutral-600 group-hover:text-neutral-400 transition-colors text-sm">{item.icon}</span>
+        </a>
+      ))}
+    </div>
+
+    <!-- Sections -->
+    <div class="flex flex-col gap-12">
+      {docSections.map(section => (
+        <section>
+          <div class="mb-4">
+            <h2 class="text-[18px] font-semibold text-neutral-200 tracking-tight">{section.group}</h2>
+            <p class="text-[13px] text-neutral-500 mt-0.5">{section.description}</p>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {section.links.map(link => (
+              <a
+                href={link.href}
+                class="group flex items-start gap-4 p-4 rounded-xl border border-neutral-800 bg-neutral-950 hover:border-neutral-700 hover:bg-neutral-900 transition-colors duration-150"
+              >
+                <div class="flex-1 min-w-0">
+                  <div class="text-[13px] font-medium text-neutral-200 group-hover:text-white mb-1 flex items-center gap-2">
+                    {link.label}
+                    <svg class="w-3.5 h-3.5 text-neutral-600 group-hover:text-neutral-400 opacity-0 group-hover:opacity-100 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                  <div class="text-[12px] text-neutral-600 leading-relaxed">{link.desc}</div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+
+    <!-- Bottom CTA -->
+    <div class="mt-16 pt-10 border-t border-neutral-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div>
+        <div class="text-[14px] font-medium text-neutral-200 mb-1">Not finding what you need?</div>
+        <div class="text-[13px] text-neutral-500">Start your free account and explore inside the product.</div>
+      </div>
+      <a href="https://moneyos.webasthetic.in/register" class="shrink-0 inline-flex items-center px-4 py-2 bg-white text-black text-[13px] font-medium rounded-md hover:bg-neutral-200 transition-colors duration-150">
+        Start free →
+      </a>
+    </div>
+  </div>
+</Layout>

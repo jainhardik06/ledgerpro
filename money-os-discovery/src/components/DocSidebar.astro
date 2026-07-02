@@ -1,0 +1,77 @@
+---
+interface DocLink {
+  label: string;
+  href: string;
+}
+interface DocSection {
+  group: string;
+  links: DocLink[];
+}
+
+const currentPath = Astro.url.pathname;
+
+const docNav: DocSection[] = [
+  {
+    group: 'Getting Started',
+    links: [
+      { label: 'Introduction', href: '/docs/introduction' },
+      { label: 'Creating a Workspace', href: '/docs/creating-workspace' },
+      { label: 'Managing Transactions', href: '/docs/managing-transactions' },
+    ],
+  },
+  {
+    group: 'Core Features',
+    links: [
+      { label: 'Budgets', href: '/docs/budgets' },
+      { label: 'Reports', href: '/docs/reports' },
+      { label: 'Clients', href: '/docs/clients' },
+    ],
+  },
+  {
+    group: 'Teams & Collaboration',
+    links: [
+      { label: 'Team Members', href: '/docs/teams' },
+      { label: 'Audit Logs', href: '/docs/audit-logs' },
+    ],
+  },
+  {
+    group: 'Security & Data',
+    links: [
+      { label: 'Security', href: '/docs/security' },
+    ],
+  },
+  {
+    group: 'Help',
+    links: [
+      { label: 'FAQ', href: '/docs/faq' },
+    ],
+  },
+];
+
+function isActive(href: string) {
+  return currentPath === href || currentPath === href + '/';
+}
+---
+
+<aside class="w-56 shrink-0 hidden lg:flex flex-col gap-0 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto py-6 pr-4 scrollbar-hide" aria-label="Documentation navigation">
+  {docNav.map(section => (
+    <div class="mb-5">
+      <div class="text-[11px] font-medium text-neutral-600 uppercase tracking-wider px-2 mb-1.5">
+        {section.group}
+      </div>
+      {section.links.map(link => (
+        <a
+          href={link.href}
+          class={`block px-2 py-1.5 rounded-md text-[13px] transition-colors duration-150 ${
+            isActive(link.href)
+              ? 'text-white font-medium bg-neutral-900'
+              : 'text-neutral-500 hover:text-neutral-200 hover:bg-neutral-900/50'
+          }`}
+          aria-current={isActive(link.href) ? 'page' : undefined}
+        >
+          {link.label}
+        </a>
+      ))}
+    </div>
+  ))}
+</aside>

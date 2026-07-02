@@ -1,0 +1,44 @@
+---
+interface RelatedPost {
+  title: string;
+  href: string;
+  category?: string;
+  readingTime?: number;
+}
+interface Props {
+  posts: RelatedPost[];
+}
+const { posts } = Astro.props;
+const labels: Record<string, string> = {
+  'expense-tracking': 'Expense Tracking',
+  budgeting: 'Budgeting',
+  'freelance-finance': 'Freelance Finance',
+  'agency-finance': 'Agency Finance',
+  'startup-finance': 'Startup Finance',
+  'tax-tips': 'Tax Tips',
+  'product-updates': 'Product Updates',
+  'tools-and-resources': 'Tools & Resources',
+};
+---
+
+{posts.length > 0 && (
+  <section class="mt-16 pt-10 border-t border-neutral-800">
+    <div class="text-[11px] font-medium text-neutral-600 uppercase tracking-wider mb-5">Keep reading</div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      {posts.map((post) => (
+        <a
+          href={post.href}
+          class="group p-5 rounded-xl border border-neutral-800 bg-neutral-950 hover:border-neutral-700 hover:bg-neutral-900 transition-colors duration-150"
+        >
+          {post.category && (
+            <div class="text-[11px] font-medium text-neutral-600 mb-2">{labels[post.category] ?? post.category}</div>
+          )}
+          <div class="text-[13px] font-medium text-neutral-200 group-hover:text-white leading-snug">{post.title}</div>
+          {post.readingTime && (
+            <div class="text-[11px] text-neutral-600 mt-2">{post.readingTime} min read</div>
+          )}
+        </a>
+      ))}
+    </div>
+  </section>
+)}

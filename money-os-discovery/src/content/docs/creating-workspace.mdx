@@ -1,0 +1,99 @@
+---
+title: "Creating a Workspace"
+description: "Set up your Money OS workspace in under 2 minutes. This guide covers account creation, workspace naming, and initial configuration."
+keywords: ["money os workspace", "getting started", "setup", "create account"]
+category: "Getting Started"
+author: "Money OS Team"
+publishDate: 2026-01-15
+status: "published"
+sidebarPosition: 2
+relatedPages: ["introduction", "managing-transactions"]
+faq:
+  - question: "Can I have multiple workspaces?"
+    answer: "Yes. Each workspace is completely isolated with its own transactions, budgets, clients, and team members. Create separate workspaces for different businesses or clients."
+  - question: "What currency should I select?"
+    answer: "Select the currency you use most frequently for transactions. You can add secondary currencies later in Settings → Currencies."
+  - question: "Can I rename my workspace after creation?"
+    answer: "Yes. Go to Settings → Workspace → General to rename your workspace at any time. The URL slug will also update."
+  - question: "What happens if I delete a workspace?"
+    answer: "Deleting a workspace permanently removes all associated transactions, budgets, clients, and reports. This action cannot be undone. Export your data first."
+  - question: "Can I transfer a workspace to another user?"
+    answer: "Workspace ownership transfer is not currently supported. As a workaround, invite the new owner, grant them Admin access, then have them re-create the workspace."
+---
+
+## Step 1: Create Your Account
+
+Navigate to [moneyos.webasthetic.in/register](https://moneyos.webasthetic.in/register).
+
+Fill in:
+- **Email address** — Use your primary business email. All financial exports and alerts will go here.
+- **Password** — Minimum 12 characters. A password manager is strongly recommended.
+- **Full name** — Used in audit logs and team notifications.
+
+Confirm your email address by clicking the link in the verification email.
+
+> **Note**: The verification email arrives within 60 seconds. Check your spam folder if it doesn't appear.
+
+---
+
+## Step 2: Name Your Workspace
+
+After email confirmation, you'll be prompted to create your first workspace.
+
+**Workspace name guidelines:**
+- Use your business or brand name (e.g., `Acme Design Studio`)
+- Keep it short — it appears in the top navigation bar
+- Avoid special characters
+
+**Workspace type** — Select the option that best describes your operation:
+| Type | Best For |
+|---|---|
+| Freelancer | Solo operators, independent contractors |
+| Agency | Teams billing multiple clients |
+| Student Club | Campus organizations tracking dues and events |
+| Small Business | Product businesses, local services |
+| Startup | Funded or pre-revenue startups |
+
+This setting affects which report templates and budget categories are pre-loaded.
+
+---
+
+## Step 3: Set Your Base Currency
+
+Select the currency most of your transactions are denominated in.
+
+> Money OS does not currently perform live currency conversions. Multi-currency support is on the roadmap.
+
+---
+
+## Step 4: Connect Your First Account
+
+You can start with either:
+
+**Option A — Manual entry**: Skip bank connection and add transactions manually. Good for freelancers who invoice irregularly.
+
+**Option B — Import via CSV**: Upload a CSV export from your bank. Most banks offer this in Account → Statements → Download.
+
+---
+
+## Step 5: Invite Team Members (Optional)
+
+If you're not working solo, go to **Settings → Team** and invite collaborators. Roles available:
+
+| Role | Can See | Can Edit | Can Delete | Can Invite |
+|---|---|---|---|---|
+| Admin | Everything | Everything | Everything | Yes |
+| Member | Transactions, Budgets | Transactions, Budgets | No | No |
+| Viewer | Everything | Nothing | Nothing | No |
+
+New team members receive an invitation email and are prompted to create their own account.
+
+---
+
+## What's Next
+
+Your workspace is ready. Continue with:
+
+- [Managing Transactions](/docs/managing-transactions) — Add your first expenses
+- [Budgets](/docs/budgets) — Set monthly spending limits
+- [Clients](/docs/clients) — Organize finances by client

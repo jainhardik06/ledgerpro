@@ -1,0 +1,103 @@
+---
+title: "Audit Logs"
+description: "Every action in Money OS is recorded. Learn how to search, filter, and export the audit trail for compliance, accountability, and debugging."
+keywords: ["audit logs", "activity log", "compliance", "team accountability", "money os audit"]
+category: "Teams & Collaboration"
+author: "Money OS Team"
+publishDate: 2026-01-15
+status: "published"
+sidebarPosition: 8
+relatedPages: ["teams", "security"]
+faq:
+  - question: "How long are audit logs retained?"
+    answer: "Audit logs are retained indefinitely. There is no expiration or rolling window on audit history."
+  - question: "Can I export audit logs?"
+    answer: "Yes. Filter the audit log to your desired date range and team member, then click Export → CSV. The export includes the actor, action, target, IP address, and timestamp."
+  - question: "Are audit logs tamper-proof?"
+    answer: "Audit log entries cannot be edited or deleted by any workspace member, including Admins. Only Money OS infrastructure-level access can modify audit records."
+  - question: "What actions are logged?"
+    answer: "All write operations are logged: creating, editing, or deleting transactions, budgets, clients, team members, and settings changes. Read-only views are not logged."
+  - question: "Can I set up alerts for specific actions?"
+    answer: "Audit log alerting is on the roadmap. Currently, you review the audit log manually or on a schedule."
+---
+
+## What the Audit Log Records
+
+Every write operation in your Money OS workspace creates an immutable audit log entry.
+
+**Logged events include:**
+
+| Category | Logged Actions |
+|---|---|
+| **Transactions** | Created, edited, deleted, bulk-edited, imported, exported |
+| **Budgets** | Created, modified, deleted |
+| **Clients** | Created, edited, deleted, archived |
+| **Team** | Member invited, role changed, member removed |
+| **Settings** | Workspace renamed, currency changed, integrations connected |
+| **Data** | Full data export triggered |
+| **Auth** | Login, logout, failed login attempt, 2FA enabled/disabled |
+
+**Read-only actions** (viewing pages, generating reports) are not logged — only actions that change data.
+
+---
+
+## Audit Log Entry Structure
+
+Each audit entry contains:
+
+| Field | Description | Example |
+|---|---|---|
+| **Actor** | Who performed the action | `Alice (alice@agency.com)` |
+| **Action** | What was done | `transaction.updated` |
+| **Target** | What was acted on | `TXN-2025-01-4821` |
+| **Detail** | Specifics of the change | `category: Marketing → Software` |
+| **IP Address** | Network origin | `103.21.x.x` |
+| **Timestamp** | Exact time (UTC) | `2025-01-15 14:32:07 UTC` |
+
+---
+
+## Searching the Audit Log
+
+Navigate to **Audit Logs** in the left sidebar.
+
+**Filter options:**
+
+- **Date range** — From a single day to your full account history
+- **Team member** — Filter by a specific actor
+- **Action type** — Filter by event category (transactions, budgets, settings, auth)
+- **Search** — Full-text search across actor names, actions, and targets
+
+Filters combine. Example: "Show all transaction deletions by member Bob in December 2024."
+
+---
+
+## Reading an Entry
+
+Click any audit log row to expand the full detail view.
+
+The expanded view shows:
+- The exact field values before and after the change (for edits)
+- The full transaction data at the time of deletion (for deletes)
+- The IP address and browser user agent
+
+This detail is critical for reconstructing what happened in ambiguous situations.
+
+---
+
+## Common Audit Log Use Cases
+
+**Monthly close**: Run the audit log for the month before exporting financial data, to verify no unauthorized edits occurred.
+
+**Team accountability**: If you notice unexpected transactions or deleted entries, filter by team member and date to identify who made the change.
+
+**Compliance**: Export audit logs for any time period to provide an activity trail to auditors.
+
+**Security review**: Filter for `auth.*` events to review login history. Any unfamiliar IP addresses or repeated failed login attempts should trigger a security review and password rotation.
+
+---
+
+## Exporting Audit Logs
+
+Click **Export → CSV** from the filtered audit log view.
+
+The CSV export contains all visible columns including the full detail payload. Import into Excel or your compliance tool for advanced analysis.

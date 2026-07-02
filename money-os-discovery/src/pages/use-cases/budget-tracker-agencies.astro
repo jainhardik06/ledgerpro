@@ -1,0 +1,36 @@
+---
+import UseCaseLayout from '../../layouts/UseCaseLayout.astro';
+---
+
+<UseCaseLayout
+  title="Budget Tracker for Agencies — Per-Client & Overhead Budgets | Money OS"
+  headline="Agency budgets that prevent scope creep before it happens."
+  subheadline="Set project budgets, monitor client spend in real time, and get alerts before you go over. Know when a client relationship is profitable before month-end reconciliation."
+  description="Money OS helps agencies set project and overhead budgets, track spend per client in real time, and get overspend alerts before scope creep erodes margins."
+  audience="Agencies"
+  slug="budget-tracker-agencies"
+  benefits={[
+    "Set per-project budgets and track client expenses against them in real time",
+    "Separate client budget from internal overhead — see both clearly",
+    "Alerts at 80% warn your team before they breach budget",
+    "Budget vs. Actual report shows which clients are over budget every month",
+    "Spot clients who consistently blow your resource budget before renewing contracts",
+    "Set overhead budgets for operations, software, and team resources separately",
+  ]}
+  features={[
+    { name: 'Project Budgets', desc: 'Create a budget per client project or retainer. Set the monthly or project-total limit. Every client-tagged expense counts against the right project budget automatically.' },
+    { name: 'Overhead Budgets', desc: 'Separate budget categories for internal costs: Office, Software, Marketing, Salaries. Track agency overhead independently of client project spend.' },
+    { name: 'Real-Time Budget Dashboard', desc: 'See all active budgets, current spend, and remaining allowance in one view. Filter by client or department. Share the dashboard with your team lead.' },
+    { name: 'Team-Wide Accountability', desc: 'Team members see their categories in the budget dashboard. When they know there is a budget, spending behavior changes. Visibility creates accountability without micromanagement.' },
+    { name: 'Margin Analysis', desc: 'Compare client budget against client revenue. Clients with tight budget-to-revenue ratios are margin risks. Identify them early and reprice at renewal.' },
+    { name: 'Monthly Budget Reports', desc: 'Automated monthly Budget vs. Actual report. Variance column shows over/under by amount and percentage per category. Share with leadership without any additional prep.' },
+  ]}
+  faqs={[
+    { question: 'Can we set budgets per client retainer?', answer: 'Yes. Create a budget for each client retainer with the monthly limit. As expenses are tagged to that client, they count against the retainer budget in real time.' },
+    { question: 'What happens when a client project goes over budget?', answer: 'Money OS sends an alert and marks the budget as exceeded in the dashboard. You decide how to handle it — absorb, bill the overage, or have a scope discussion with the client.' },
+    { question: 'Can we budget for non-billable internal time or only hard expenses?', answer: 'Money OS currently tracks financial transactions (expenses and revenue). Time tracking for non-billable internal work is on the roadmap. Use a time tracker alongside Money OS for that dimension.' },
+    { question: 'Can different team leads manage their own budgets?', answer: 'Yes. Admins see and manage all budgets. Give department heads or client leads Admin access to manage their own budget categories while you retain overall oversight.' },
+    { question: 'How do we set quarterly budgets instead of monthly?', answer: 'Set the budget limit to the quarterly total and track it against the current month\'s spend. Full quarterly budget periods with automatic rollover are on the roadmap.' },
+  ]}
+  ctaHeadline="Know before you bill. Protect your agency margins."
+/>

@@ -389,3 +389,193 @@ The Growth Cluster is strictly decoupled from the Product Engine. Designing for 
 **Relationships**: None.
 **Future Scaling Strategy**: Low volume.
 **Retention Policy**: Indefinite.
+
+---
+
+## 17. social_assets
+**Purpose**: Store generated social media creative assets (images, captions, videos) for distribution campaigns.
+**Schema**:
+```json
+{
+  "_id": "ObjectId",
+  "profileId": "ObjectId",
+  "assetType": "enum['Image', 'Video', 'Caption', 'Thread', 'Carousel']",
+  "assetUrl": "string",
+  "caption": "string",
+  "hashtags": ["string"],
+  "scheduledFor": "Date",
+  "postedAt": "Date",
+  "campaignId": "ObjectId",
+  "status": "enum['Draft', 'Scheduled', 'Posted', 'Archived']",
+  "createdAt": "Date"
+}
+```
+**Indexes**:
+- `{ "profileId": 1, "status": 1 }`
+- `{ "scheduledFor": 1 }`
+- `{ "campaignId": 1 }`
+**Relationships**: Belongs to `social_profiles`. Optionally belongs to `launch_campaigns`.
+**Future Scaling Strategy**: Asset URLs point to Vercel CDN or S3. Document only stores the reference, not binary data.
+**Retention Policy**: Posted assets retained indefinitely for audit trail. Archived drafts purged after 180 days.
+
+---
+
+## 18. ad_units
+**Purpose**: Define and store Google AdSense ad unit configurations for each placement type in the Discovery ecosystem.
+**Schema**:
+```json
+{
+  "_id": "ObjectId",
+  "name": "string",
+  "adUnitId": "string",
+  "adClient": "string",
+  "format": "enum['Display', 'InArticle', 'InFeed', 'Matched']",
+  "size": "string",
+  "placementType": "enum['Blog-Inline', 'Blog-Footer', 'Comparison-Below-Table', 'Resource-Sidebar']",
+  "isActive": "boolean",
+  "createdAt": "Date",
+  "notes": "string"
+}
+```
+**Indexes**:
+- `{ "placementType": 1, "isActive": 1 }`
+- `{ "adUnitId": 1 }` (Unique)
+**Relationships**: One-to-Many with `ad_placements`.
+**Future Scaling Strategy**: Low volume. Max ~20 distinct ad units.
+**Retention Policy**: Indefinite.
+
+---
+
+## 19. ad_placements
+**Purpose**: Map which ad unit appears on which content page or route pattern, enforcing UX rules.
+**Schema**:
+```json
+{
+  "_id": "ObjectId",
+  "adUnitId": "ObjectId",
+  "contentType": "enum['blog', 'comparison', 'resource', 'use-case']",
+  "routePattern": "string",
+  "position": "enum['inline-mid', 'inline-end', 'below-table', 'sidebar']",
+  "maxAdsPerPage": "number",
+  "isActive": "boolean",
+  "createdAt": "Date",
+  "notes": "string"
+}
+```
+**Indexes**:
+- `{ "contentType": 1, "isActive": 1 }`
+- `{ "routePattern": 1 }`
+**Relationships**: Belongs to `ad_units`.
+**Future Scaling Strategy**: Flat collection. Route patterns allow wildcard matching (e.g., `/blog/*`).
+**Retention Policy**: Indefinite.
+
+---
+
+## 20. ad_performance
+**Purpose**: Aggregate daily AdSense performance metrics per ad unit for revenue tracking and optimization.
+**Schema**:
+```json
+{
+  "_id": "ObjectId",
+  "adUnitId": "ObjectId",
+  "date": "string",
+  "impressions": "number",
+  "clicks": "number",
+  "ctr": "number",
+  "estimatedEarningsUsd": "number",
+  "rpm": "number",
+  "fetchedAt": "Date"
+}
+```
+**Indexes**:
+- `{ "adUnitId": 1, "date": -1 }`
+- `{ "date": -1 }`
+**Relationships**: Belongs to `ad_units`.
+**Future Scaling Strategy**: Pre-aggregated daily rows. At 365 days × 20 units = 7,300 rows. Negligible storage.
+**Retention Policy**: Indefinite. Historical earnings data is critical for tax and business intelligence.
+
+---
+
+## 21. affiliate_links
+**Purpose**: Register and manage affiliate tracking links for partner programs and sponsored products.
+**Schema**:
+```json
+{
+  "_id": "ObjectId",
+  "partnerName": "string",
+  "productName": "string",
+  "category": "string",
+  "rawUrl": "string",
+  "trackingUrl": "string",
+  "commissionType": "enum['CPC', 'CPA', 'Revenue Share']",
+  "commissionRate": "number",
+  "cookieDurationDays": "number",
+  "placementPages": ["string"],
+  "isActive": "boolean",
+  "addedAt": "Date",
+  "notes": "string"
+}
+```
+**Indexes**:
+- `{ "partnerName": 1 }`
+- `{ "isActive": 1, "category": 1 }`
+- `{ "trackingUrl": 1 }` (Unique)
+**Relationships**: One-to-Many with `affiliate_clicks` and `affiliate_conversions`.
+**Future Scaling Strategy**: Low volume. Max ~200 active affiliate links.
+**Retention Policy**: Indefinite.
+
+---
+
+## 22. affiliate_clicks
+**Purpose**: Record every click on an affiliate link with source, session, and referrer context.
+**Schema**:
+```json
+{
+  "_id": "ObjectId",
+  "affiliateLinkId": "ObjectId",
+  "sessionId": "string",
+  "referrerUrl": "string",
+  "sourcePage": "string",
+  "userAgent": "string",
+  "ipHash": "string",
+  "clickedAt": "Date",
+  "utmSource": "string",
+  "utmMedium": "string",
+  "utmCampaign": "string"
+}
+```
+**Indexes**:
+- `{ "affiliateLinkId": 1, "clickedAt": -1 }`
+- `{ "clickedAt": -1 }`
+- `{ "sessionId": 1 }`
+**Relationships**: Belongs to `affiliate_links`.
+**Future Scaling Strategy**: Write-heavy at scale. TTL index on `clickedAt` (180 days) to prevent unbounded growth on Atlas Free.
+**Retention Policy**: 180 days via TTL index. Aggregate conversion data is retained in `affiliate_conversions`.
+
+---
+
+## 23. affiliate_conversions
+**Purpose**: Record verified conversions (purchases, signups) attributed to affiliate click sessions.
+**Schema**:
+```json
+{
+  "_id": "ObjectId",
+  "affiliateLinkId": "ObjectId",
+  "clickId": "ObjectId",
+  "sessionId": "string",
+  "conversionType": "enum['Purchase', 'Signup', 'Trial', 'Download']",
+  "commissionEarnedUsd": "number",
+  "orderValue": "number",
+  "convertedAt": "Date",
+  "verificationStatus": "enum['Pending', 'Confirmed', 'Reversed']",
+  "partnerTransactionId": "string",
+  "notes": "string"
+}
+```
+**Indexes**:
+- `{ "affiliateLinkId": 1, "convertedAt": -1 }`
+- `{ "verificationStatus": 1 }`
+- `{ "sessionId": 1 }`
+**Relationships**: Belongs to `affiliate_links`. References `affiliate_clicks` via `clickId`.
+**Future Scaling Strategy**: Low volume (conversions are rare events). Fits comfortably in Atlas Free forever.
+**Retention Policy**: Indefinite. Financial records required for tax compliance.

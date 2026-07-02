@@ -1,0 +1,34 @@
+name: Replenish Topics (Money OS Discovery)
+
+# Tops up the content pipeline once a month so the Auto Blog workflow always
+# has high-priority topics to write. Writes only to the Growth DB (no commit).
+on:
+  schedule:
+    - cron: '0 8 1 * *'   # 1st of each month, 08:00 UTC
+  workflow_dispatch:
+    inputs:
+      count:
+        description: 'How many topics to generate'
+        default: '12'
+        required: false
+
+jobs:
+  replenish:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: money-os-discovery
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: money-os-discovery/package-lock.json
+      - run: npm ci
+      - name: Discover topics
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GROQ_MODEL: ${{ secrets.GROQ_MODEL }}
+          MONGODB_GROWTH_URI: ${{ secrets.MONGODB_GROWTH_URI }}
+        run: npm run growth:topics -- --count=${{ github.event.inputs.count || '12' }}

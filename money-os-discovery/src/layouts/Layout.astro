@@ -1,26 +1,116 @@
 ---
-import '../styles/global.css';
----
-<!doctype html>
-<html lang="en" class="bg-black text-white antialiased font-sans">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
-	</head>
-	<body>
-		<slot />
-	</body>
-</html>
+interface Props {
+  title: string;
+  description?: string;
+  ogImage?: string;
+  canonicalUrl?: string;
+  type?: 'website' | 'article';
+  noIndex?: boolean;
+}
 
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
-</style>
+const {
+  title,
+  description = 'Money OS — Financial command center for freelancers, agencies, and small teams.',
+  ogImage = '/og/default.png',
+  canonicalUrl = Astro.url.href,
+  type = 'website',
+  noIndex = false,
+} = Astro.props;
+
+const siteUrl = 'https://discover.moneyos.webasthetic.in';
+const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
+const fullTitle = title.includes('Money OS') ? title : `${title} | Money OS`;
+
+// AdSense loader is included once, site-wide, only when configured. Individual
+// ad units (AdSlot / InContentAd) just render the <ins> and push.
+const adsenseClient = import.meta.env.PUBLIC_ADSENSE_CLIENT;
+---
+
+<!doctype html>
+<html lang="en" class="bg-black text-white antialiased">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+
+    <!-- Primary Meta -->
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {noIndex && <meta name="robots" content="noindex, nofollow" />}
+    {!noIndex && <meta name="robots" content="index, follow" />}
+    <link rel="canonical" href={canonicalUrl} />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={fullOgImage} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content="Money OS" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={fullOgImage} />
+
+    <!-- AdSense loader (only emitted when configured) -->
+    {adsenseClient && (
+      <script
+        async
+        src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClient}`}
+        crossorigin="anonymous"
+      ></script>
+    )}
+
+    <!-- Brand typeface: Geist — same family as the Money OS product. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap');
+
+      :root {
+        --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+        --font-mono: 'Geist Mono', 'SF Mono', 'Fira Code', 'Roboto Mono', monospace;
+      }
+
+      html {
+        font-family: var(--font-sans);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      ::selection {
+        background-color: #262626;
+        color: #ededed;
+      }
+
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #000;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #262626;
+        border-radius: 3px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #404040;
+      }
+    </style>
+  </head>
+  <body class="bg-black text-neutral-200 min-h-screen">
+    <slot />
+  </body>
+</html>

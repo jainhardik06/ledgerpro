@@ -1,0 +1,108 @@
+---
+const currentPath = Astro.url.pathname;
+
+const navLinks = [
+  { label: 'Docs', href: '/docs' },
+  { label: 'Blog', href: '/blog' },
+  { label: 'Comparisons', href: '/comparisons' },
+  { label: 'Use Cases', href: '/use-cases' },
+  { label: 'Resources', href: '/resources' },
+  { label: 'Changelog', href: '/changelog' },
+];
+
+function isActive(href: string) {
+  if (href === '/') return currentPath === '/';
+  return currentPath.startsWith(href);
+}
+---
+
+<header class="h-14 border-b border-neutral-800 bg-black/80 backdrop-blur-md sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between gap-4">
+
+    <!-- Logo -->
+    <a href="/" class="flex items-center gap-2 shrink-0" aria-label="Money OS home">
+      <div class="w-6 h-6 bg-white rounded-sm flex items-center justify-center">
+        <span class="text-black text-[11px] font-bold leading-none">M</span>
+      </div>
+      <span class="text-[13px] font-semibold text-white tracking-tight">Money OS</span>
+      <span class="text-[11px] text-neutral-600 font-medium border border-neutral-800 rounded px-1.5 py-0.5 hidden sm:inline">docs</span>
+    </a>
+
+    <!-- Desktop Nav -->
+    <nav class="hidden md:flex items-center gap-1" aria-label="Main navigation">
+      {navLinks.map(link => (
+        <a
+          href={link.href}
+          class={`px-3 py-1.5 rounded-md text-[13px] font-medium transition-colors duration-150 ${
+            isActive(link.href)
+              ? 'text-white bg-neutral-900'
+              : 'text-neutral-400 hover:text-white hover:bg-neutral-900'
+          }`}
+        >
+          {link.label}
+        </a>
+      ))}
+    </nav>
+
+    <!-- CTA -->
+    <div class="flex items-center gap-2 shrink-0">
+      <a
+        href="https://moneyos.webasthetic.in/login"
+        class="hidden sm:inline-flex text-[13px] font-medium text-neutral-400 hover:text-white transition-colors duration-150"
+      >
+        Sign in
+      </a>
+      <a
+        href="https://moneyos.webasthetic.in/register"
+        class="inline-flex items-center px-3 py-1.5 bg-white text-black text-[13px] font-medium rounded-md hover:bg-neutral-200 transition-colors duration-150 focus:outline-none focus:ring-1 focus:ring-white focus:ring-offset-1 focus:ring-offset-black"
+      >
+        Start free
+      </a>
+
+      <!-- Mobile menu button -->
+      <button
+        id="mobile-menu-btn"
+        class="md:hidden p-1.5 text-neutral-400 hover:text-white transition-colors"
+        aria-label="Open menu"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 12h18M3 6h18M3 18h18" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div
+    id="mobile-menu"
+    class="md:hidden hidden border-t border-neutral-800 bg-black"
+    role="dialog"
+    aria-label="Mobile navigation"
+  >
+    <nav class="px-4 py-3 flex flex-col gap-1">
+      {navLinks.map(link => (
+        <a
+          href={link.href}
+          class={`px-3 py-2 rounded-md text-[13px] font-medium transition-colors ${
+            isActive(link.href)
+              ? 'text-white bg-neutral-900'
+              : 'text-neutral-400 hover:text-white'
+          }`}
+        >
+          {link.label}
+        </a>
+      ))}
+    </nav>
+  </div>
+</header>
+
+<script>
+  const btn = document.getElementById('mobile-menu-btn');
+  const menu = document.getElementById('mobile-menu');
+  btn?.addEventListener('click', () => {
+    const isOpen = menu?.classList.toggle('hidden') === false;
+    btn.setAttribute('aria-expanded', String(!isOpen));
+  });
+</script>

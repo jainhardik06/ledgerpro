@@ -1,0 +1,103 @@
+---
+title: "Security"
+description: "How Money OS protects your financial data. Encryption, two-factor authentication, access controls, and infrastructure security."
+keywords: ["security", "data encryption", "two-factor authentication", "2FA", "data privacy", "money os security"]
+category: "Security & Data"
+author: "Money OS Team"
+publishDate: 2026-01-15
+status: "published"
+sidebarPosition: 9
+relatedPages: ["audit-logs", "faq"]
+faq:
+  - question: "Is my financial data encrypted?"
+    answer: "Yes. All data is encrypted at rest using AES-256 and in transit using TLS 1.3. Encryption keys are managed via a hardware security module (HSM) and rotated annually."
+  - question: "Does Money OS sell my data?"
+    answer: "No. Money OS does not sell, share, or monetize your financial data. Your data is used solely to provide the service."
+  - question: "Where is my data stored?"
+    answer: "Data is stored in MongoDB Atlas infrastructure on AWS. Your workspace data resides in the region selected during setup (default: us-east-1). European workspaces can request eu-west-1 storage."
+  - question: "What happens to my data if I cancel?"
+    answer: "Your data is retained for 30 days after account cancellation, during which you can export everything. After 30 days, all data is permanently deleted from all systems."
+  - question: "Does Money OS have a bug bounty program?"
+    answer: "We accept responsible disclosure reports at security@moneyos.webasthetic.in. We do not currently have a formal bounty program, but we recognize researchers who report valid vulnerabilities."
+---
+
+## Data Encryption
+
+**At rest:** All workspace data — transactions, budgets, client records, team information — is encrypted using AES-256. Encryption applies to every field in every database record.
+
+**In transit:** All communication between your browser and Money OS uses TLS 1.3. HTTP connections are automatically redirected to HTTPS. HSTS is enforced.
+
+**Encryption keys:** Managed by a hardware security module (HSM). Keys are never stored alongside the data they encrypt. Key rotation occurs annually.
+
+---
+
+## Authentication
+
+### Password Requirements
+
+- Minimum 12 characters
+- No maximum length
+- Common passwords rejected (checked against HaveIBeenPwned database at registration)
+- Passwords are hashed using Argon2id — they are never stored in plaintext
+
+### Two-Factor Authentication (2FA)
+
+2FA adds a second verification step at login. Strongly recommended for all Admins.
+
+**Supported 2FA methods:**
+- **TOTP authenticator apps** — Google Authenticator, Authy, 1Password, Bitwarden
+- **Email OTP** — One-time code delivered to your account email
+
+**To enable 2FA:**
+1. Go to Settings → Security → Two-Factor Authentication
+2. Select your preferred method
+3. Scan the QR code with your authenticator app (TOTP) or verify via email
+4. Save your backup codes in a secure location
+
+> Backup codes are shown once at setup. Store them in a password manager or secure document. Losing access to your 2FA method and backup codes will require identity verification to recover your account.
+
+**Enforcing 2FA for your team:**
+Admins can enforce 2FA for all workspace members in Settings → Security → Team 2FA Policy. Members who haven't enabled 2FA are locked out until they do.
+
+---
+
+## Access Controls
+
+### Role-Based Access
+
+Money OS uses role-based access control (RBAC). Every API request is verified against the requesting user's role before data is returned or modified. See [Team Members](/docs/teams) for the full permissions matrix.
+
+### Session Management
+
+- Sessions expire after 14 days of inactivity
+- All active sessions are visible in Settings → Security → Active Sessions
+- You can revoke any session remotely (useful if a device is lost or stolen)
+
+---
+
+## Infrastructure Security
+
+Money OS is hosted on Vercel (application layer) and MongoDB Atlas (database layer).
+
+| Layer | Provider | Security Certifications |
+|---|---|---|
+| Application | Vercel | SOC 2 Type II |
+| Database | MongoDB Atlas on AWS | SOC 2 Type II, ISO 27001 |
+| DNS | Cloudflare | DDoS protection, WAF |
+
+**No customer data is stored on Vercel.** Vercel serves the application code. All data lives in MongoDB Atlas.
+
+---
+
+## Responsible Disclosure
+
+If you discover a security vulnerability, report it to **security@moneyos.webasthetic.in**.
+
+Include:
+- Description of the vulnerability
+- Steps to reproduce
+- Potential impact
+
+We respond within 48 hours and aim to resolve critical issues within 7 days.
+
+Do not publicly disclose vulnerabilities before we've had a chance to patch them.

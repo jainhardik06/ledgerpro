@@ -23,12 +23,25 @@ It is a pure static engine designed to capture, educate, and convert traffic for
 - **Content Formatting:** MDX natively supported.
 - **Generation Model:** Static Site Generation (SSG).
 
+> **Setup & operations:** see [OPERATIONS.md](./OPERATIONS.md) for the (short) list
+> of credentials to fill in and how the automated content engine runs.
+
 ## Constraints & Rules
 
 - **No Authentication:** Pure public-facing content.
 - **No User Accounts:** SaaS logic belongs in the main `money-os` repo.
-- **No Dashboard:** Dashboards run in the Product Engine.
-- **No Direct Mongo Dependency:** Content is built statically during deployment. DB connections (if any) are strictly build-time for static generation.
+- **Static-first:** Every content page is prerendered (SSG). The single exception is
+  the affiliate redirect `/go/<slug>`, a tiny serverless function that logs a click
+  and 302-redirects. The Growth DB is otherwise touched only by build/CI scripts.
+- **Isolated Growth DB:** All data lives in the separate `money_os_growth` cluster,
+  never the production SaaS database.
+
+## Engines
+
+- **Visual Engine** (`src/lib/og.ts`, `src/pages/og/`) — branded OG images at build time.
+- **Content Engine** (`scripts/`) — topic discovery → article generation → publish, automated via GitHub Actions (~1 post / 3 days).
+- **Monetization Engine** (`src/components/AdSlot.astro`, `src/pages/go/`) — contextual ads (off by default) + affiliate redirects with click tracking.
+- **SEO/AI Discovery** — sitemap, RSS, `robots.txt`, `/llms.txt`, JSON-LD on every page.
 
 ## Directory Structure
 

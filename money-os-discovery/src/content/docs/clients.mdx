@@ -1,0 +1,103 @@
+---
+title: "Clients"
+description: "Manage client finances in Money OS. Track expenses per client, generate client-specific reports, and prepare billing summaries."
+keywords: ["clients", "client billing", "client expenses", "client reports", "money os clients"]
+category: "Core Features"
+author: "Money OS Team"
+publishDate: 2026-01-15
+status: "published"
+sidebarPosition: 6
+relatedPages: ["reports", "teams"]
+faq:
+  - question: "How many clients can I add?"
+    answer: "There is no limit on the number of clients in Money OS. Add as many as your business serves."
+  - question: "Can I archive a client without deleting their data?"
+    answer: "Yes. Open the client, click the three-dot menu, and select Archive. Archived clients are hidden from default views but their transaction history is fully preserved."
+  - question: "Can I assign a team member to a specific client?"
+    answer: "Client assignment to team members is not currently supported. All team members with appropriate roles see all clients."
+  - question: "Does Money OS send invoices?"
+    answer: "Money OS does not generate or send invoices in v1. It tracks expenses and income per client. Invoicing is on the product roadmap."
+  - question: "Can I attach a contract or document to a client?"
+    answer: "Document attachment is not currently supported. Use the client Notes field to store links to contracts in your document storage (Google Drive, Dropbox, Notion)."
+---
+
+## What Clients Are
+
+In Money OS, a Client is a business entity (person, company, or organization) that your transactions can be tagged to.
+
+By tagging transactions to clients, you unlock:
+- **Per-client expense and income tracking**
+- **Client profitability analysis** (Revenue − Expenses = Margin)
+- **Reimbursable expense identification** for billing
+- **Client-specific reports** for accountants or stakeholders
+
+---
+
+## Adding a Client
+
+Navigate to **Clients → New Client**.
+
+**Required:**
+- **Client name** — Legal or business name
+
+**Optional:**
+- **Contact email** — For internal reference
+- **Billing currency** — If this client pays in a different currency
+- **Hourly rate** — If you track time for billing purposes
+- **Notes** — Contract notes, billing cycle, payment terms
+
+Click Save. The client is immediately available for tagging transactions.
+
+---
+
+## Tagging Transactions to Clients
+
+When adding or editing any transaction, open the **Client** dropdown and select the relevant client.
+
+A single transaction can only be tagged to one client at a time.
+
+To bulk-assign transactions to a client:
+1. Filter transactions by date range or description
+2. Select all relevant transactions using checkboxes
+3. Click **Bulk Edit → Set Client**
+4. Choose the client
+
+---
+
+## Client Dashboard
+
+Open any client to see their dedicated dashboard:
+
+**Summary cards:**
+- Total Revenue (income transactions tagged to this client)
+- Total Expenses (expense transactions tagged to this client)
+- Net Margin
+- Reimbursable Expenses (expenses to bill back)
+
+**Transaction table:** All transactions tagged to this client, sortable and filterable.
+
+**Monthly trend chart:** Month-by-month revenue and expenses for this client.
+
+---
+
+## Reimbursable Expenses
+
+Expenses incurred on behalf of a client — travel, tools, subcontractors — are often billed back.
+
+To mark an expense as reimbursable:
+1. Open the transaction
+2. Toggle **Reimbursable** in the Details section
+
+Reimbursable transactions are highlighted on the client dashboard and can be exported as a billing summary CSV to attach to your invoice.
+
+---
+
+## Client Reports
+
+From any client dashboard, click **Export** to generate:
+
+- **Client Expense Summary** — All expenses tagged to this client, grouped by category
+- **Billing Summary** — Reimbursable expenses formatted for invoice attachment
+- **Client P&L** — Full profit and loss statement for this client
+
+These reports support both CSV and PDF export.

@@ -1,0 +1,122 @@
+---
+title: "Managing Transactions"
+description: "Add, import, categorize, and search your financial transactions in Money OS. Everything you need to maintain accurate records."
+keywords: ["transactions", "expense tracking", "import csv", "categorize expenses", "money os"]
+category: "Getting Started"
+author: "Money OS Team"
+publishDate: 2026-01-15
+status: "published"
+sidebarPosition: 3
+relatedPages: ["budgets", "reports"]
+faq:
+  - question: "Can I bulk edit transactions?"
+    answer: "Yes. Select multiple transactions using the checkbox column, then use the 'Bulk Edit' action to reassign categories, clients, or tags in one operation."
+  - question: "What CSV format does Money OS accept?"
+    answer: "Money OS accepts any CSV with at minimum: a date column, an amount column, and a description column. You map the columns during import. Supports exports from Chase, HDFC, ICICI, Wise, Stripe, and most major banks."
+  - question: "How do I handle split transactions?"
+    answer: "Open any transaction and click 'Split'. Enter the amounts and categories for each split. The original transaction is replaced by the splits, and the total must match."
+  - question: "Can I attach receipts to transactions?"
+    answer: "Receipt attachment is on the roadmap. Currently, you can add notes to any transaction as a reference to a physical or digital receipt."
+  - question: "How do I mark a transaction as reimbursable?"
+    answer: "Open the transaction, expand the Details section, and toggle 'Reimbursable'. Reimbursable transactions are highlighted in the Clients section and can be exported for client billing."
+---
+
+## Transaction Types
+
+Money OS records two types of financial movements:
+
+| Type | Symbol | Example |
+|---|---|---|
+| **Expense** (debit) | — | Software subscription, contractor payment |
+| **Income** (credit) | + | Client invoice payment, refund |
+
+Both types are supported in all reports, budgets, and client billing flows.
+
+---
+
+## Adding a Transaction Manually
+
+Navigate to **Transactions → Add Transaction** (or press `N` from any transactions view).
+
+**Required fields:**
+- **Date** — The actual transaction date, not the date you're entering it
+- **Amount** — Positive number. Type is controlled by the Expense/Income toggle
+- **Description** — What you purchased or received. Be specific: `Figma Pro - Annual` not `Software`
+- **Category** — Select from your category list or create a new one inline
+
+**Optional fields:**
+- **Client** — Attach this transaction to a specific client for billing
+- **Notes** — Internal reference, receipt number, or context
+- **Tags** — Freeform labels for filtering (e.g., `Q4`, `tax-deductible`, `project-alpha`)
+
+Click **Save** or press `⌘ Enter`.
+
+---
+
+## Importing via CSV
+
+For bulk imports from your bank or payment processor:
+
+1. Go to **Transactions → Import**
+2. Upload your CSV file (drag-and-drop or click to browse)
+3. Map columns: match your CSV headers to Money OS fields
+4. Preview the first 10 rows — verify dates, amounts, and signs are correct
+5. Click **Import** — duplicates are detected automatically via amount + date + description hash
+
+> **Tip**: Run your first import with a small date range (e.g., last 30 days) to validate the column mapping before importing a full year.
+
+**Supported date formats:**
+- `YYYY-MM-DD` (recommended)
+- `DD/MM/YYYY`
+- `MM/DD/YYYY`
+- `Jan 15, 2025`
+
+---
+
+## Categories
+
+Categories determine how transactions appear in reports, budgets, and tax summaries.
+
+**Default categories (Freelancer/Agency preset):**
+
+| Category | Typical Use |
+|---|---|
+| Software & Tools | Subscriptions, licenses |
+| Contractor Fees | Freelance payments, outsourcing |
+| Home Office | Proportional rent, internet, utilities |
+| Equipment | Hardware, peripherals |
+| Travel | Flights, hotels, client meetings |
+| Marketing | Ads, design tools |
+| Professional Development | Courses, books, events |
+| Meals & Entertainment | Client dinners (note: % deductible varies) |
+| Banking & Finance | Payment processing fees, wire fees |
+| Miscellaneous | Catch-all — minimize use |
+
+To create a custom category: **Settings → Categories → New Category**.
+
+---
+
+## Searching and Filtering
+
+From the Transactions list:
+
+- **Search bar**: Full-text search across description and notes
+- **Date range picker**: Preset ranges (This Month, Last Quarter, This Year) or custom range
+- **Category filter**: Single or multi-select
+- **Client filter**: Show only transactions attached to a specific client
+- **Type filter**: Expenses only, Income only, or All
+- **Tag filter**: Filter by one or more tags
+
+Filters are combinable. A filtered view can be exported to CSV directly.
+
+---
+
+## Keyboard Shortcuts
+
+| Action | Shortcut |
+|---|---|
+| New transaction | `N` |
+| Search transactions | `⌘K` or `/` |
+| Delete selected | `Delete` |
+| Export current view | `⌘E` |
+| Toggle expense/income | `T` (in transaction form) |
