@@ -25,6 +25,7 @@ import path from 'node:path';
 import { connect, PROJECT_ROOT } from './lib/growth.mjs';
 import { parseJson, hasApiKey, getModel } from './lib/llm.mjs';
 import { generateStage } from './lib/rate-limit.mjs';
+import { submitUrls } from './lib/indexnow.mjs';
 import {
   BLOG_CATEGORIES, slugify, readingTime, buildFrontmatter, writeBlogPost, blogFileExists, normalizeTypography,
 } from './lib/content.mjs';
@@ -254,6 +255,14 @@ async function main() {
     });
     console.log('✓ Growth DB updated (topic published, blog_posts + content_briefs recorded).');
   }
+
+  const publishedUrl = `${(process.env.PUBLIC_SITE_URL || 'https://discover.moneyos.webasthetic.in').replace(/\/$/, '')}/blog/${slug}`;
+  const indexResult = await submitUrls([publishedUrl]);
+  console.log(
+    indexResult.ok
+      ? `✓ IndexNow: notified Bing/Yandex of ${publishedUrl}`
+      : `! IndexNow: submission skipped or failed (non-fatal) — ${indexResult.error ?? indexResult.status ?? 'unknown'}`
+  );
 
   if (client) await client.close();
   console.log('Done.');
