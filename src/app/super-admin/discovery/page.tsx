@@ -27,6 +27,24 @@ import {
 
 export const dynamic = 'force-dynamic';
 
+const DISCOVERY_SITE_URL = 'https://discover.moneyos.webasthetic.in';
+
+/** Live HTTP check with a short timeout — used to verify the discovery site
+ * and its SEO/AI-discovery surface (sitemap, robots.txt, llms.txt) are
+ * actually reachable in production, not just "code exists". */
+async function checkUrl(url: string, timeoutMs = 4000): Promise<{ ok: boolean; status: number | null }> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { method: 'GET', signal: controller.signal, cache: 'no-store' });
+    return { ok: res.ok, status: res.status };
+  } catch {
+    return { ok: false, status: null };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 function StatCard({ icon: Icon, label, value, accent }: { icon: any, label: string, value: string | number, accent?: string }) {
   return (
     <div className="p-6 rounded-xl border border-[#262626] bg-[#000000]">
@@ -56,6 +74,18 @@ export default async function DiscoveryDashboard() {
 
   // Infrastructure
   let discoveryDeployed = false;
+  let sitemapStatus: { ok: boolean; status: number | null } = { ok: false, status: null };
+  let robotsStatus: { ok: boolean; status: number | null } = { ok: false, status: null };
+  let llmsStatus: { ok: boolean; status: number | null } = { ok: false, status: null };
+
+  // Live-check the deployed discovery site's SEO/AI-discovery surface. Runs
+  // in parallel with the DB fetch below since it's independent I/O.
+  const liveChecksPromise = Promise.all([
+    checkUrl(DISCOVERY_SITE_URL + '/'),
+    checkUrl(DISCOVERY_SITE_URL + '/sitemap-index.xml'),
+    checkUrl(DISCOVERY_SITE_URL + '/robots.txt'),
+    checkUrl(DISCOVERY_SITE_URL + '/llms.txt'),
+  ]);
 
   // Directories
   let totalTargets = 0, dirSubmitted = 0, dirApproved = 0, dirRejected = 0;
@@ -187,8 +217,33 @@ export default async function DiscoveryDashboard() {
     }
   }
 
+  try {
+    const [homeCheck, sitemapCheck, robotsCheck, llmsCheck] = await liveChecksPromise;
+    discoveryDeployed = homeCheck.ok;
+    sitemapStatus = sitemapCheck;
+    robotsStatus = robotsCheck;
+    llmsStatus = llmsCheck;
+  } catch (e) {
+    console.error('[DiscoveryDashboard] Error running live site checks:', e);
+  }
+
   const totalCrawlerHits = gptBotHits + claudeBotHits + perplexityHits + geminiHits + copilotHits;
   const phDraft = phAssets.find(a => a.status === 'Draft');
+
+  // Launch checklist — computed entirely from real data fetched above, no
+  // fabricated fields. Each item is either verifiably true or honestly false.
+  const launchChecklist = [
+    { label: 'Discovery site live', done: discoveryDeployed },
+    { label: 'Sitemap reachable', done: sitemapStatus.ok },
+    { label: 'robots.txt reachable', done: robotsStatus.ok },
+    { label: 'llms.txt reachable', done: llmsStatus.ok },
+    { label: `Docs published (${docsCount})`, done: docsCount > 0 },
+    { label: `Blog posts published (${blogCount})`, done: blogCount > 0 },
+    { label: `Directories submitted (${dirSubmitted}/${totalTargets})`, done: dirSubmitted > 0 },
+    { label: `Backlinks earned (${totalBacklinks})`, done: totalBacklinks > 0 },
+    { label: `AI crawler visits recorded (${totalCrawlerHits})`, done: totalCrawlerHits > 0 },
+    { label: `Ad monetization active (${activeAdUnits}/${totalAdUnits})`, done: activeAdUnits > 0 },
+  ];
 
   return (
     <div className="p-6 sm:p-8 max-w-[1280px] mx-auto font-sans">
@@ -244,6 +299,53 @@ export default async function DiscoveryDashboard() {
           </div>
           <span className="text-[11px] text-[#525252] font-medium uppercase tracking-wider">Not Configured</span>
         </div>
+      </div>
+
+      {/* ─── SECTION 1B: PUBLISHING & DISTRIBUTION STATUS ─── */}
+      <SectionHeader title="Publishing & Distribution Status" />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+        {[
+          { label: 'Sitemap', status: sitemapStatus, href: DISCOVERY_SITE_URL + '/sitemap-index.xml' },
+          { label: 'robots.txt (AI crawlers)', status: robotsStatus, href: DISCOVERY_SITE_URL + '/robots.txt' },
+          { label: 'llms.txt', status: llmsStatus, href: DISCOVERY_SITE_URL + '/llms.txt' },
+        ].map((item) => (
+          <a
+            key={item.label}
+            href={item.href}
+            target="_blank"
+            rel="noreferrer"
+            className="p-5 rounded-xl border border-[#262626] bg-[#0a0a0a] flex items-center justify-between hover:border-[#404040] transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <FileText className="w-4 h-4 text-[#a1a1aa]" />
+              <span className="text-[13px] font-medium text-[#ededed]">{item.label}</span>
+            </div>
+            {item.status.ok ? (
+              <span className="text-[11px] text-emerald-400 font-medium uppercase tracking-wider flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse inline-block" /> {item.status.status}
+              </span>
+            ) : (
+              <span className="text-[11px] text-rose-400 font-medium uppercase tracking-wider flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-400 inline-block" /> {item.status.status ?? 'Unreachable'}
+              </span>
+            )}
+          </a>
+        ))}
+      </div>
+
+      {/* ─── SECTION 1C: LAUNCH CHECKLIST ─── */}
+      <SectionHeader title="Launch Checklist" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-10">
+        {launchChecklist.map((item) => (
+          <div key={item.label} className="flex items-center gap-3 px-4 py-3 rounded-lg border border-[#262626] bg-[#0a0a0a]">
+            {item.done ? (
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            ) : (
+              <XCircle className="w-4 h-4 text-[#525252] shrink-0" />
+            )}
+            <span className={`text-[13px] ${item.done ? 'text-[#ededed]' : 'text-[#737373]'}`}>{item.label}</span>
+          </div>
+        ))}
       </div>
 
       {/* ─── SECTION 2: DIRECTORIES ─── */}
