@@ -1,34 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createLog } from '@/lib/db';
+import { connectGrowthDb } from '@/lib/db';
 
+/**
+ * Receives crawler-visit pings from src/proxy.ts and writes them to the
+ * Growth DB's `crawler_visits` collection — separate from the production
+ * database, matching what /super-admin/discovery actually reads
+ * (`crawler_visits.countDocuments({ botFamily: ... })`).
+ *
+ * `visited_at` (not `visitedAt`) matches the TTL index created by
+ * money-os-discovery/scripts/seed-growth-db.mjs (90-day auto-prune, keeping
+ * this collection well within the Atlas Free 512 MB limit).
+ */
 export async function POST(req: NextRequest) {
   try {
-    const { userAgent, path } = await req.json();
+    const { botFamily, userAgent, path, ip } = await req.json();
 
-    if (!userAgent) {
-      return NextResponse.json({ error: 'Missing userAgent' }, { status: 400 });
+    if (!botFamily || !userAgent) {
+      return NextResponse.json({ error: 'Missing botFamily or userAgent' }, { status: 400 });
     }
 
-    // Determine the bot name
-    let botName = 'UnknownBot';
-    if (userAgent.includes('GPTBot')) botName = 'GPTBot';
-    else if (userAgent.includes('ClaudeBot')) botName = 'ClaudeBot';
-    else if (userAgent.includes('PerplexityBot')) botName = 'PerplexityBot';
-    else if (userAgent.includes('CCBot')) botName = 'CCBot';
-    else if (userAgent.includes('Bingbot')) botName = 'BingBot';
-    else if (userAgent.includes('Googlebot')) botName = 'GoogleBot';
+    const { db } = await connectGrowthDb();
+    if (!db) {
+      // Growth DB not configured in this environment (e.g. local dev without
+      // MONGODB_GROWTH_URI) — don't error, just skip telemetry.
+      return NextResponse.json({ success: true, skipped: true });
+    }
 
-    // Log the crawl as a system log using username 'SYSTEM' or 'AI_CRAWLER'
-    await createLog(
-      'SYSTEM',
-      'AI_CRAWLER',
-      `${botName} crawled path: ${path}`,
-      'global',
-      '127.0.0.1' // or extract from req
-    );
+    await db.collection('crawler_visits').insertOne({
+      botFamily,
+      userAgent,
+      path: path ?? null,
+      ip: ip ?? null,
+      visited_at: new Date(),
+    });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch {
+    // Telemetry failures must never surface as user-facing errors.
     return NextResponse.json({ error: 'Failed to track bot' }, { status: 500 });
   }
 }
