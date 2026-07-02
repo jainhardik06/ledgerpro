@@ -18,10 +18,12 @@ interface Props {
   adSlot?: string;
   /** Visual label shown above the unit for transparency. */
   label?: string;
+  /** Matches an ad_units.unitId in the Growth DB (see seed-growth-db.mjs) for analytics. */
+  placement?: string;
   class?: string;
 }
 
-const { adSlot, label = 'Advertisement', class: className = '' } = Astro.props;
+const { adSlot, label = 'Advertisement', placement = 'unknown', class: className = '' } = Astro.props;
 
 const CARBON_SERVE = import.meta.env.PUBLIC_CARBON_SERVE;
 const CARBON_PLACEMENT = import.meta.env.PUBLIC_CARBON_PLACEMENT;
@@ -37,7 +39,12 @@ const mode: 'carbon' | 'adsense' | 'none' = CARBON_SERVE
 {mode !== 'none' && (
   <aside class={`my-10 ${className}`} aria-label={label}>
     <div class="text-[10px] uppercase tracking-wider text-neutral-700 mb-2">{label}</div>
-    <div class="rounded-xl border border-neutral-900 bg-neutral-950/60 p-4 flex items-center justify-center min-h-[100px]">
+    <div
+      class="rounded-xl border border-neutral-900 bg-neutral-950/60 p-4 flex items-center justify-center min-h-[100px]"
+      data-ad-track
+      data-ad-placement={placement}
+      data-ad-network={mode}
+    >
       {mode === 'carbon' && (
         <script async type="text/javascript" src={`//cdn.carbonads.com/carbon.js?serve=${CARBON_SERVE}&placement=${CARBON_PLACEMENT}`} id="_carbonads_js"></script>
       )}

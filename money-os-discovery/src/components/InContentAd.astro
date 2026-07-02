@@ -28,7 +28,12 @@ const enabled = Boolean(ADSENSE_CLIENT);
     <template id="incontent-ad-template">
       <aside class="my-12" aria-label="Advertisement" data-incontent-ad>
         <div class="text-[10px] uppercase tracking-wider text-neutral-700 mb-2 text-center">Advertisement</div>
-        <div class="rounded-2xl border border-neutral-900 bg-neutral-950/50 p-4">
+        <div
+          class="rounded-2xl border border-neutral-900 bg-neutral-950/50 p-4"
+          data-ad-track
+          data-ad-placement="blog-in-content"
+          data-ad-network="adsense"
+        >
           <ins
             class="adsbygoogle block w-full"
             style="display:block"
