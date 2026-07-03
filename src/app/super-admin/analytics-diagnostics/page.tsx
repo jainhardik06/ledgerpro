@@ -12,7 +12,7 @@ export default async function AnalyticsDiagnosticsPage() {
     POSTHOG_PERSONAL_API_KEY: !!process.env.POSTHOG_PERSONAL_API_KEY,
     POSTHOG_PROJECT_ID: !!process.env.POSTHOG_PROJECT_ID,
     GA4_PROPERTY_ID: !!process.env.GA4_PROPERTY_ID,
-    GOOGLE_APPLICATION_CREDENTIALS: !!process.env.GOOGLE_APPLICATION_CREDENTIALS,
+    GOOGLE_APPLICATION_CREDENTIALS_JSON: !!process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON,
   };
 
   // Get UTM stats
@@ -67,7 +67,7 @@ export default async function AnalyticsDiagnosticsPage() {
           <div className="space-y-3">
             <DiagnosticRow label="Connected?" status={envStatus.NEXT_PUBLIC_GA_MEASUREMENT_ID ? 'Yes' : 'No'} isGood={envStatus.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
             <DiagnosticRow label="Property ID" value={process.env.GA4_PROPERTY_ID || 'Not Set'} />
-            <DiagnosticRow label="Reporting API" status={envStatus.GOOGLE_APPLICATION_CREDENTIALS && envStatus.GA4_PROPERTY_ID ? 'Configured' : 'Missing Credentials'} isGood={envStatus.GOOGLE_APPLICATION_CREDENTIALS && envStatus.GA4_PROPERTY_ID} />
+            <DiagnosticRow label="Reporting API" status={envStatus.GOOGLE_APPLICATION_CREDENTIALS_JSON && envStatus.GA4_PROPERTY_ID ? 'Configured' : 'Missing Credentials'} isGood={envStatus.GOOGLE_APPLICATION_CREDENTIALS_JSON && envStatus.GA4_PROPERTY_ID} />
           </div>
         </section>
 
@@ -75,7 +75,7 @@ export default async function AnalyticsDiagnosticsPage() {
         <section className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 sm:p-6">
           <h2 className="text-lg font-medium text-white mb-4 border-b border-zinc-800 pb-2">Search Console</h2>
           <div className="space-y-3">
-            <DiagnosticRow label="Connected?" status={envStatus.GOOGLE_APPLICATION_CREDENTIALS ? 'Yes' : 'No'} isGood={envStatus.GOOGLE_APPLICATION_CREDENTIALS} />
+            <DiagnosticRow label="Connected?" status={envStatus.GOOGLE_APPLICATION_CREDENTIALS_JSON ? 'Yes' : 'No'} isGood={envStatus.GOOGLE_APPLICATION_CREDENTIALS_JSON} />
             <DiagnosticRow label="Site URL Target" value={process.env.NEXT_PUBLIC_APP_URL || 'Not Set'} />
           </div>
         </section>

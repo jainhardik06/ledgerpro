@@ -84,7 +84,7 @@ export default async function GrowthIntelligencePage() {
               <SourcePieChart data={sourceData} />
             </div>
           </div>
-          {!hasGA4 && <ConfigWarning service="Google Analytics 4" varName="GOOGLE_APPLICATION_CREDENTIALS" />}
+          {!hasGA4 && <ConfigWarning service="Google Analytics 4" varName="GOOGLE_APPLICATION_CREDENTIALS_JSON" />}
         </section>
 
         {/* SECTION 3: ACTIVATION FUNNEL */}

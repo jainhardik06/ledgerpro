@@ -1,5 +1,6 @@
 import React from 'react';
 import { connectGrowthDb } from '@/lib/db';
+import { fetchGSCSearch } from '@/lib/external-apis';
 import {
   Activity,
   Globe,
@@ -77,6 +78,7 @@ export default async function DiscoveryDashboard() {
   let sitemapStatus: { ok: boolean; status: number | null } = { ok: false, status: null };
   let robotsStatus: { ok: boolean; status: number | null } = { ok: false, status: null };
   let llmsStatus: { ok: boolean; status: number | null } = { ok: false, status: null };
+  let seoIndexStatus: 'connected' | 'not_configured' | 'unreachable' = 'not_configured';
 
   // Live-check the deployed discovery site's SEO/AI-discovery surface. Runs
   // in parallel with the DB fetch below since it's independent I/O.
@@ -86,6 +88,13 @@ export default async function DiscoveryDashboard() {
     checkUrl(DISCOVERY_SITE_URL + '/robots.txt'),
     checkUrl(DISCOVERY_SITE_URL + '/llms.txt'),
   ]);
+
+  // Real Search Console connectivity check — not a static label. Returns
+  // null on missing credentials OR a real API failure (e.g. permission not
+  // yet granted); a non-null result (including an empty array) means the
+  // authenticated call to Google's API genuinely succeeded.
+  const hasGscCredentials = !!process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON || !!process.env.GOOGLE_APPLICATION_CREDENTIALS;
+  const gscCheckPromise = hasGscCredentials ? fetchGSCSearch() : Promise.resolve(null);
 
   // Directories
   let totalTargets = 0, dirSubmitted = 0, dirApproved = 0, dirRejected = 0;
@@ -240,6 +249,18 @@ export default async function DiscoveryDashboard() {
     console.error('[DiscoveryDashboard] Error running live site checks:', e);
   }
 
+  if (!hasGscCredentials) {
+    seoIndexStatus = 'not_configured';
+  } else {
+    try {
+      const gscResult = await gscCheckPromise;
+      seoIndexStatus = gscResult !== null ? 'connected' : 'unreachable';
+    } catch (e) {
+      console.error('[DiscoveryDashboard] Error running GSC live check:', e);
+      seoIndexStatus = 'unreachable';
+    }
+  }
+
   const totalCrawlerHits = gptBotHits + claudeBotHits + perplexityHits + geminiHits + copilotHits;
   const phDraft = phAssets.find(a => a.status === 'Draft');
 
@@ -310,7 +331,15 @@ export default async function DiscoveryDashboard() {
             <Search className="w-4 h-4 text-[#a1a1aa]" />
             <span className="text-[13px] font-medium text-[#ededed]">SEO Index Status</span>
           </div>
-          <span className="text-[11px] text-[#525252] font-medium uppercase tracking-wider">Not Configured</span>
+          {seoIndexStatus === 'connected' ? (
+            <span className="text-[11px] text-emerald-400 font-medium uppercase tracking-wider flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse inline-block" /> Connected
+            </span>
+          ) : seoIndexStatus === 'unreachable' ? (
+            <span className="text-[11px] text-amber-400 font-medium uppercase tracking-wider">Permission Pending</span>
+          ) : (
+            <span className="text-[11px] text-[#525252] font-medium uppercase tracking-wider">Not Configured</span>
+          )}
         </div>
       </div>
 

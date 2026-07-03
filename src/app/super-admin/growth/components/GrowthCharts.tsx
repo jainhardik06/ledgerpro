@@ -6,7 +6,7 @@ import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, R
 export function GrowthAreaChart({ data, dataKey, name }: { data: any[], dataKey: string, name: string }) {
   return (
     <div style={{ width: '100%', height: 250 }}>
-      <ResponsiveContainer>
+      <ResponsiveContainer minWidth={0} minHeight={0} debounce={50}>
         <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="colorArea" x1="0" y1="0" x2="0" y2="1">
@@ -31,7 +31,7 @@ export function AcquisitionFunnelChart({ data }: { data: any[] }) {
   // A simple horizontal bar chart acts well as a funnel visualization when sorted
   return (
     <div style={{ width: '100%', height: 300 }}>
-      <ResponsiveContainer>
+      <ResponsiveContainer minWidth={0} minHeight={0} debounce={50}>
         <BarChart layout="vertical" data={data} margin={{ top: 10, right: 30, left: 20, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#27272a" />
           <XAxis type="number" stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} />
@@ -52,7 +52,7 @@ export function SourcePieChart({ data }: { data: {name: string, value: number}[]
   
   return (
     <div style={{ width: '100%', height: 250 }}>
-      <ResponsiveContainer>
+      <ResponsiveContainer minWidth={0} minHeight={0} debounce={50}>
         <PieChart>
           <Pie
             data={data}
