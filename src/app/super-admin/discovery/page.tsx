@@ -162,11 +162,16 @@ export default async function DiscoveryDashboard() {
         db.collection('backlinks').countDocuments({ status: 'Active', isDoFollow: true }),
         db.collection('backlinks').find({ status: 'Active' }).sort({ discoveredAt: -1 }).limit(5).toArray(),
 
-        // Content counts
+        // Content counts. seo_pages has no status/lifecycle field — every
+        // document in it represents an already-live tracked page — and no
+        // comparison-type entries yet (backfill script only seeds
+        // doc/home/use-case types; the 2 real comparison MDX pages on the
+        // site aren't backfilled into this collection). blog_posts uses a
+        // lowercase 'published' status value, not 'Published'.
         db.collection('docs_pages').countDocuments(),
-        db.collection('seo_pages').countDocuments({ status: 'Published' }),
-        db.collection('blog_posts').countDocuments({ status: 'Published' }),
-        db.collection('seo_pages').countDocuments({ category: 'comparison' }),
+        db.collection('seo_pages').countDocuments(),
+        db.collection('blog_posts').countDocuments({ status: 'published' }),
+        db.collection('seo_pages').countDocuments({ type: 'comparison' }),
 
         // Keywords
         db.collection('keyword_targets').countDocuments(),
