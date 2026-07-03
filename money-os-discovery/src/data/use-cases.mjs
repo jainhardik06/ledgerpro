@@ -4,21 +4,21 @@
  * The pages themselves live in `src/pages/use-cases/*.astro` (each rendered via
  * UseCaseLayout). This manifest is the single source of truth for the use-cases
  * INDEX grid and the build-time OG image factory, so titles never drift.
+ * Plain .mjs (not .ts) so Node automation scripts (scripts/lib/internal-links.mjs)
+ * can import it directly alongside Astro — no separate copy to keep in sync.
  *
  * To add a use case: create the `.astro` page, then add one row here.
+ *
+ * @typedef {Object} UseCaseEntry
+ * @property {string} slug
+ * @property {string} audience
+ * @property {string} ogTitle - Headline used on the OG card.
+ * @property {string} blurb - One-line summary for the index grid.
+ * @property {'Audience'|'Keyword'} group - Grouping for the index page.
  */
-export interface UseCaseEntry {
-  slug: string;
-  audience: string;
-  /** Headline used on the OG card. */
-  ogTitle: string;
-  /** One-line summary for the index grid. */
-  blurb: string;
-  /** Grouping for the index page. */
-  group: 'Audience' | 'Keyword';
-}
 
-export const useCases: UseCaseEntry[] = [
+/** @type {UseCaseEntry[]} */
+export const useCases = [
   // ── Tier 1: audience pages ──
   { slug: 'freelancers', audience: 'Freelancers', ogTitle: 'Your freelance finances. Finally organized.', blurb: 'Track deductible expenses, set budgets that hold, and generate a tax-ready report in seconds.', group: 'Audience' },
   { slug: 'agencies', audience: 'Agencies', ogTitle: 'Run agency finances without the spreadsheet chaos.', blurb: 'Multi-client expense tracking, per-client profitability, and team financial visibility.', group: 'Audience' },

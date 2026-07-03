@@ -26,6 +26,8 @@ import { connect, PROJECT_ROOT } from './lib/growth.mjs';
 import { parseJson, hasApiKey, getModel } from './lib/llm.mjs';
 import { generateStage } from './lib/rate-limit.mjs';
 import { submitUrls } from './lib/indexnow.mjs';
+import { requestIndexing } from './lib/google-search-console.mjs';
+import { loadAllContent, findRelated } from './lib/internal-links.mjs';
 import {
   BLOG_CATEGORIES, slugify, readingTime, buildFrontmatter, writeBlogPost, blogFileExists, normalizeTypography,
 } from './lib/content.mjs';
@@ -33,8 +35,16 @@ import {
 const DRY_RUN = process.argv.includes('--dry-run');
 
 // Shared house style, prepended to every stage call so each small call still
-// produces on-brand, anti-slop, specific writing.
-const HOUSE_STYLE = `You are the senior content writer for Money OS, a free financial command center for freelancers, agencies, startups, and small teams (expense tracking, category budgets with alerts, multi-client tagging, role-based team access, tax-ready reports).
+// produces on-brand, anti-slop, specific writing. `linkSuggestions` comes
+// from the Internal Linking Engine (scripts/lib/internal-links.mjs) —
+// real, computed relatedness against every existing doc/blog/use-case/
+// comparison, not a static hardcoded list that goes stale as content grows.
+function houseStyle(linkSuggestions) {
+  const linkList = linkSuggestions.length > 0
+    ? linkSuggestions.map((s) => `${s.url} (${s.title})`).join(', ')
+    : '/use-cases/freelancers, /docs/managing-transactions'; // safe fallback if no matches found
+
+  return `You are the senior content writer for Money OS, a free financial command center for freelancers, agencies, startups, and small teams (expense tracking, category budgets with alerts, multi-client tagging, role-based team access, tax-ready reports).
 
 Hard rules (content violating these will be rejected):
 - NO AI-slop openers. Never start with "In today's...", "In the world of...", "When it comes to...", "Managing X can be challenging", or any generic hedge.
@@ -44,8 +54,9 @@ Hard rules (content violating these will be rejected):
 - No fabricated statistics. If you cite a stat without a real source, don't include it.
 - No padding transitions ("Now that we've covered..."). Let headings do the work.
 - Second person ("you") for instructional content. Confident, plain, no jargon.
-- Where natural, link to Money OS pages using FULL markdown link syntax [link text](/path) — NEVER bare brackets like [/docs/budgets] with no parenthesized URL. Valid paths: /use-cases/expense-tracker-freelancers, /use-cases/freelancers, /use-cases/agencies, /use-cases/startups, /docs/budgets, /docs/managing-transactions, /blog/what-is-burn-rate, /blog/freelancer-expense-categories. Only link when relevant, at most 2-3 links total across the whole article.
+- Where natural, link to Money OS pages using FULL markdown link syntax [link text](/path) — NEVER bare brackets like [/docs/budgets] with no parenthesized URL. These specific pages were computed as genuinely related to this article's topic, use only these: ${linkList}. Only link when relevant, at most 2-3 links total across the whole article.
 - Use plain ASCII punctuation: a regular hyphen "-", not "‑" (non-breaking hyphen) or em/en dashes. Use straight quotes ' and ", not curly quotes.`;
+}
 
 function planPrompt(topic) {
   return `Plan a blog post for this topic. Do not write the article yet.
@@ -115,9 +126,20 @@ function pickTopicFromBacklog() {
 
 /** Generate the full article as a sequence of small, paced, retried calls. */
 async function generateArticle(topic) {
+  // Internal Linking Engine: compute real relatedness against every existing
+  // doc/blog/use-case/comparison before writing a word, so the model links
+  // to genuinely related pages instead of guessing from a static list.
+  const allContent = loadAllContent();
+  const pseudoTarget = { slug: '__new__', keywords: [topic.primaryKeyword.toLowerCase(), ...(topic.title.toLowerCase().split(' '))], category: (topic.category ?? '').toLowerCase() };
+  const linkSuggestions = findRelated(pseudoTarget, allContent, 4);
+  const style = houseStyle(linkSuggestions);
+  if (linkSuggestions.length > 0) {
+    console.log(`  Internal links available: ${linkSuggestions.map((s) => s.url).join(', ')}`);
+  }
+
   console.log(`Stage 1/4: planning...`);
   const planRaw = await generateStage('plan', {
-    system: HOUSE_STYLE, prompt: planPrompt(topic), maxTokens: 900, temperature: 0.6, json: true,
+    system: style, prompt: planPrompt(topic), maxTokens: 900, temperature: 0.6, json: true,
   });
   const plan = parseJson(planRaw);
   if (!Array.isArray(plan.sections) || plan.sections.length < 2) {
@@ -130,7 +152,7 @@ async function generateArticle(topic) {
 
   console.log(`Stage 2/4: writing intro...`);
   const intro = await generateStage('intro', {
-    system: HOUSE_STYLE, prompt: introPrompt(plan), maxTokens: 550, temperature: 0.7,
+    system: style, prompt: introPrompt(plan), maxTokens: 550, temperature: 0.7,
   });
 
   console.log(`Stage 3/4: writing ${plan.sections.length} sections (paced, one at a time)...`);
@@ -139,14 +161,14 @@ async function generateArticle(topic) {
     const heading = plan.sections[i];
     console.log(`  - section ${i + 1}/${plan.sections.length}: "${heading}"`);
     const body = await generateStage(`section-${i + 1}`, {
-      system: HOUSE_STYLE, prompt: sectionPrompt(plan, heading, i), maxTokens: 900, temperature: 0.7,
+      system: style, prompt: sectionPrompt(plan, heading, i), maxTokens: 900, temperature: 0.7,
     });
     sectionBodies.push({ heading, body: body.trim() });
   }
 
   console.log(`Stage 4/4: writing FAQ answers...`);
   const faqRaw = await generateStage('faq', {
-    system: HOUSE_STYLE, prompt: faqPrompt(plan), maxTokens: 1300, temperature: 0.6, json: true,
+    system: style, prompt: faqPrompt(plan), maxTokens: 1300, temperature: 0.6, json: true,
   });
   const { faq } = parseJson(faqRaw);
 
@@ -257,12 +279,29 @@ async function main() {
   }
 
   const publishedUrl = `${(process.env.PUBLIC_SITE_URL || 'https://discover.moneyos.webasthetic.in').replace(/\/$/, '')}/blog/${slug}`;
+
   const indexResult = await submitUrls([publishedUrl]);
   console.log(
     indexResult.ok
       ? `✓ IndexNow: notified Bing/Yandex of ${publishedUrl}`
       : `! IndexNow: submission skipped or failed (non-fatal) — ${indexResult.error ?? indexResult.status ?? 'unknown'}`
   );
+
+  // Best-effort Google notification — see google-search-console.mjs for why
+  // this is "best-effort" (the Indexing API isn't officially meant for blog
+  // content) rather than a guaranteed indexing request.
+  const gscResult = await requestIndexing(publishedUrl);
+  console.log(
+    gscResult.ok
+      ? `✓ Google Indexing API: notified for ${publishedUrl}`
+      : `! Google Indexing API: ${gscResult.reason} (non-fatal${gscResult.reason === 'permission_denied' ? ' — grant the service account access in Search Console' : ''})`
+  );
+  if (db) {
+    await db.collection('blog_posts').updateOne(
+      { slug },
+      { $set: { indexnow_status: indexResult.ok ? 'submitted' : 'failed', gsc_indexing_status: gscResult.ok ? 'submitted' : gscResult.reason } },
+    );
+  }
 
   if (client) await client.close();
   console.log('Done.');

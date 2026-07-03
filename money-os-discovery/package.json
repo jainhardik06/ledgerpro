@@ -13,7 +13,10 @@
     "growth:seed": "node scripts/seed-growth-db.mjs",
     "growth:topics": "node scripts/discover-topics.mjs",
     "content:generate": "node scripts/generate-post.mjs",
-    "content:plan": "node scripts/generate-post.mjs --dry-run"
+    "content:plan": "node scripts/generate-post.mjs --dry-run",
+    "content:refresh-check": "node scripts/detect-stale-content.mjs",
+    "content:link-suggest": "node scripts/suggest-internal-links.mjs",
+    "content:backfill": "node scripts/backfill-dashboard-data.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^6.0.3",

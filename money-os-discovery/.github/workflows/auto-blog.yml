@@ -46,6 +46,8 @@ jobs:
           GEMINI_MODEL: ${{ secrets.GEMINI_MODEL }}
           MONGODB_GROWTH_URI: ${{ secrets.MONGODB_GROWTH_URI }}
           GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
+          GA4_PROPERTY_ID: ${{ secrets.GA4_PROPERTY_ID }}
+          PUBLIC_SITE_URL: ${{ secrets.PUBLIC_SITE_URL }}
         run: npm run content:generate
 
       - name: Commit & push new post
