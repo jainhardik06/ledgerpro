@@ -8,7 +8,11 @@
  * groq-sdk's APIError uses) so llm.mjs's pool rotation logic works
  * identically regardless of which provider is active.
  */
-export const DEFAULT_MODEL = 'gemini-2.0-flash';
+// gemini-2.0-flash has zero free-tier quota on newly created AI Studio keys
+// (Google shifted default free allocation to the 2.5 generation) — verified
+// live: gemini-2.0-flash/-lite return 429 RESOURCE_EXHAUSTED with limit: 0,
+// while gemini-2.5-flash-lite returns real 200s on the same key.
+export const DEFAULT_MODEL = 'gemini-2.5-flash-lite';
 
 // Gemini finish reasons -> the Groq/OpenAI-style vocabulary the rest of the
 // content engine already checks for (specifically 'length' for truncation).
