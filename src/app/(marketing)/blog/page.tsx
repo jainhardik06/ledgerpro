@@ -27,7 +27,7 @@ interface DiscoveryPost {
 }
 
 /**
- * The real blog lives at discover.moneyos.webasthetic.in — a separate Astro
+ * The real blog lives at discovermoneyos.webasthetic.in — a separate Astro
  * site with the actual content engine, OG images, and full article layout.
  * This page used to show hand-written fake placeholder posts with dead
  * links; instead it now server-fetches the discovery site's real RSS feed
@@ -35,11 +35,11 @@ interface DiscoveryPost {
  * hourly so a newly-published post appears without a redeploy.
  */
 // Custom domain first (correct long-term URL); Vercel's own domain as a
-// fallback since discover.moneyos.webasthetic.in isn't DNS-configured yet
+// fallback since discovermoneyos.webasthetic.in isn't DNS-configured yet
 // as of this writing — without this, the page silently shows nothing until
 // DNS is set up. Once DNS is live, the first URL succeeds and this is moot.
 const DISCOVERY_RSS_URLS = [
-  'https://discover.moneyos.webasthetic.in/rss.xml',
+  'https://discovermoneyos.webasthetic.in/rss.xml',
   'https://money-os-discovery.vercel.app/rss.xml',
 ];
 
@@ -107,8 +107,8 @@ export default async function BlogPage() {
         {posts.length === 0 ? (
           <div className="p-8 rounded-2xl border border-white/[0.05] bg-[#0a0a0a] text-center">
             <p className="text-[15px] text-neutral-400">The blog is temporarily unavailable. Read it directly at{' '}
-              <a href="https://discover.moneyos.webasthetic.in/blog" className="text-white underline underline-offset-2">
-                discover.moneyos.webasthetic.in/blog
+              <a href="https://discovermoneyos.webasthetic.in/blog" className="text-white underline underline-offset-2">
+                discovermoneyos.webasthetic.in/blog
               </a>.
             </p>
           </div>

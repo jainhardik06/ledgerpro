@@ -29,7 +29,7 @@
 import crypto from 'node:crypto';
 
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
-const SITE_URL = process.env.PUBLIC_SITE_URL || 'https://discover.moneyos.webasthetic.in';
+const SITE_URL = process.env.PUBLIC_SITE_URL || 'https://discovermoneyos.webasthetic.in';
 
 let cachedToken = null; // { accessToken, expiresAt }
 

@@ -43,7 +43,7 @@ By tracking these centrally, the Discovery Intelligence Center acts as the absol
   _id: ObjectId;
   type: 'banner' | 'avatar' | 'open_graph' | 'logo_transparent';
   platformTarget: 'LinkedIn' | 'X' | 'GitHub' | 'YouTube' | 'Global';
-  path: string; // The deployed URL (e.g., https://discover.moneyos.webasthetic.in/images/og-main.png)
+  path: string; // The deployed URL (e.g., https://discovermoneyos.webasthetic.in/images/og-main.png)
   dimensions: string; // Strict layout checking (e.g., "1200x630")
   createdAt: Date;
 }

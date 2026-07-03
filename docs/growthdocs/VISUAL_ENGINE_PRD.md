@@ -53,7 +53,7 @@ Location: public/og/{slug}.png
 Background: #000000 (solid black, per Constitution)
 
 Top-left: Money OS logo mark (white, 32px)
-Bottom-left: "discover.moneyos.webasthetic.in" (12px, #525252, monospaced)
+Bottom-left: "discovermoneyos.webasthetic.in" (12px, #525252, monospaced)
 
 Center-left: Category label (11px, uppercase, #525252)
 Center: Article headline (32–40px, font-semibold, #ededed, max 2 lines, max-w 60%)

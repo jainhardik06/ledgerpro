@@ -4,7 +4,7 @@
  * complete picture. Blog/comparison/resource pages are registered by the
  * content engine as they publish.
  */
-const SITE = 'https://discover.moneyos.webasthetic.in';
+const SITE = 'https://discovermoneyos.webasthetic.in';
 
 const useCaseSlugs = [
   'freelancers', 'agencies', 'startups', 'creators', 'student-clubs', 'small-businesses',

@@ -140,7 +140,7 @@ placement while staying within the design rules.
 ### Option A — Google AdSense (recommended; in-content + sidebar)
 
 1. Create an account at **https://adsense.google.com**, add the site
-   `discover.moneyos.webasthetic.in`, and verify it (the loader is auto-injected
+   `discovermoneyos.webasthetic.in`, and verify it (the loader is auto-injected
    once your client id is set).
 2. After approval, create **two ad units** (type: *Display* / *In-article*) and
    copy each unit's `data-ad-slot` id.

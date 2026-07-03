@@ -42,7 +42,7 @@ function el(type: string, style: Record<string, unknown>, children?: unknown): a
 export async function renderOgImage({
   title,
   eyebrow = 'Money OS',
-  footer = 'discover.moneyos.webasthetic.in',
+  footer = 'discovermoneyos.webasthetic.in',
 }: OgOptions): Promise<Buffer> {
   // Keep the headline from overflowing the card.
   const headline = title.length > 90 ? title.slice(0, 87).trimEnd() + '…' : title;

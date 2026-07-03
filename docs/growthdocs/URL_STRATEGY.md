@@ -55,7 +55,7 @@ Astro config: `trailingSlash: 'never'`
 
 ### 2.1 Homepage
 ```
-https://discover.moneyos.webasthetic.in/
+https://discovermoneyos.webasthetic.in/
 ```
 
 ### 2.2 Blog
@@ -213,7 +213,7 @@ When two articles would produce the same slug:
 ## 6. Discovery Domain Architecture
 
 ```
-discover.moneyos.webasthetic.in     → Astro Discovery Site (this)
+discovermoneyos.webasthetic.in     → Astro Discovery Site (this)
 moneyos.webasthetic.in              → SaaS Product
 ```
 

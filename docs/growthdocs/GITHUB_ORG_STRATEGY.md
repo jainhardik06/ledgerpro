@@ -53,7 +53,7 @@ You must create a special `.github` repository. Inside it, create `profile/READM
 
 ```markdown
 <div align="center">
-  <img src="https://discover.moneyos.webasthetic.in/images/github-banner.png" alt="Money OS Architecture" width="800">
+  <img src="https://discovermoneyos.webasthetic.in/images/github-banner.png" alt="Money OS Architecture" width="800">
   <br><br>
   <h1>The Financial Command Center for SaaS Founders</h1>
 </div>
@@ -62,7 +62,7 @@ Money OS replaces fragmented spreadsheets and legacy accounting tools with a uni
 
 ### 🌐 Core Links
 - **Platform**: [moneyos.webasthetic.in](https://moneyos.webasthetic.in)
-- **Documentation**: [discover.moneyos.webasthetic.in/docs](https://discover.moneyos.webasthetic.in/docs)
+- **Documentation**: [discovermoneyos.webasthetic.in/docs](https://discovermoneyos.webasthetic.in/docs)
 - **X (Twitter)**: [@MoneyOSHQ](https://twitter.com/MoneyOSHQ)
 
 ### 🏗️ Open Engineering

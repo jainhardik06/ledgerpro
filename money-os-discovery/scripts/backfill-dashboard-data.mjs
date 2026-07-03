@@ -64,7 +64,7 @@ async function backfillDocsPages(db) {
           category: data.category ?? null,
           sidebarPosition: data.sidebarPosition ?? null,
           status: data.status ?? 'published',
-          url: `https://discover.moneyos.webasthetic.in/docs/${slug}`,
+          url: `https://discovermoneyos.webasthetic.in/docs/${slug}`,
           updated_at: data.updatedDate ? new Date(data.updatedDate) : new Date(data.publishDate),
         },
         $setOnInsert: { created_at: new Date() },
@@ -92,7 +92,7 @@ async function backfillKeywordTargets(db) {
           // Honest state: we have no real rank data yet (no GSC connection
           // to this domain configured). null, not fabricated.
           currentRank: null,
-          targetUrl: t.slug ? `https://discover.moneyos.webasthetic.in/blog/${t.slug}` : null,
+          targetUrl: t.slug ? `https://discovermoneyos.webasthetic.in/blog/${t.slug}` : null,
           status: t.status ?? 'queued',
         },
         $setOnInsert: { created_at: new Date() },

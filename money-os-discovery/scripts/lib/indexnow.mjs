@@ -15,7 +15,7 @@
  * has to grant) is still the only path there.
  */
 const INDEXNOW_KEY = '211f5cca454d4ac79217d58c0f9b6862';
-const SITE_HOST = 'discover.moneyos.webasthetic.in';
+const SITE_HOST = 'discovermoneyos.webasthetic.in';
 const KEY_LOCATION = `https://${SITE_HOST}/${INDEXNOW_KEY}.txt`;
 
 /**

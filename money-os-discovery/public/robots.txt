@@ -44,4 +44,4 @@ User-agent: *
 Allow: /
 Disallow: /go/
 
-Sitemap: https://discover.moneyos.webasthetic.in/sitemap-index.xml
+Sitemap: https://discovermoneyos.webasthetic.in/sitemap-index.xml

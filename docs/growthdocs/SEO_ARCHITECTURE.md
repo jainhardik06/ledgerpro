@@ -55,7 +55,7 @@ Allow: /
 User-agent: PerplexityBot
 Allow: /
 
-Sitemap: https://discover.moneyos.webasthetic.in/sitemap.xml
+Sitemap: https://discovermoneyos.webasthetic.in/sitemap.xml
 ```
 
 We explicitly allow AI crawlers. This is the opposite of what most sites do, and it is correct — AI citation is the new backlink.

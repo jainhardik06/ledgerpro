@@ -27,7 +27,7 @@ import {
 
 export const dynamic = 'force-dynamic';
 
-const DISCOVERY_SITE_URL = 'https://discover.moneyos.webasthetic.in';
+const DISCOVERY_SITE_URL = 'https://discovermoneyos.webasthetic.in';
 
 /** Live HTTP check with a short timeout — used to verify the discovery site
  * and its SEO/AI-discovery surface (sitemap, robots.txt, llms.txt) are

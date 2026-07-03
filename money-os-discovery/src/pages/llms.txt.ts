@@ -8,7 +8,7 @@ import { useCases } from '../data/use-cases';
  * LLM can find and cite the most relevant Money OS pages. Regenerated on every
  * build, so new docs / blog posts / use cases appear automatically.
  */
-const SITE = 'https://discover.moneyos.webasthetic.in';
+const SITE = 'https://discovermoneyos.webasthetic.in';
 
 export const GET: APIRoute = async () => {
   const [docs, blog, comparisons, resources] = await Promise.all([

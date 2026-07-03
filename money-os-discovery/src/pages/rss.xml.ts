@@ -14,7 +14,7 @@ export async function GET(context: APIContext) {
     title: 'Money OS Blog',
     description:
       'Practical finance guides for freelancers, agencies, startups, and small teams — expense tracking, budgeting, taxes, and tools.',
-    site: context.site ?? 'https://discover.moneyos.webasthetic.in',
+    site: context.site ?? 'https://discovermoneyos.webasthetic.in',
     items: posts.map((post) => ({
       title: post.data.title,
       description: post.data.description,

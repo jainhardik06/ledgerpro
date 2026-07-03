@@ -278,7 +278,7 @@ async function main() {
     console.log('✓ Growth DB updated (topic published, blog_posts + content_briefs recorded).');
   }
 
-  const publishedUrl = `${(process.env.PUBLIC_SITE_URL || 'https://discover.moneyos.webasthetic.in').replace(/\/$/, '')}/blog/${slug}`;
+  const publishedUrl = `${(process.env.PUBLIC_SITE_URL || 'https://discovermoneyos.webasthetic.in').replace(/\/$/, '')}/blog/${slug}`;
 
   const indexResult = await submitUrls([publishedUrl]);
   console.log(

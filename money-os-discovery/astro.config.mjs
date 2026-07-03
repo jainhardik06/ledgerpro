@@ -9,7 +9,7 @@ import vercel from '@astrojs/vercel';
 // https://astro.build/config
 export default defineConfig({
   // Canonical production URL — drives sitemap, RSS, canonical tags, OG image URLs.
-  site: 'https://discover.moneyos.webasthetic.in',
+  site: 'https://discovermoneyos.webasthetic.in',
 
   // Static-first (SSG). Individual routes opt into on-demand rendering with
   // `export const prerender = false` (currently only the affiliate redirect).

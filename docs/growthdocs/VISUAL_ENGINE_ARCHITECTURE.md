@@ -181,7 +181,7 @@ def generate_og(slug: str, title: str, category: str, description: str = "") -> 
         y += 56
 
     # URL watermark
-    draw.text((60, BRAND["height"] - 40), "discover.moneyos.webasthetic.in", fill=BRAND["text_muted"], font=font_url)
+    draw.text((60, BRAND["height"] - 40), "discovermoneyos.webasthetic.in", fill=BRAND["text_muted"], font=font_url)
 
     # Save
     output_path = f"public/og/blog/{slug}.png"
