@@ -56,8 +56,14 @@ jobs:
             echo "No new post was generated; nothing to commit."
             exit 0
           fi
-          git config user.name  "money-os-content-bot"
-          git config user.email "bot@users.noreply.github.com"
+          # Vercel only auto-deploys production pushes whose commit author is a
+          # recognized account on the project — a commit authored as a generic
+          # bot identity (money-os-content-bot) gets silently skipped for
+          # deployment even though the git push itself succeeds. Using the
+          # real authorized account here is required for CI-published posts
+          # to actually go live, not just land in the repo.
+          git config user.name  "jainhardik06"
+          git config user.email "2023pietcshardik060@poornima.org"
           git add src/content/blog
           NEWFILE=$(git diff --cached --name-only --diff-filter=A | head -1)
           git commit -m "content: auto-publish $(basename "$NEWFILE" .mdx)"
