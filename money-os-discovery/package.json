@@ -16,7 +16,8 @@
     "content:plan": "node scripts/generate-post.mjs --dry-run",
     "content:refresh-check": "node scripts/detect-stale-content.mjs",
     "content:link-suggest": "node scripts/suggest-internal-links.mjs",
-    "content:backfill": "node scripts/backfill-dashboard-data.mjs"
+    "content:backfill": "node scripts/backfill-dashboard-data.mjs",
+    "content:performance": "node scripts/sync-content-performance.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^6.0.3",

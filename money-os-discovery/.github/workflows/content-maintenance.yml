@@ -1,0 +1,39 @@
+name: Content Maintenance (Money OS Discovery)
+
+# Runs monthly (1st, 09:00 UTC — an hour after replenish-topics): checks
+# for stale content, refreshes internal-link suggestions, and syncs real
+# pageview data from PostHog. Writes only to the Growth DB, no commit.
+on:
+  schedule:
+    - cron: '0 9 1 * *'
+  workflow_dispatch: {}
+
+jobs:
+  maintain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+
+      - name: Detect stale content
+        env:
+          MONGODB_GROWTH_URI: ${{ secrets.MONGODB_GROWTH_URI }}
+        run: npm run content:refresh-check
+
+      - name: Refresh internal-link suggestions
+        env:
+          MONGODB_GROWTH_URI: ${{ secrets.MONGODB_GROWTH_URI }}
+        run: npm run content:link-suggest
+
+      - name: Sync content performance from PostHog
+        env:
+          MONGODB_GROWTH_URI: ${{ secrets.MONGODB_GROWTH_URI }}
+          POSTHOG_PERSONAL_API_KEY: ${{ secrets.POSTHOG_PERSONAL_API_KEY }}
+          POSTHOG_PROJECT_ID: ${{ secrets.POSTHOG_PROJECT_ID }}
+        run: npm run content:performance
