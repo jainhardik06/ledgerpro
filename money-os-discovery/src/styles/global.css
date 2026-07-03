@@ -1,2 +1,71 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+
+/* Themed scrollbars, applied globally (not per-component-scoped) so they
+   reach every page and every internally-scrolling container — sidebars
+   (TableOfContents, DocSidebar), code blocks, and comparison tables all
+   use overflow-x/y-auto and previously fell back to the unstyled OS
+   default because the old rule lived in a scoped <style> block that only
+   shipped on pages rendering that specific component. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #262626 #000;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #262626;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #404040;
+}
+
+/* Fully hidden scrollbar for compact nav sidebars where a visible track
+   would be visual noise (TOC, docs sidebar) — cross-browser, and now
+   truly global instead of accidentally page-scoped. */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Content callouts and reading-progress transition — moved here from
+   DocLayout.astro's scoped-to-docs-pages <style is:global> block, which
+   meant these rules never shipped on blog/comparison pages even though
+   the classes aren't page-type-specific. */
+.prose pre code {
+  background: transparent;
+  padding: 0;
+  font-size: 13px;
+  color: #d4d4d4;
+}
+
+.callout {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border-left: 2px solid;
+  margin: 1.5rem 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.callout-info { background: rgb(59 130 246 / 0.06); border-color: rgb(59 130 246 / 0.3); color: #93c5fd; }
+.callout-warning { background: rgb(245 158 11 / 0.06); border-color: rgb(245 158 11 / 0.3); color: #fcd34d; }
+.callout-danger { background: rgb(239 68 68 / 0.06); border-color: rgb(239 68 68 / 0.3); color: #fca5a5; }
+.callout-success { background: rgb(16 185 129 / 0.06); border-color: rgb(16 185 129 / 0.3); color: #6ee7b7; }
+
+#reading-progress-bar {
+  transition: width 50ms linear;
+}

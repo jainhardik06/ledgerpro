@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import TopNav from '../../components/TopNav.astro';
+import Footer from '../../components/Footer.astro';
 import { getCollection } from 'astro:content';
 
 const items = (await getCollection('comparisons', ({ data }) => data.status === 'published'))
@@ -39,4 +40,6 @@ const items = (await getCollection('comparisons', ({ data }) => data.status === 
       </div>
     )}
   </main>
+
+  <Footer />
 </Layout>

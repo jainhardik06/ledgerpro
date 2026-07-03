@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import TopNav from '../components/TopNav.astro';
-import BrandMark from '../components/BrandMark.astro';
+import Footer from '../components/Footer.astro';
 ---
 
 <Layout
@@ -197,21 +197,7 @@ import BrandMark from '../components/BrandMark.astro';
       </a>
     </section>
 
-    <!-- ── FOOTER ── -->
-    <footer class="border-t border-neutral-900 py-10">
-      <div class="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div class="flex items-center gap-2 text-neutral-400">
-          <BrandMark size={16} />
-          <span class="text-[13px] text-neutral-400">Money OS</span>
-        </div>
-        <div class="flex items-center gap-5 text-[13px] text-neutral-600">
-          <a href="/docs" class="hover:text-neutral-400 transition-colors">Docs</a>
-          <a href="/blog" class="hover:text-neutral-400 transition-colors">Blog</a>
-          <a href="/changelog" class="hover:text-neutral-400 transition-colors">Changelog</a>
-          <a href="/comparisons" class="hover:text-neutral-400 transition-colors">Compare</a>
-          <a href="https://moneyos.webasthetic.in/signup" class="hover:text-neutral-400 transition-colors">Sign up</a>
-        </div>
-      </div>
-    </footer>
   </main>
+
+  <Footer />
 </Layout>

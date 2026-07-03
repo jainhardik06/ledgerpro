@@ -112,22 +112,8 @@ const posthogHost = import.meta.env.PUBLIC_POSTHOG_HOST || 'https://us.i.posthog
         color: #ededed;
       }
 
-      ::-webkit-scrollbar {
-        width: 6px;
-      }
-
-      ::-webkit-scrollbar-track {
-        background: #000;
-      }
-
-      ::-webkit-scrollbar-thumb {
-        background: #262626;
-        border-radius: 3px;
-      }
-
-      ::-webkit-scrollbar-thumb:hover {
-        background: #404040;
-      }
+      /* Scrollbar theming lives in global.css (applies site-wide, not just
+         to elements within this component's own Astro style scope). */
     </style>
   </head>
   <body class="bg-black text-neutral-200 min-h-screen">

@@ -2,6 +2,7 @@
 import Layout from './Layout.astro';
 import TopNav from '../components/TopNav.astro';
 import AdSlot from '../components/AdSlot.astro';
+import Footer from '../components/Footer.astro';
 
 interface FeatureRow {
   feature: string;
@@ -131,6 +132,8 @@ const articleSchema = {
       </a>
     </div>
   </main>
+
+  <Footer />
 
   <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />
   {faqSchema && <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />}

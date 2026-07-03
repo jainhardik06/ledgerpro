@@ -3,6 +3,7 @@ import { getCollection, render } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import TopNav from '../../components/TopNav.astro';
 import AdSlot from '../../components/AdSlot.astro';
+import Footer from '../../components/Footer.astro';
 
 export async function getStaticPaths() {
   const resources = await getCollection('resources', ({ data }) => data.status === 'published');
@@ -76,6 +77,8 @@ const faqSchema = data.faq && data.faq.length > 0 ? {
       </a>
     </div>
   </main>
+
+  <Footer />
 
   {faqSchema && <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />}
 </Layout>

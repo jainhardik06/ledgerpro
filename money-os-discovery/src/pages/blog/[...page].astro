@@ -3,6 +3,7 @@ import type { GetStaticPaths, Page } from 'astro';
 import { getCollection, type CollectionEntry } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import TopNav from '../../components/TopNav.astro';
+import Footer from '../../components/Footer.astro';
 
 export const getStaticPaths = (async ({ paginate }) => {
   const posts = (await getCollection('blog', ({ data }) => data.status === 'published'))
@@ -124,12 +125,7 @@ const [featured, ...rest] = isFirst ? page.data : [null, ...page.data];
     )}
   </main>
 
-  <footer class="border-t border-neutral-900 py-10 mt-10">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 flex items-center justify-between text-[13px] text-neutral-600">
-      <span>Money OS Blog</span>
-      <a href="/rss.xml" class="hover:text-neutral-400 transition-colors">RSS</a>
-    </div>
-  </footer>
+  <Footer />
 </Layout>
 
 <style>

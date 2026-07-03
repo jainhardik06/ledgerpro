@@ -35,7 +35,7 @@ function isActive(href: string) {
       {navLinks.map(link => (
         <a
           href={link.href}
-          class={`px-3 py-1.5 rounded-md text-[13px] font-medium transition-colors duration-150 ${
+          class={`px-3 py-1.5 rounded-md text-[13px] font-medium transition-colors duration-150 focus:outline-none focus:ring-1 focus:ring-white/40 ${
             isActive(link.href)
               ? 'text-white bg-neutral-900'
               : 'text-neutral-400 hover:text-white hover:bg-neutral-900'
@@ -50,7 +50,7 @@ function isActive(href: string) {
     <div class="flex items-center gap-2 shrink-0">
       <a
         href="https://moneyos.webasthetic.in/login"
-        class="hidden sm:inline-flex text-[13px] font-medium text-neutral-400 hover:text-white transition-colors duration-150"
+        class="hidden sm:inline-flex text-[13px] font-medium text-neutral-400 hover:text-white transition-colors duration-150 focus:outline-none focus:ring-1 focus:ring-white/40 rounded px-1"
       >
         Sign in
       </a>
@@ -64,7 +64,7 @@ function isActive(href: string) {
       <!-- Mobile menu button -->
       <button
         id="mobile-menu-btn"
-        class="md:hidden p-1.5 text-neutral-400 hover:text-white transition-colors"
+        class="md:hidden p-1.5 text-neutral-400 hover:text-white transition-colors focus:outline-none focus:ring-1 focus:ring-white/40 rounded"
         aria-label="Open menu"
         aria-expanded="false"
         aria-controls="mobile-menu"
@@ -87,7 +87,7 @@ function isActive(href: string) {
       {navLinks.map(link => (
         <a
           href={link.href}
-          class={`px-3 py-2 rounded-md text-[13px] font-medium transition-colors ${
+          class={`px-3 py-2 rounded-md text-[13px] font-medium transition-colors focus:outline-none focus:ring-1 focus:ring-white/40 ${
             isActive(link.href)
               ? 'text-white bg-neutral-900'
               : 'text-neutral-400 hover:text-white'
@@ -104,7 +104,10 @@ function isActive(href: string) {
   const btn = document.getElementById('mobile-menu-btn');
   const menu = document.getElementById('mobile-menu');
   btn?.addEventListener('click', () => {
+    // classList.toggle() returns true if 'hidden' is now present (menu
+    // closed) and false if it was removed (menu open) — aria-expanded
+    // must match that directly, not its inverse.
     const isOpen = menu?.classList.toggle('hidden') === false;
-    btn.setAttribute('aria-expanded', String(!isOpen));
+    btn.setAttribute('aria-expanded', String(isOpen));
   });
 </script>

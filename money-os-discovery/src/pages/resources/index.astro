@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import TopNav from '../../components/TopNav.astro';
+import Footer from '../../components/Footer.astro';
 import { getCollection } from 'astro:content';
 
 const resources = (await getCollection('resources', ({ data }) => data.status === 'published'))
@@ -51,4 +52,6 @@ const typeLabels: Record<string, string> = {
       </div>
     )}
   </main>
+
+  <Footer />
 </Layout>

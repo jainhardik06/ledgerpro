@@ -1,6 +1,7 @@
 ---
 import Layout from './Layout.astro';
 import TopNav from '../components/TopNav.astro';
+import Footer from '../components/Footer.astro';
 
 interface Props {
   title: string;
@@ -140,6 +141,8 @@ const softwareSchema = {
       </div>
     </section>
   </main>
+
+  <Footer />
 
   <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
   <script type="application/ld+json" set:html={JSON.stringify(softwareSchema)} />

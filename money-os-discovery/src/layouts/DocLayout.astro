@@ -6,6 +6,7 @@ import TableOfContents from '../components/TableOfContents.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import ReadingProgress from '../components/ReadingProgress.astro';
 import RelatedDocs from '../components/RelatedDocs.astro';
+import Footer from '../components/Footer.astro';
 
 interface Props {
   title: string;
@@ -136,39 +137,12 @@ const finalSchema = schema ?? defaultSchema;
     <TableOfContents headings={headings} />
   </div>
 
+  <Footer />
+
   <!-- JSON-LD Schema -->
   <script type="application/ld+json" set:html={JSON.stringify(finalSchema)} />
 </Layout>
 
-<style is:global>
-  /* Override Tailwind prose code block styling for syntax blocks */
-  .prose pre code {
-    background: transparent;
-    padding: 0;
-    font-size: 13px;
-    color: #d4d4d4;
-  }
-
-  /* Custom callout blocks */
-  .callout {
-    padding: 1rem;
-    border-radius: 0.5rem;
-    border-left: 2px solid;
-    margin: 1.5rem 0;
-    font-size: 14px;
-    line-height: 1.6;
-  }
-  .callout-info { background: rgb(59 130 246 / 0.06); border-color: rgb(59 130 246 / 0.3); color: #93c5fd; }
-  .callout-warning { background: rgb(245 158 11 / 0.06); border-color: rgb(245 158 11 / 0.3); color: #fcd34d; }
-  .callout-danger { background: rgb(239 68 68 / 0.06); border-color: rgb(239 68 68 / 0.3); color: #fca5a5; }
-  .callout-success { background: rgb(16 185 129 / 0.06); border-color: rgb(16 185 129 / 0.3); color: #6ee7b7; }
-
-  /* Reading progress */
-  #reading-progress-bar {
-    transition: width 50ms linear;
-  }
-
-  /* Scrollbar hide utility */
-  .scrollbar-hide::-webkit-scrollbar { display: none; }
-  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-</style>
+{/* Callouts, code block overrides, reading-progress transition, and
+    scrollbar-hide now live in src/styles/global.css so they apply on
+    every page, not just pages that render this specific layout. */}

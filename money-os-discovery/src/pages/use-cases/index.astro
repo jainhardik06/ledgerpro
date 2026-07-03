@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import TopNav from '../../components/TopNav.astro';
+import Footer from '../../components/Footer.astro';
 import { useCases } from '../../data/use-cases';
 
 const audiencePages = useCases.filter((u) => u.group === 'Audience');
@@ -60,4 +61,6 @@ const keywordPages = useCases.filter((u) => u.group === 'Keyword');
       </a>
     </div>
   </main>
+
+  <Footer />
 </Layout>
