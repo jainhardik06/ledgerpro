@@ -2,6 +2,15 @@ import React from 'react';
 import Link from 'next/link';
 import { BarChart3, TrendingUp, Download, PieChart } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Actionable Analytics | Money OS',
+  description: 'Expense summaries, income breakdowns, tax-ready reports, and client P&L — generated in seconds by Money OS, not hours in a spreadsheet.',
+  alternates: { canonical: '/features/reports' },
+  openGraph: { title: 'Actionable Analytics | Money OS', description: 'Expense summaries, tax-ready reports, and client P&L generated in seconds.', url: '/features/reports', type: 'website' },
+  twitter: { card: 'summary_large_image', title: 'Actionable Analytics | Money OS', description: 'Expense summaries, tax-ready reports, and client P&L generated in seconds.' },
+};
 
 export default function ReportsFeature() {
   return (

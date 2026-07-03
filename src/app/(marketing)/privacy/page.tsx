@@ -1,4 +1,13 @@
 import React from 'react';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy | Money OS',
+  description: 'How Money OS collects, uses, and protects your information, and the data minimization principles behind the platform.',
+  alternates: { canonical: '/privacy' },
+  openGraph: { title: 'Privacy Policy | Money OS', description: 'How Money OS collects, uses, and protects your information.', url: '/privacy', type: 'website' },
+  twitter: { card: 'summary', title: 'Privacy Policy | Money OS', description: 'How Money OS collects, uses, and protects your information.' },
+};
 
 export default function PrivacyPolicyPage() {
   return (

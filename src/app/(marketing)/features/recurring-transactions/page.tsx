@@ -2,6 +2,15 @@ import React from 'react';
 import Link from 'next/link';
 import { CalendarDays, ArrowRight, RefreshCw, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Automate Fixed Expenses | Money OS',
+  description: 'Set up recurring transactions once — Money OS logs subscriptions, rent, retainers, and payroll automatically on Daily, Weekly, or Monthly schedules.',
+  alternates: { canonical: '/features/recurring-transactions' },
+  openGraph: { title: 'Automate Fixed Expenses | Money OS', description: 'Recurring transactions for subscriptions, rent, retainers, and payroll — set once, logged automatically.', url: '/features/recurring-transactions', type: 'website' },
+  twitter: { card: 'summary_large_image', title: 'Automate Fixed Expenses | Money OS', description: 'Recurring transactions for subscriptions, rent, retainers, and payroll.' },
+};
 
 export default function RecurringTransactionsFeature() {
   return (

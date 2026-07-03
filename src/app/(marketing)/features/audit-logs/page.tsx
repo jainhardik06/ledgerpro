@@ -2,6 +2,15 @@ import React from 'react';
 import Link from 'next/link';
 import { ShieldAlert, FileText, Search, User } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Immutable Audit Trails | Money OS',
+  description: 'Every transaction edit, budget change, and settings update recorded permanently in Money OS — a full, tamper-proof activity trail for your workspace.',
+  alternates: { canonical: '/features/audit-logs' },
+  openGraph: { title: 'Immutable Audit Trails | Money OS', description: 'A full, tamper-proof activity trail for every change in your workspace.', url: '/features/audit-logs', type: 'website' },
+  twitter: { card: 'summary_large_image', title: 'Immutable Audit Trails | Money OS', description: 'A full, tamper-proof activity trail for every change in your workspace.' },
+};
 
 export default function AuditLogsFeature() {
   return (

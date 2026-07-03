@@ -2,6 +2,15 @@ import React from 'react';
 import Link from 'next/link';
 import { Target, ArrowRight, AlertTriangle, PieChart } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Budgets That Actually Work | Money OS',
+  description: 'Set monthly or custom-period spending limits per category in Money OS, with real-time tracking and alerts before you overspend.',
+  alternates: { canonical: '/features/budgets' },
+  openGraph: { title: 'Budgets That Actually Work | Money OS', description: 'Category budgets with real-time tracking and overspend alerts.', url: '/features/budgets', type: 'website' },
+  twitter: { card: 'summary_large_image', title: 'Budgets That Actually Work | Money OS', description: 'Category budgets with real-time tracking and overspend alerts.' },
+};
 
 export default function BudgetsFeature() {
   return (

@@ -1,4 +1,13 @@
 import React from 'react';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Cookie Policy | Money OS',
+  description: 'How Money OS uses cookies and similar storage technologies, and the strict privacy and data minimization principles behind it.',
+  alternates: { canonical: '/cookie-policy' },
+  openGraph: { title: 'Cookie Policy | Money OS', description: 'How Money OS uses cookies and similar storage technologies.', url: '/cookie-policy', type: 'website' },
+  twitter: { card: 'summary', title: 'Cookie Policy | Money OS', description: 'How Money OS uses cookies and similar storage technologies.' },
+};
 
 export default function CookiePolicyPage() {
   return (

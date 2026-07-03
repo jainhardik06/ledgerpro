@@ -1,4 +1,13 @@
 import React from 'react';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Refund Policy | Money OS',
+  description: 'Money OS is currently in a free Beta phase — what that means for billing, refunds, and future paid tiers.',
+  alternates: { canonical: '/refund-policy' },
+  openGraph: { title: 'Refund Policy | Money OS', description: 'Money OS is currently in a free Beta phase — what that means for billing and refunds.', url: '/refund-policy', type: 'website' },
+  twitter: { card: 'summary', title: 'Refund Policy | Money OS', description: 'Money OS is currently in a free Beta phase — what that means for billing and refunds.' },
+};
 
 export default function RefundPolicyPage() {
   return (

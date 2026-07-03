@@ -2,6 +2,15 @@ import React from 'react';
 import Link from 'next/link';
 import { Building2, BarChart3, Wallet, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Money OS for Small Businesses — Know Your Numbers',
+  description: 'Ditch the spreadsheet. Track every business expense, hold real budgets, and hand your accountant a complete record at tax time.',
+  alternates: { canonical: '/use-cases/small-businesses' },
+  openGraph: { title: 'Money OS for Small Businesses — Know Your Numbers', description: 'Track expenses, hold budgets, and hand your accountant a complete record.', url: '/use-cases/small-businesses', type: 'website' },
+  twitter: { card: 'summary_large_image', title: 'Money OS for Small Businesses — Know Your Numbers', description: 'Track expenses, hold budgets, and hand your accountant a complete record.' },
+};
 
 export default function SmallBusinessesUseCase() {
   return (

@@ -1,4 +1,13 @@
 import React from 'react';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Terms of Service | Money OS',
+  description: 'The Terms of Service governing access to Money OS — workspace creation, authentication, and platform usage during the free Beta.',
+  alternates: { canonical: '/terms' },
+  openGraph: { title: 'Terms of Service | Money OS', description: 'The Terms of Service governing access to Money OS.', url: '/terms', type: 'website' },
+  twitter: { card: 'summary', title: 'Terms of Service | Money OS', description: 'The Terms of Service governing access to Money OS.' },
+};
 
 export default function TermsOfServicePage() {
   return (

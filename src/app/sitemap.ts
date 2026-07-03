@@ -19,7 +19,6 @@ const routes = [
   '/features/reports',
   '/features/teams',
   '/guides',
-  '/pricing',
   '/privacy',
   '/refund-policy',
   '/security',

@@ -2,6 +2,15 @@ import React from 'react';
 import Link from 'next/link';
 import { UserCircle, Coffee, FileSpreadsheet, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Money OS for Freelancers — Tax Season, Simplified',
+  description: 'Track every deductible expense, set budgets that hold, and generate a tax-ready report in seconds with Money OS.',
+  alternates: { canonical: '/use-cases/freelancers' },
+  openGraph: { title: 'Money OS for Freelancers — Tax Season, Simplified', description: 'Track deductible expenses and generate a tax-ready report in seconds.', url: '/use-cases/freelancers', type: 'website' },
+  twitter: { card: 'summary_large_image', title: 'Money OS for Freelancers — Tax Season, Simplified', description: 'Track deductible expenses and generate a tax-ready report in seconds.' },
+};
 
 export default function FreelancersUseCase() {
   return (

@@ -1,4 +1,13 @@
 import React from 'react';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Data Processing Agreement | Money OS',
+  description: 'The Data Processing Agreement governing how Money OS processes organizational financial records and user metadata.',
+  alternates: { canonical: '/dpa' },
+  openGraph: { title: 'Data Processing Agreement | Money OS', description: 'How Money OS processes organizational financial records and user metadata.', url: '/dpa', type: 'website' },
+  twitter: { card: 'summary', title: 'Data Processing Agreement | Money OS', description: 'How Money OS processes organizational financial records and user metadata.' },
+};
 
 export default function DPAPage() {
   return (

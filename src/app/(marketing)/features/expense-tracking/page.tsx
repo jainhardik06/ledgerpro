@@ -2,6 +2,15 @@ import React from 'react';
 import Link from 'next/link';
 import { Activity, ArrowRight, CheckCircle2, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Expense Tracking, Re-Engineered for Speed | Money OS',
+  description: 'Log, import via CSV, and auto-categorize every business expense and income in Money OS — search your full history in milliseconds.',
+  alternates: { canonical: '/features/expense-tracking' },
+  openGraph: { title: 'Expense Tracking, Re-Engineered for Speed | Money OS', description: 'Log, import, and auto-categorize every business expense and income.', url: '/features/expense-tracking', type: 'website' },
+  twitter: { card: 'summary_large_image', title: 'Expense Tracking, Re-Engineered for Speed | Money OS', description: 'Log, import, and auto-categorize every business expense and income.' },
+};
 
 export default function ExpenseTrackingFeature() {
   return (

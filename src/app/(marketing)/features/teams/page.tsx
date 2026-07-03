@@ -2,6 +2,15 @@ import React from 'react';
 import Link from 'next/link';
 import { Users, ArrowRight, ShieldCheck, UserPlus, Key } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Multi-Player Finance | Money OS',
+  description: 'Invite your team to Money OS with role-based access — Admin, Member, or Viewer — and a complete audit trail for every change.',
+  alternates: { canonical: '/features/teams' },
+  openGraph: { title: 'Multi-Player Finance | Money OS', description: 'Role-based team access with a complete audit trail for every change.', url: '/features/teams', type: 'website' },
+  twitter: { card: 'summary_large_image', title: 'Multi-Player Finance | Money OS', description: 'Role-based team access with a complete audit trail for every change.' },
+};
 
 export default function TeamsFeature() {
   return (

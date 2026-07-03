@@ -1,4 +1,13 @@
 import React from 'react';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Accessibility Statement | Money OS',
+  description: 'How Money OS approaches digital accessibility — conformance standards, ongoing commitments, and how to report an issue.',
+  alternates: { canonical: '/accessibility' },
+  openGraph: { title: 'Accessibility Statement | Money OS', description: 'How Money OS approaches digital accessibility.', url: '/accessibility', type: 'website' },
+  twitter: { card: 'summary', title: 'Accessibility Statement | Money OS', description: 'How Money OS approaches digital accessibility.' },
+};
 
 export default function AccessibilityPage() {
   return (

@@ -2,6 +2,15 @@ import React from 'react';
 import Link from 'next/link';
 import { GraduationCap, ShieldAlert, Users, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Money OS for Student Clubs — Treasury Management',
+  description: 'Transparent fund management for campus organizations — track dues, event expenses, and allocations with full committee visibility.',
+  alternates: { canonical: '/use-cases/student-clubs' },
+  openGraph: { title: 'Money OS for Student Clubs — Treasury Management', description: 'Transparent fund management for campus organizations.', url: '/use-cases/student-clubs', type: 'website' },
+  twitter: { card: 'summary_large_image', title: 'Money OS for Student Clubs — Treasury Management', description: 'Transparent fund management for campus organizations.' },
+};
 
 export default function StudentClubsUseCase() {
   return (

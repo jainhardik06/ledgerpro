@@ -2,6 +2,15 @@ import React from 'react';
 import Link from 'next/link';
 import { Briefcase, Users, Repeat, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Money OS for Agencies — Retainers, Tracked Cleanly',
+  description: 'Run agency finances without spreadsheet chaos — multi-client expense tracking, per-client profitability, and team financial visibility.',
+  alternates: { canonical: '/use-cases/agencies' },
+  openGraph: { title: 'Money OS for Agencies — Retainers, Tracked Cleanly', description: 'Multi-client expense tracking and per-client profitability for agencies.', url: '/use-cases/agencies', type: 'website' },
+  twitter: { card: 'summary_large_image', title: 'Money OS for Agencies — Retainers, Tracked Cleanly', description: 'Multi-client expense tracking and per-client profitability for agencies.' },
+};
 
 export default function AgenciesUseCase() {
   return (
