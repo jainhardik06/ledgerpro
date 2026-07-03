@@ -205,7 +205,7 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`Generating article with Groq (${getModel()}) — paced, ~2-4 minutes...`);
+  console.log(`Generating article (starting with ${getModel()}, rotates through the key pool on rate limits) — paced, ~2-4 minutes...`);
   const startedAt = Date.now();
   const post = await generateArticle(topic);
   const elapsedSec = Math.round((Date.now() - startedAt) / 1000);

@@ -1,64 +1,155 @@
 /**
- * LLM wrapper for the content engine — powered by Groq (fast, generous free
- * tier, OpenAI-compatible). Centralizes the API key check, model selection, and
- * a JSON-extraction helper so the generation scripts stay focused on prompts.
+ * Multi-provider LLM dispatcher for the content engine.
+ *
+ * Both Groq and Gemini have generous but real free-tier rate limits. Instead
+ * of one API key hitting 429s the automation can't recover from quickly,
+ * this maintains a POOL of keys (any mix of Groq and Gemini) and rotates to
+ * the next available key the moment one gets rate-limited — usually far
+ * faster than waiting out a single key's cooldown window.
+ *
+ * Env format (comma-separated; either or both may be set):
+ *   GROQ_API_KEYS=gsk_aaa,gsk_bbb,gsk_ccc
+ *   GEMINI_API_KEYS=AIzaaaa,AIzabbb
+ * A single legacy GROQ_API_KEY is still honored for backward compatibility.
+ *
+ * scripts/lib/rate-limit.mjs's pacing/backoff (the outer retry loop for
+ * transient/network errors) is unchanged — this module only changes what
+ * happens *within* a single attempt when a 429 specifically occurs: rotate
+ * key/provider immediately instead of just waiting.
  */
-import Groq from 'groq-sdk';
+import * as groq from './providers/groq.mjs';
+import * as gemini from './providers/gemini.mjs';
 
-export function hasApiKey() {
-  return Boolean(process.env.GROQ_API_KEY);
+const PROVIDERS = { groq, gemini };
+
+// How long a rate-limited key sits out before being eligible again, if the
+// API didn't give us a more precise retry-after.
+const DEFAULT_COOLDOWN_MS = 60_000;
+
+function parseKeyList(envVar) {
+  return (process.env[envVar] || '')
+    .split(',')
+    .map((k) => k.trim())
+    .filter(Boolean);
 }
 
-export function getClient() {
-  if (!hasApiKey()) {
-    throw new Error('GROQ_API_KEY is not set. Add it to .env.local or CI secrets.');
+function buildPool() {
+  const pool = [];
+  const groqKeys = parseKeyList('GROQ_API_KEYS');
+  if (groqKeys.length === 0 && process.env.GROQ_API_KEY) groqKeys.push(process.env.GROQ_API_KEY.trim());
+  for (const apiKey of groqKeys) {
+    pool.push({ provider: 'groq', apiKey, model: process.env.GROQ_MODEL || groq.DEFAULT_MODEL });
   }
-  // maxRetries: 0 — retry/backoff/pacing is handled explicitly by
-  // scripts/lib/rate-limit.mjs so we have full visibility and control over
-  // timing (the SDK's built-in retries would otherwise retry silently and
-  // unpredictably, fighting with our own pacing).
-  return new Groq({ apiKey: process.env.GROQ_API_KEY, maxRetries: 0 });
+
+  const geminiKeys = parseKeyList('GEMINI_API_KEYS');
+  if (geminiKeys.length === 0 && process.env.GEMINI_API_KEY) geminiKeys.push(process.env.GEMINI_API_KEY.trim());
+  for (const apiKey of geminiKeys) {
+    pool.push({ provider: 'gemini', apiKey, model: process.env.GEMINI_MODEL || gemini.DEFAULT_MODEL });
+  }
+
+  return pool;
+}
+
+// Module-level state: which pool entry to try next, and per-key cooldowns.
+// Persists across calls within one script run, so successive stages
+// naturally continue rotating rather than always retrying key #1 first.
+let poolIndex = 0;
+const cooldownUntil = new Map(); // apiKey -> timestamp ms
+
+export function hasApiKey() {
+  return buildPool().length > 0;
 }
 
 export function getModel() {
-  // A strong, free Groq model good for long-form writing. Override with GROQ_MODEL.
-  // Note: llama-3.3-70b-versatile was decommissioned by Groq (Aug 2026) — using
-  // their recommended replacement.
-  return process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
+  // Reported for logging purposes (the model of the *first configured*
+  // provider) — the actual model used per-call may differ if rotation
+  // occurs. getActiveProviderLabel() gives the real-time picture.
+  const pool = buildPool();
+  return pool[0]?.model ?? groq.DEFAULT_MODEL;
+}
+
+/** Human-readable "provider/model" label for logging, without leaking keys. */
+function label(entry) {
+  return `${entry.provider}/${entry.model}`;
+}
+
+function keyAvailable(entry) {
+  const until = cooldownUntil.get(entry.apiKey);
+  return !until || until <= Date.now();
 }
 
 /**
- * Call the model and return the assistant text.
- * Set `json: true` to request strict JSON output (model must support it).
- *
- * `openai/gpt-oss-120b` (our default model) is a reasoning model: some of its
- * `max_tokens` budget is spent on hidden reasoning before the visible answer,
- * which — combined with an undersized budget — silently truncates output
- * mid-sentence instead of erroring. We fix this two ways: request
- * `reasoning_effort: 'low'` to minimize that overhead, and return
- * `finishReason` so callers can detect truncation (`finish_reason ===
- * 'length'`) and retry with a bigger budget rather than publish a cut-off
- * sentence.
+ * Try the pool starting at poolIndex, skipping any key still in cooldown.
+ * Returns the entry to use plus its pool position, or null if every key is
+ * currently cooling down.
+ */
+function nextAvailable(pool) {
+  for (let i = 0; i < pool.length; i++) {
+    const idx = (poolIndex + i) % pool.length;
+    if (keyAvailable(pool[idx])) return idx;
+  }
+  return -1;
+}
+
+/**
+ * Call the model and return { text, finishReason, provider }.
+ * Rotates automatically through the key pool on 429s. If every key in the
+ * pool is currently cooling down, throws a 429-shaped error so the outer
+ * withRateLimit() backoff (scripts/lib/rate-limit.mjs) waits and retries —
+ * by then some cooldowns will likely have expired.
  */
 export async function complete({ system, prompt, maxTokens = 4096, temperature = 0.7, json = false }) {
-  const client = getClient();
-  const messages = [];
-  if (system) messages.push({ role: 'system', content: system });
-  messages.push({ role: 'user', content: prompt });
+  const pool = buildPool();
+  if (pool.length === 0) {
+    throw new Error('No LLM API keys configured. Set GROQ_API_KEYS and/or GEMINI_API_KEYS.');
+  }
 
-  const res = await client.chat.completions.create({
-    model: getModel(),
-    messages,
-    max_tokens: maxTokens,
-    temperature,
-    reasoning_effort: 'low',
-    ...(json ? { response_format: { type: 'json_object' } } : {}),
-  });
-  const choice = res.choices?.[0];
-  return {
-    text: (choice?.message?.content ?? '').trim(),
-    finishReason: choice?.finish_reason ?? null,
-  };
+  let lastError = null;
+  const attempted = new Set();
+
+  while (attempted.size < pool.length) {
+    const idx = nextAvailable(pool);
+    if (idx === -1) break; // every key is cooling down right now
+
+    const entry = pool[idx];
+    attempted.add(idx);
+    poolIndex = (idx + 1) % pool.length; // next call starts after this one
+
+    try {
+      const adapter = PROVIDERS[entry.provider];
+      const result = await adapter.complete({
+        apiKey: entry.apiKey,
+        model: entry.model,
+        system,
+        prompt,
+        maxTokens,
+        temperature,
+        json,
+      });
+      return { ...result, provider: entry.provider };
+    } catch (err) {
+      lastError = err;
+      if (err?.status === 429) {
+        const retryAfterHeader = err?.headers?.get?.('retry-after');
+        const retryAfterMs = retryAfterHeader ? Number(retryAfterHeader) * 1000 : null;
+        cooldownUntil.set(entry.apiKey, Date.now() + (Number.isFinite(retryAfterMs) ? retryAfterMs : DEFAULT_COOLDOWN_MS));
+        console.warn(`  ! [${label(entry)}] rate limited — rotating to next key in pool`);
+        continue; // try the next available key immediately, no sleep
+      }
+      // Non-429 error (network, 5xx, etc.) — let the caller's outer
+      // withRateLimit() retry/backoff handle it; don't silently eat it by
+      // trying other keys, since it's likely not a rate-limit problem.
+      throw err;
+    }
+  }
+
+  // Every key is on cooldown. Surface a 429 so withRateLimit() backs off
+  // and retries the whole complete() call later, by which point some
+  // cooldowns should have expired.
+  const err = new Error(`All ${pool.length} LLM key(s) are rate-limited right now.`);
+  err.status = 429;
+  err.cause = lastError;
+  throw err;
 }
 
 /**

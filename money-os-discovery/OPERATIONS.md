@@ -27,11 +27,19 @@ three places. Nothing else requires code changes.
 
 ### a) `.env.local` (local dev + running scripts)
 
-Already set: `MONGODB_GROWTH_URI`. **Fill in:**
+Already set: `MONGODB_GROWTH_URI`, `GROQ_API_KEYS`. **Recommended addition:**
 
 ```
-GROQ_API_KEY=gsk_...                 # required for automated blog generation (free: console.groq.com/keys)
+GEMINI_API_KEYS=AIza...              # free: aistudio.google.com/apikey
 ```
+
+Both Groq and Gemini have free tiers with real rate limits. The content
+engine (`scripts/lib/llm.mjs`) maintains a pool of keys from **both**
+`GROQ_API_KEYS` and `GEMINI_API_KEYS` (each comma-separated — you can list
+multiple keys of the same provider too) and automatically rotates to the
+next available key the instant one gets rate-limited (429), instead of
+stalling. A single key in either list still works fine; adding a second
+provider just makes the free-tier automation more resilient.
 
 Optional (ads stay off until set): the `PUBLIC_ADSENSE_*` / `PUBLIC_CARBON_*` keys (see §7).
 
@@ -45,9 +53,11 @@ Optional: the `PUBLIC_ADSENSE_*` / `PUBLIC_CARBON_*` keys to turn ads on (§7).
 ### c) GitHub repo → Settings → Secrets and variables → Actions
 
 ```
-GROQ_API_KEY=gsk_...
+GROQ_API_KEYS=gsk_...
+GEMINI_API_KEYS=AIza...            # optional but recommended — see above
 MONGODB_GROWTH_URI=<same connection string>
 GROQ_MODEL=openai/gpt-oss-120b     # optional, this is the default
+GEMINI_MODEL=gemini-2.0-flash      # optional, this is the default
 ```
 
 That's the entire to-do list. Social profiles are added from the dashboard at
