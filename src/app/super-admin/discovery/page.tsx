@@ -96,6 +96,7 @@ export default async function DiscoveryDashboard() {
 
   // Content
   let docsCount = 0, seoPagesCount = 0, blogCount = 0, comparisonsCount = 0;
+  let blogPostDetails: any[] = [];
 
   // Keywords
   let totalKeywords = 0, rankedKeywords = 0;
@@ -212,6 +213,18 @@ export default async function DiscoveryDashboard() {
       totalTopics = _totalTopics; backlogTopics = _backlogTopics; writingTopics = _writingTopics; doneTopics = _doneTopics;
       totalBriefs = _totalBriefs; approvedBriefs = _approvedBriefs;
       topTopics = _topTopics;
+
+      // Content Intelligence — real per-post data from the content engine's
+      // maintenance scripts (sync-content-performance.mjs, detect-stale-
+      // content.mjs, and the indexnow/gsc status generate-post.mjs records
+      // at publish time). Nothing here is computed live in the dashboard;
+      // it's all previously-synced real data, kept fast to load.
+      blogPostDetails = await db.collection('blog_posts')
+        .find({})
+        .sort({ published_at: -1 })
+        .limit(20)
+        .project({ slug: 1, title: 1, pageviews_90d: 1, needs_refresh: 1, age_months: 1, indexnow_status: 1, gsc_indexing_status: 1, published_at: 1 })
+        .toArray();
     } catch (e) {
       console.error('[DiscoveryDashboard] Error fetching growth stats:', e);
     }
@@ -402,6 +415,44 @@ export default async function DiscoveryDashboard() {
         <StatCard icon={Search} label="SEO Pages Live" value={seoPagesCount} />
         <StatCard icon={BookOpen} label="Blog Posts" value={blogCount} />
         <StatCard icon={Activity} label="Comparisons" value={comparisonsCount} />
+      </div>
+
+      {/* ─── SECTION 4B: CONTENT INTELLIGENCE ─── */}
+      <SectionHeader title="Content Intelligence" />
+      <div className="border border-[#262626] bg-[#0a0a0a] rounded-xl overflow-hidden mb-10">
+        <table className="w-full text-left">
+          <thead>
+            <tr className="border-b border-[#262626]">
+              <th className="px-5 py-3 text-[11px] uppercase tracking-wider font-medium text-[#525252]">Post</th>
+              <th className="px-5 py-3 text-[11px] uppercase tracking-wider font-medium text-[#525252]">Views (90d)</th>
+              <th className="px-5 py-3 text-[11px] uppercase tracking-wider font-medium text-[#525252]">Age</th>
+              <th className="px-5 py-3 text-[11px] uppercase tracking-wider font-medium text-[#525252]">IndexNow</th>
+              <th className="px-5 py-3 text-[11px] uppercase tracking-wider font-medium text-[#525252]">Google Indexing</th>
+            </tr>
+          </thead>
+          <tbody>
+            {blogPostDetails.length === 0 ? (
+              <tr><td colSpan={5} className="px-5 py-8 text-center text-[13px] text-[#525252]">No blog posts yet.</td></tr>
+            ) : (
+              blogPostDetails.map((p) => (
+                <tr key={p.slug} className="border-b border-[#262626] last:border-0">
+                  <td className="px-5 py-3 text-[13px] text-[#ededed]">
+                    {p.title}
+                    {p.needs_refresh && <span className="ml-2 text-[10px] text-amber-400 uppercase tracking-wider">Needs refresh</span>}
+                  </td>
+                  <td className="px-5 py-3 text-[13px] text-[#a1a1aa] tabular-nums font-mono">{p.pageviews_90d ?? '—'}</td>
+                  <td className="px-5 py-3 text-[13px] text-[#a1a1aa]">{p.age_months != null ? `${p.age_months}mo` : '—'}</td>
+                  <td className="px-5 py-3 text-[13px]">
+                    <span className={p.indexnow_status === 'submitted' ? 'text-emerald-400' : 'text-[#525252]'}>{p.indexnow_status ?? 'not synced'}</span>
+                  </td>
+                  <td className="px-5 py-3 text-[13px]">
+                    <span className={p.gsc_indexing_status === 'submitted' ? 'text-emerald-400' : 'text-[#525252]'}>{p.gsc_indexing_status ?? 'not synced'}</span>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* ─── SECTION 5: KEYWORDS ─── */}
