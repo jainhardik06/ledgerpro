@@ -362,7 +362,7 @@ export default async function DiscoveryDashboard() {
       </div>
 
       {/* ─── SECTION 2: DIRECTORIES ─── */}
-      <SectionHeader title="Directory Tracking" />
+      <SectionHeader title="Directory Tracking" href="/super-admin/discovery/directories" />
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-10">
         <StatCard icon={Globe} label="Total Targets" value={totalTargets} />
         <StatCard icon={Clock} label="Pending" value={dirSubmitted} />
