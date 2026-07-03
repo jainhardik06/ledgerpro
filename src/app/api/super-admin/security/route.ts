@@ -20,6 +20,7 @@ export async function GET() {
         action: log.action,
         details: log.details,
         tenantId: log.tenantId,
+        ipAddress: log.ipAddress,
         timestamp: log.timestamp,
       }));
 

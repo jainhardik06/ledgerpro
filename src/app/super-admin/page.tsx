@@ -34,10 +34,22 @@ export default function SuperAdminOverview() {
           <p className="text-[13px] text-neutral-400">Platform-wide operational telemetry and analytics.</p>
         </div>
         <div className="flex items-center gap-4">
-           <div className="flex items-center gap-2 text-[12px] font-mono font-medium px-3 py-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 text-emerald-500">
-             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-             All Systems Nominal
-           </div>
+           {loading ? (
+             <div className="flex items-center gap-2 text-[12px] font-mono font-medium px-3 py-1.5 rounded-full border border-white/[0.05] bg-white/[0.02] text-neutral-500">
+               <div className="w-2 h-2 rounded-full bg-neutral-600 animate-pulse" />
+               Checking...
+             </div>
+           ) : (analytics?.failedLogins ?? 0) > 0 ? (
+             <div className="flex items-center gap-2 text-[12px] font-mono font-medium px-3 py-1.5 rounded-full border border-amber-500/20 bg-amber-500/10 text-amber-500">
+               <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+               {analytics.failedLogins} Anomal{analytics.failedLogins === 1 ? 'y' : 'ies'} Detected
+             </div>
+           ) : (
+             <div className="flex items-center gap-2 text-[12px] font-mono font-medium px-3 py-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 text-emerald-500">
+               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+               All Systems Nominal
+             </div>
+           )}
         </div>
       </div>
 
@@ -53,7 +65,6 @@ export default function SuperAdminOverview() {
             </div>
             <div>
               <div className="text-3xl font-semibold tracking-tight text-white mb-1 tabular-nums">{loading ? '--' : analytics?.totalTenants?.toLocaleString() || 0}</div>
-              <div className="text-[12px] text-emerald-500 font-medium">+12% this month</div>
             </div>
           </div>
 
@@ -65,7 +76,6 @@ export default function SuperAdminOverview() {
             </div>
             <div>
               <div className="text-3xl font-semibold tracking-tight text-white mb-1 tabular-nums">{loading ? '--' : analytics?.totalUsers?.toLocaleString() || 0}</div>
-              <div className="text-[12px] text-emerald-500 font-medium">+8% this month</div>
             </div>
           </div>
 
@@ -77,7 +87,6 @@ export default function SuperAdminOverview() {
             </div>
             <div>
               <div className="text-3xl font-semibold tracking-tight text-white mb-1 tabular-nums">{loading ? '--' : analytics?.totalTransactions?.toLocaleString() || 0}</div>
-              <div className="text-[12px] text-emerald-500 font-medium">+24% this month</div>
             </div>
           </div>
 

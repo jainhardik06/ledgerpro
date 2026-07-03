@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { CommandPalette } from '@/components/ui/CommandPalette';
 import { BrandMark } from '@/components/ui/BrandMark';
+import { BroadcastBanner } from '@/components/dashboard/BroadcastBanner';
 
 import { Menu, X } from 'lucide-react';
 
@@ -181,6 +182,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       
       <div className="flex-1 flex flex-col min-w-0">
         <TopBar onOpenMenu={() => setIsMobileMenuOpen(true)} />
+        <BroadcastBanner />
         <main className="flex-1 overflow-y-auto w-full">
           {children}
         </main>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { connectGrowthDb } from '@/lib/db';
 import { addSocialProfile, deleteSocialProfile } from '@/app/actions/social';
-import { Trash2, Plus, ExternalLink } from 'lucide-react';
+import { Trash2, Plus, ExternalLink, CheckCircle2 } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -114,6 +114,3 @@ export default async function SocialMetadataCRUD() {
     </div>
   );
 }
-
-// Temporary inline import until lucide-react is fully synced or handled by standard imports if CheckCircle2 missing
-import { CheckCircle2 } from 'lucide-react';

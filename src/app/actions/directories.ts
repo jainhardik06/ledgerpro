@@ -1,9 +1,18 @@
 'use server';
 
 import { connectGrowthDb } from '@/lib/db';
+import { getSessionUser } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 
+async function requireSuperAdmin() {
+  const session = await getSessionUser();
+  if (!session || session.role !== 'SUPER_ADMIN') {
+    throw new Error('Unauthorized');
+  }
+}
+
 export async function addDirectory(formData: FormData) {
+  await requireSuperAdmin();
   const { db } = await connectGrowthDb();
   if (!db) throw new Error('Growth Database not connected');
 
@@ -24,6 +33,7 @@ export async function addDirectory(formData: FormData) {
 
 /** Mark a directory as submitted — creates the tracked submission record the dashboard reads. */
 export async function markSubmitted(formData: FormData) {
+  await requireSuperAdmin();
   const { db } = await connectGrowthDb();
   if (!db) throw new Error('Growth Database not connected');
 
@@ -46,6 +56,7 @@ export async function markSubmitted(formData: FormData) {
 
 /** Approve a pending submission — optionally records the resulting backlink. */
 export async function approveSubmission(formData: FormData) {
+  await requireSuperAdmin();
   const { db } = await connectGrowthDb();
   if (!db) throw new Error('Growth Database not connected');
 
@@ -76,6 +87,7 @@ export async function approveSubmission(formData: FormData) {
 }
 
 export async function rejectSubmission(formData: FormData) {
+  await requireSuperAdmin();
   const { db } = await connectGrowthDb();
   if (!db) throw new Error('Growth Database not connected');
 
@@ -94,6 +106,7 @@ export async function rejectSubmission(formData: FormData) {
 }
 
 export async function deleteDirectory(name: string) {
+  await requireSuperAdmin();
   const { db } = await connectGrowthDb();
   if (!db) throw new Error('Growth Database not connected');
 

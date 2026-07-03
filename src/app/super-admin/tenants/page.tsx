@@ -9,6 +9,13 @@ export default function TenantsPage() {
   const [search, setSearch] = useState('');
   const [tenants, setTenants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const closeMenu = () => setOpenMenuId(null);
+    document.addEventListener('click', closeMenu);
+    return () => document.removeEventListener('click', closeMenu);
+  }, []);
 
   useEffect(() => {
     const fetchTenants = async () => {
@@ -41,6 +48,22 @@ export default function TenantsPage() {
       }
     } catch (e) {
       console.error("Failed to impersonate tenant", e);
+    }
+  };
+
+  const handleSetStatus = async (tenantId: string, status: 'ACTIVE' | 'SUSPENDED') => {
+    setOpenMenuId(null);
+    try {
+      const res = await fetch(`/api/super-admin/tenants/${tenantId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      if (res.ok) {
+        setTenants(prev => prev.map(t => t.id === tenantId ? { ...t, status } : t));
+      }
+    } catch (e) {
+      console.error('Failed to update tenant status', e);
     }
   };
 
@@ -110,13 +133,30 @@ export default function TenantsPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="relative flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                       <button onClick={() => handleImpersonate(tenant.id)} title="Impersonate Tenant" aria-label={`Impersonate ${tenant.name}`} className="p-1.5 hover:bg-white/[0.1] rounded text-neutral-400 hover:text-white transition-colors">
                         <UserSquare2 className="w-4 h-4" />
                       </button>
-                      <button aria-label={`More actions for ${tenant.name}`} className="p-1.5 hover:bg-white/[0.1] rounded text-neutral-400 hover:text-white transition-colors">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === tenant.id ? null : tenant.id); }}
+                        aria-label={`More actions for ${tenant.name}`}
+                        className="p-1.5 hover:bg-white/[0.1] rounded text-neutral-400 hover:text-white transition-colors"
+                      >
                         <MoreHorizontal className="w-4 h-4" />
                       </button>
+                      {openMenuId === tenant.id && (
+                        <div onClick={(e) => e.stopPropagation()} className="absolute right-0 top-8 z-20 w-40 rounded-md border border-white/[0.1] bg-[#0a0a0a] shadow-lg py-1">
+                          {tenant.status === 'ACTIVE' ? (
+                            <button onClick={() => handleSetStatus(tenant.id, 'SUSPENDED')} className="w-full text-left px-3 py-2 text-[12px] text-rose-400 hover:bg-white/[0.05]">
+                              Suspend Organization
+                            </button>
+                          ) : (
+                            <button onClick={() => handleSetStatus(tenant.id, 'ACTIVE')} className="w-full text-left px-3 py-2 text-[12px] text-emerald-400 hover:bg-white/[0.05]">
+                              Reactivate Organization
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </td>
                 </tr>

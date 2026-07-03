@@ -1,9 +1,18 @@
 'use server';
 
 import { connectGrowthDb } from '@/lib/db';
+import { getSessionUser } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 
+async function requireSuperAdmin() {
+  const session = await getSessionUser();
+  if (!session || session.role !== 'SUPER_ADMIN') {
+    throw new Error('Unauthorized');
+  }
+}
+
 export async function addSocialProfile(formData: FormData) {
+  await requireSuperAdmin();
   const { db } = await connectGrowthDb();
   if (!db) throw new Error('Growth Database not connected');
 
@@ -11,7 +20,7 @@ export async function addSocialProfile(formData: FormData) {
   const url = formData.get('url') as string;
   const username = formData.get('username') as string;
   const followersStr = formData.get('followers') as string;
-  
+
   const followers = parseInt(followersStr, 10) || 0;
   const verified = formData.get('verified') === 'on';
 
@@ -31,6 +40,7 @@ export async function addSocialProfile(formData: FormData) {
 }
 
 export async function deleteSocialProfile(platform: string) {
+  await requireSuperAdmin();
   const { db } = await connectGrowthDb();
   if (!db) throw new Error('Growth Database not connected');
 

@@ -19,13 +19,23 @@ export async function GET() {
       FREE: 0
     };
 
+    // ENTERPRISE_PRICE/STARTER_PRICE are Money OS's real published list prices —
+    // MRR here is a legitimate estimate (real active tenant counts x list price),
+    // not fabricated. There is no Stripe/billing integration in this codebase,
+    // so net retention and churn cannot be computed (both require historical
+    // subscription lifecycle events — upgrades, downgrades, cancellations —
+    // that nothing here tracks yet). Returning null rather than a placeholder
+    // number is intentional: the UI must show "not available", not fake data.
+    const ENTERPRISE_PRICE = 299;
+    const STARTER_PRICE = 49;
+
     tenants.forEach(t => {
       if (t.status === 'ACTIVE') {
         if (t.plan === 'ENTERPRISE') {
-           totalMrr += 299; // Mock price per enterprise
+           totalMrr += ENTERPRISE_PRICE;
            planCounts.ENTERPRISE++;
         } else if (t.plan === 'STARTER') {
-           totalMrr += 49;
+           totalMrr += STARTER_PRICE;
            planCounts.STARTER++;
         } else {
            planCounts.FREE++;
@@ -33,15 +43,14 @@ export async function GET() {
       }
     });
 
-    const netRetention = 104.2; // Derived metric placeholder
     const arpa = totalMrr / (planCounts.ENTERPRISE + planCounts.STARTER || 1);
-    const churnRate = 1.2;
 
     return NextResponse.json({
       mrr: totalMrr,
-      netRetention,
+      mrrIsEstimate: true,
+      netRetention: null,
       arpa: Math.round(arpa),
-      churnRate,
+      churnRate: null,
       planDistribution: planCounts
     });
   } catch (error) {

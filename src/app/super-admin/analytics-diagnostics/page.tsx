@@ -1,5 +1,5 @@
 import React from 'react';
-import { getUTMAcquisitionStats, connectDb } from '@/lib/db';
+import { getUTMAcquisitionStats, connectGrowthDb } from '@/lib/db';
 
 export const metadata = {
   title: 'Analytics Diagnostics | Money OS',
@@ -20,17 +20,18 @@ export default async function AnalyticsDiagnosticsPage() {
   const utmCapturedToday = Object.keys(utmStats.sources).length > 0 ? 
     Object.values(utmStats.sources).reduce((a, b) => a + b, 0) : 0;
 
-  // Get Bot Stats
+  // Get Bot Stats — real AI crawler telemetry lives in the Growth DB's
+  // crawler_visits collection (see src/app/api/internal/bot-track/route.ts),
+  // not the production `logs` collection.
   let gptVisits = 0;
   let claudeVisits = 0;
   let perplexityVisits = 0;
   try {
-    const { db } = await connectDb();
+    const { db } = await connectGrowthDb();
     if (db) {
-      const bots = await db.collection('logs').find({ action: 'BOT_CRAWL' }).toArray();
-      gptVisits = bots.filter(b => b.details?.includes('GPTBot')).length;
-      claudeVisits = bots.filter(b => b.details?.includes('ClaudeBot')).length;
-      perplexityVisits = bots.filter(b => b.details?.includes('PerplexityBot')).length;
+      gptVisits = await db.collection('crawler_visits').countDocuments({ botFamily: 'GPTBot' });
+      claudeVisits = await db.collection('crawler_visits').countDocuments({ botFamily: 'Claude' });
+      perplexityVisits = await db.collection('crawler_visits').countDocuments({ botFamily: 'Perplexity' });
     }
   } catch (e) {
     console.error('Failed to fetch bot logs');

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { DollarSign, TrendingUp, TrendingDown, Users, Activity } from 'lucide-react';
 
 export default function RevenuePage() {
   const [data, setData] = useState<any>(null);
@@ -48,9 +47,8 @@ export default function RevenuePage() {
           <div className="relative z-10 flex flex-col items-center">
             <span className="text-[13px] font-medium uppercase tracking-widest text-neutral-400 mb-2">Total Monthly Recurring Revenue</span>
             <div className="text-6xl font-bold tracking-tighter text-white tabular-nums">${data?.mrr?.toLocaleString() || 0}</div>
-            <div className="flex items-center gap-2 mt-4 text-[14px]">
-              <span className="flex items-center gap-1 text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded font-medium"><TrendingUp className="w-4 h-4" /> +14.2%</span>
-              <span className="text-neutral-500">vs last month</span>
+            <div className="flex items-center gap-2 mt-4 text-[12px] text-neutral-500">
+              Estimated from active tenant plan tiers x list price — no billing integration configured
             </div>
           </div>
         </div>
@@ -59,8 +57,8 @@ export default function RevenuePage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="p-5 rounded-xl border border-white/[0.05] bg-[#0a0a0a] flex flex-col">
             <span className="text-[12px] font-medium uppercase tracking-widest text-neutral-500 mb-4">Net Retention</span>
-            <div className="text-3xl font-semibold text-white tracking-tight tabular-nums mb-1">{data?.netRetention || 0}%</div>
-            <p className="text-[12px] text-neutral-400">Expansion outpaces churn by +4.2%</p>
+            <div className="text-3xl font-semibold text-white tracking-tight tabular-nums mb-1">{data?.netRetention != null ? `${data.netRetention}%` : 'N/A'}</div>
+            <p className="text-[12px] text-neutral-500">Requires subscription lifecycle tracking (not yet implemented)</p>
           </div>
           <div className="p-5 rounded-xl border border-white/[0.05] bg-[#0a0a0a] flex flex-col">
             <span className="text-[12px] font-medium uppercase tracking-widest text-neutral-500 mb-4">Avg Rev Per Account</span>
@@ -69,8 +67,8 @@ export default function RevenuePage() {
           </div>
           <div className="p-5 rounded-xl border border-white/[0.05] bg-[#0a0a0a] flex flex-col">
             <span className="text-[12px] font-medium uppercase tracking-widest text-neutral-500 mb-4">Logo Churn Rate</span>
-            <div className="text-3xl font-semibold text-white tracking-tight tabular-nums mb-1">{data?.churnRate || 0}%</div>
-            <p className="text-[12px] text-emerald-500">Below industry standard of 2.5%</p>
+            <div className="text-3xl font-semibold text-white tracking-tight tabular-nums mb-1">{data?.churnRate != null ? `${data.churnRate}%` : 'N/A'}</div>
+            <p className="text-[12px] text-neutral-500">Requires subscription lifecycle tracking (not yet implemented)</p>
           </div>
         </div>
 

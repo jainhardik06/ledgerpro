@@ -27,6 +27,27 @@ export default function AuditPage() {
 
   const filteredAudits = audits.filter(a => a.action.toLowerCase().includes(search.toLowerCase()) || a.username.toLowerCase().includes(search.toLowerCase()));
 
+  const exportCsv = () => {
+    const header = ['Timestamp', 'Action', 'Actor', 'Target ID', 'Details'];
+    const rows = filteredAudits.map(a => [
+      new Date(a.timestamp).toISOString(),
+      a.action,
+      a.username,
+      a.tenantId || 'GLOBAL',
+      a.details,
+    ]);
+    const csv = [header, ...rows]
+      .map(row => row.map(cell => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `audit-log-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="flex flex-col h-[calc(100vh-56px)] animate-in fade-in duration-500">
       
@@ -47,7 +68,7 @@ export default function AuditPage() {
               className="h-9 w-64 bg-[#0a0a0a] border border-white/[0.1] rounded-md pl-9 pr-3 text-[13px] text-white focus:border-white/[0.2] outline-none"
             />
           </div>
-          <button className="h-9 px-3 border border-white/[0.1] bg-[#0a0a0a] rounded-md flex items-center gap-2 text-[13px] font-medium text-white hover:bg-white/[0.05] transition-colors">
+          <button onClick={exportCsv} disabled={filteredAudits.length === 0} className="h-9 px-3 border border-white/[0.1] bg-[#0a0a0a] rounded-md flex items-center gap-2 text-[13px] font-medium text-white hover:bg-white/[0.05] transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
             <Download className="w-4 h-4 text-neutral-400" /> Export CSV
           </button>
         </div>

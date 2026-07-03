@@ -52,16 +52,22 @@ export default function SecurityPage() {
          <div className="rounded-xl border border-white/[0.05] bg-[#0a0a0a] p-5 flex flex-col justify-between h-48">
            <div>
              <div className="text-[12px] font-medium text-neutral-500 uppercase tracking-widest mb-1">Threat Level</div>
-             <div className="text-2xl font-semibold tracking-tight text-emerald-500">NOMINAL</div>
+             {(() => {
+               const count = data?.failedLogins?.length || 0;
+               const level = count === 0 ? { label: 'NOMINAL', color: 'text-emerald-500' }
+                 : count < 10 ? { label: 'GUARDED', color: 'text-amber-500' }
+                 : { label: 'ELEVATED', color: 'text-rose-500' };
+               return <div className={`text-2xl font-semibold tracking-tight ${level.color}`}>{loading ? '--' : level.label}</div>;
+             })()}
            </div>
            <div>
              <div className="flex justify-between text-[12px] text-neutral-400 mb-1">
-               <span>Failed Logins</span>
+               <span>Failed Logins (last 100 events)</span>
                <span className="font-mono text-white">{data?.failedLogins?.length || 0}</span>
              </div>
              <div className="flex justify-between text-[12px] text-neutral-400">
-               <span>Blocked IPs</span>
-               <span className="font-mono text-white">0</span>
+               <span>Unique Source IPs</span>
+               <span className="font-mono text-white">{new Set((data?.failedLogins || []).map((l: any) => l.ipAddress).filter(Boolean)).size}</span>
              </div>
            </div>
          </div>

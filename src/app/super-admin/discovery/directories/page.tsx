@@ -55,9 +55,9 @@ export default async function DirectoriesCRM() {
               </div>
               <div>
                 <label className="block text-[11px] uppercase tracking-wider font-medium text-[#525252] mb-1">Tier</label>
-                <select name="tier" className="w-full h-9 px-3 text-[13px] rounded-md border border-[#262626] bg-[#000000] text-[#ededed] focus:ring-1 focus:ring-[#ededed] focus:outline-none">
+                <select name="tier" defaultValue="2" className="w-full h-9 px-3 text-[13px] rounded-md border border-[#262626] bg-[#000000] text-[#ededed] focus:ring-1 focus:ring-[#ededed] focus:outline-none">
                   <option value="1">Tier 1</option>
-                  <option value="2" selected>Tier 2</option>
+                  <option value="2">Tier 2</option>
                 </select>
               </div>
               <button type="submit" className="mt-4 w-full bg-[#ededed] text-black rounded-md px-4 py-2 text-[13px] font-medium hover:bg-white transition-colors flex items-center justify-center gap-2">

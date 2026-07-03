@@ -7,6 +7,7 @@ export default function UsersPage() {
   const [search, setSearch] = useState('');
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -25,7 +26,29 @@ export default function UsersPage() {
     fetchUsers();
   }, []);
 
+  useEffect(() => {
+    const closeMenu = () => setOpenMenuId(null);
+    document.addEventListener('click', closeMenu);
+    return () => document.removeEventListener('click', closeMenu);
+  }, []);
+
   const filteredUsers = users.filter(u => u.username.toLowerCase().includes(search.toLowerCase()) || u.id.toLowerCase().includes(search.toLowerCase()));
+
+  const handleSetStatus = async (userId: string, status: 'ACTIVE' | 'SUSPENDED') => {
+    setOpenMenuId(null);
+    try {
+      const res = await fetch('/api/super-admin/users', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: userId, status }),
+      });
+      if (res.ok) {
+        setUsers(prev => prev.map(u => u.id === userId ? { ...u, status } : u));
+      }
+    } catch (e) {
+      console.error('Failed to update user status', e);
+    }
+  };
 
   return (
     <div className="flex flex-col h-[calc(100vh-56px)] animate-in fade-in duration-500">
@@ -102,9 +125,27 @@ export default function UsersPage() {
                      </span>
                    </td>
                    <td className="px-6 py-4 text-right">
-                     <button className="p-1.5 hover:bg-white/[0.1] rounded text-neutral-400 hover:text-white transition-colors opacity-0 group-hover:opacity-100">
-                       <MoreHorizontal className="w-4 h-4" />
-                     </button>
+                     <div className="relative inline-block">
+                       <button
+                         onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === user.id ? null : user.id); }}
+                         className="p-1.5 hover:bg-white/[0.1] rounded text-neutral-400 hover:text-white transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                       >
+                         <MoreHorizontal className="w-4 h-4" />
+                       </button>
+                       {openMenuId === user.id && (
+                         <div onClick={(e) => e.stopPropagation()} className="absolute right-0 top-8 z-20 w-40 rounded-md border border-white/[0.1] bg-[#0a0a0a] shadow-lg py-1">
+                           {user.status === 'ACTIVE' ? (
+                             <button onClick={() => handleSetStatus(user.id, 'SUSPENDED')} className="w-full text-left px-3 py-2 text-[12px] text-rose-400 hover:bg-white/[0.05]">
+                               Suspend User
+                             </button>
+                           ) : (
+                             <button onClick={() => handleSetStatus(user.id, 'ACTIVE')} className="w-full text-left px-3 py-2 text-[12px] text-emerald-400 hover:bg-white/[0.05]">
+                               Reactivate User
+                             </button>
+                           )}
+                         </div>
+                       )}
+                     </div>
                    </td>
                  </tr>
                ))
