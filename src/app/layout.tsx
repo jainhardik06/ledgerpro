@@ -1,9 +1,10 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { PostHogProvider } from "@/components/analytics/posthog-provider";
 import ClientInitialization from "@/components/ClientInitialization";
+import { PwaProvider } from "@/components/pwa-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,6 +30,15 @@ export const metadata: Metadata = {
       "msvalidate.01": "F614BC6EF94226D68CEEFCFD3ED65C36",
     },
   },
+  appleWebApp: {
+    title: "LedgerPro",
+    statusBarStyle: "black-translucent",
+    capable: true,
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0a0a0a",
 };
 
 export default function RootLayout({
@@ -42,9 +52,11 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <ClientInitialization />
-        <PostHogProvider>{children}</PostHogProvider>
-        <GoogleAnalytics gaId="G-JZ0LD0YTJE" />
+        <PwaProvider>
+          <ClientInitialization />
+          <PostHogProvider>{children}</PostHogProvider>
+          <GoogleAnalytics gaId="G-JZ0LD0YTJE" />
+        </PwaProvider>
       </body>
     </html>
   );

@@ -10,6 +10,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Logo } from '@/components/ui/Logo';
 import { CommandPalette } from '@/components/ui/CommandPalette';
+import { usePwaInstall } from '@/hooks/usePwaInstall';
 
 const FEATURES = [
   { name: 'Expense Tracking', desc: 'Real-time ledger entry and flow tracking.', path: '/features/expense-tracking', icon: Activity },
@@ -47,6 +48,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
   const [expandedAccordion, setExpandedAccordion] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const { isInstallable, promptInstall } = usePwaInstall();
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -334,6 +336,16 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
 
           {/* Auth Actions in Drawer Footer */}
           <div className="mt-8 pt-6 border-t border-white/[0.05] flex flex-col gap-4 shrink-0">
+            <Button 
+              variant="outline"
+              className="w-full border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300 font-semibold h-11"
+              onClick={() => {
+                promptInstall();
+                setMobileMenuOpen(false);
+              }}
+            >
+              Download App
+            </Button>
             {loading ? (
               <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto" />
             ) : user ? (
@@ -399,6 +411,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
               <li><Link href="/support" className="hover:text-white transition-colors focus:outline-none focus-visible:underline rounded">Support Center</Link></li>
               <li><Link href="/docs" className="hover:text-white transition-colors focus:outline-none focus-visible:underline rounded">Documentation</Link></li>
               <li><Link href="/blog" className="hover:text-white transition-colors focus:outline-none focus-visible:underline rounded">Blog</Link></li>
+              <li><button onClick={promptInstall} className="hover:text-white transition-colors focus:outline-none focus-visible:underline rounded text-left">Download App</button></li>
             </ul>
           </div>
 

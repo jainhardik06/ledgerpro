@@ -11,12 +11,14 @@ import {
 import { CommandPalette } from '@/components/ui/CommandPalette';
 import { BrandMark } from '@/components/ui/BrandMark';
 import { BroadcastBanner } from '@/components/dashboard/BroadcastBanner';
+import { usePwaInstall } from '@/hooks/usePwaInstall';
 
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Download } from 'lucide-react';
 
 function Sidebar({ isMobile, isOpen, onClose }: { isMobile?: boolean; isOpen?: boolean; onClose?: () => void }) {
   const pathname = usePathname();
   const { user, tenant } = useDashboardContext();
+  const { isInstallable, promptInstall } = usePwaInstall();
   
   const appMode = tenant?.appMode || 'Standard';
   const clientTerm = appMode === 'Student_Club' ? 'Sponsors' : 'Clients';
@@ -95,6 +97,12 @@ function Sidebar({ isMobile, isOpen, onClose }: { isMobile?: boolean; isOpen?: b
 
       {/* User Profile / Logout */}
       <div className="p-3 border-t border-white/[0.05] shrink-0">
+        {isMobile && isInstallable && (
+          <button aria-label="Download App" className="flex items-center gap-2.5 w-full px-3 py-2 mb-2 rounded-lg text-[13.5px] font-medium text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 hover:text-emerald-300 transition-colors" onClick={() => { onClose?.(); promptInstall(); }}>
+            <Download className="w-4 h-4" />
+            <span className="flex-1 text-left">Download App</span>
+          </button>
+        )}
         <button aria-label="Open command palette" className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-[13.5px] font-medium text-neutral-400 hover:text-white hover:bg-white/[0.04] transition-colors" onClick={() => { onClose?.(); window.dispatchEvent(new Event('open-command-palette')); }}>
            <Search className="w-4 h-4 text-neutral-500" />
            <span className="flex-1 text-left">Command Palette</span>
