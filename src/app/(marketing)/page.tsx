@@ -75,17 +75,91 @@ export default function MarketingHome() {
               ))}
             </ul>
           </div>
-          <div className="relative">
-            {/* Abstract UI representation */}
-            <div className="w-full aspect-square rounded-2xl border border-white/[0.1] bg-[#0a0a0a] p-8 shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent opacity-50" />
-              <div className="space-y-4">
-                <div className="w-1/3 h-4 rounded bg-white/[0.05]" />
-                <div className="w-full h-24 rounded-lg bg-white/[0.02] border border-white/[0.05]" />
-                <div className="w-full h-12 rounded-lg bg-white/[0.02] border border-white/[0.05]" />
-                <div className="w-full h-12 rounded-lg bg-white/[0.02] border border-white/[0.05]" />
+          <div className="relative group lg:ml-10">
+            {/* Elegant Dashboard Mockup */}
+            <div className="w-full rounded-2xl border border-white/[0.08] bg-[#050505] shadow-[0_0_40px_rgba(0,0,0,0.5)] overflow-hidden transform transition-all duration-500 hover:scale-[1.02] hover:border-white/[0.12] hover:shadow-[0_0_60px_rgba(16,185,129,0.05)]">
+              {/* Header */}
+              <div className="flex items-center justify-between p-5 border-b border-white/[0.05] bg-white/[0.01]">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+                    <LineChart className="w-4 h-4 text-emerald-400" />
+                  </div>
+                  <div>
+                    <div className="text-[13px] font-medium text-white">Net Position</div>
+                    <div className="text-[11px] text-neutral-500 font-mono">Real-time sync active</div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-lg font-semibold text-white tracking-tight font-mono">$124,500.00</div>
+                  <div className="text-[12px] text-emerald-400 flex items-center gap-1 justify-end font-medium">
+                    <ArrowRight className="w-3 h-3 -rotate-45" /> +2.4%
+                  </div>
+                </div>
               </div>
+
+              {/* Transactions List */}
+              <div className="p-5 pb-8 space-y-2">
+                <div className="text-[11px] font-medium text-neutral-500 uppercase tracking-widest mb-3">Recent Activity</div>
+                
+                {/* Transaction Item 1 */}
+                <div className="flex items-center justify-between p-3 rounded-xl hover:bg-white/[0.02] transition-colors border border-transparent hover:border-white/[0.05] cursor-default group/item">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-white/[0.03] flex items-center justify-center border border-white/[0.05] group-hover/item:border-white/[0.1] transition-colors">
+                      <Zap className="w-4 h-4 text-neutral-400" />
+                    </div>
+                    <div>
+                      <div className="text-[13px] font-medium text-neutral-200">AWS Server Hosting</div>
+                      <div className="text-[11px] text-neutral-500">Infrastructure</div>
+                    </div>
+                  </div>
+                  <div className="text-[13px] font-medium text-neutral-300 font-mono">
+                    -$1,240.50
+                  </div>
+                </div>
+
+                {/* Transaction Item 2 */}
+                <div className="flex items-center justify-between p-3 rounded-xl hover:bg-white/[0.02] transition-colors border border-transparent hover:border-white/[0.05] cursor-default group/item">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 group-hover/item:border-emerald-500/30 transition-colors">
+                      <ArrowRight className="w-4 h-4 text-emerald-400 rotate-45" />
+                    </div>
+                    <div>
+                      <div className="text-[13px] font-medium text-neutral-200">Stripe Payout</div>
+                      <div className="text-[11px] text-neutral-500">Revenue</div>
+                    </div>
+                  </div>
+                  <div className="text-[13px] font-medium text-emerald-400 font-mono">
+                    +$8,450.00
+                  </div>
+                </div>
+
+                {/* Transaction Item 3 */}
+                <div className="flex items-center justify-between p-3 rounded-xl hover:bg-white/[0.02] transition-colors border border-transparent hover:border-white/[0.05] cursor-default group/item">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-white/[0.03] flex items-center justify-center border border-white/[0.05] group-hover/item:border-white/[0.1] transition-colors">
+                      <Users className="w-4 h-4 text-neutral-400" />
+                    </div>
+                    <div>
+                      <div className="text-[13px] font-medium text-neutral-200">Gusto Payroll</div>
+                      <div className="text-[11px] text-neutral-500">Operations</div>
+                    </div>
+                  </div>
+                  <div className="text-[13px] font-medium text-neutral-300 font-mono">
+                    -$4,200.00
+                  </div>
+                </div>
+              </div>
+
+              {/* Faded bottom for visual effect */}
+              <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#050505] to-transparent pointer-events-none" />
+              
+              {/* Subtle top glow */}
+              <div className="absolute top-0 left-1/4 right-1/4 h-[1px] bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent" />
             </div>
+            
+            {/* Background ambient glows */}
+            <div className="absolute -right-12 top-10 w-48 h-48 bg-emerald-500/5 rounded-full blur-3xl -z-10" />
+            <div className="absolute -left-12 bottom-10 w-48 h-48 bg-neutral-500/5 rounded-full blur-3xl -z-10" />
           </div>
         </div>
       </section>

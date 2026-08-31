@@ -163,7 +163,7 @@ function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
             <Search className="w-4 h-4 sm:hidden" />
             <Plus className="w-4 h-4 hidden sm:block" />
          </button>
-         <button onClick={logout} className="ml-1 sm:ml-2 px-3 py-1.5 rounded bg-white text-black text-[12px] font-semibold hover:bg-neutral-200 transition-colors">
+         <button id="logout-btn" onClick={logout} className="ml-1 sm:ml-2 px-3 py-1.5 rounded bg-white text-black text-[12px] font-semibold hover:bg-neutral-200 transition-colors">
            <span className="hidden sm:inline">{user?.impersonatedBy ? 'Exit Impersonation' : 'Log out'}</span>
            <span className="sm:hidden">{user?.impersonatedBy ? 'Exit' : 'Log out'}</span>
          </button>

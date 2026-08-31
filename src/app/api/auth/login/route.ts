@@ -26,7 +26,11 @@ async function setSessionCookie(token: string) {
 }
 
 function requireSuperAdminHash(): string | null {
-  const hash = process.env.SUPER_ADMIN_PASSWORD_HASH;
+  let hash = process.env.SUPER_ADMIN_PASSWORD_HASH;
+  if (hash) {
+    hash = hash.replace(/^['"]|['"]$/g, '');
+    hash = hash.replace(/\\/g, '');
+  }
   if (!hash) {
     if (process.env.NODE_ENV === 'production') {
       throw new Error('SUPER_ADMIN_PASSWORD_HASH must be set in production');

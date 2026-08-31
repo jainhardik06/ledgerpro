@@ -1,0 +1,25 @@
+url: "http://localhost:3000/login"
+env:
+  USERNAME: "user@example.com"
+  PASSWORD: "password"
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    file: ../subflows/login.yaml
+    env:
+      USERNAME: ${USERNAME}
+      PASSWORD: ${PASSWORD}
+- tapOn: "Transactions"
+- assertVisible: "Transactions"
+- tapOn: "New Record"
+- assertVisible: "New Transaction"
+- tapOn:
+    id: "tx-amount"
+- inputText: "1500"
+- tapOn:
+    id: "tx-desc"
+- inputText: "Server Hosting"
+- tapOn:
+    id: "tx-save-btn"
+- assertVisible: "Server Hosting"

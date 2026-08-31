@@ -1,0 +1,7 @@
+url: "http://localhost:3000"
+---
+- tapOn:
+    id: "logout-btn"
+- extendedWaitUntil:
+    visible: "Welcome back"
+    timeout: 10000

@@ -451,13 +451,13 @@ export default function TransactionsPage() {
              </div>
 
              <div>
-               <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">Amount (₹)</label>
-               <input type="number" value={txAmount} onChange={e=>setTxAmount(e.target.value)} required min="0" step="0.01" className="w-full h-12 bg-transparent border-b border-white/[0.1] text-3xl font-semibold text-white focus:border-emerald-500 outline-none tabular-nums" placeholder="0.00" />
+               <label htmlFor="tx-amount" className="block text-[12px] font-medium text-neutral-400 mb-1.5">Amount (₹)</label>
+               <input id="tx-amount" type="number" value={txAmount} onChange={e=>setTxAmount(e.target.value)} required min="0" step="0.01" className="w-full h-12 bg-transparent border-b border-white/[0.1] text-3xl font-semibold text-white focus:border-emerald-500 outline-none tabular-nums" placeholder="0.00" />
              </div>
 
              <div>
-               <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">Description</label>
-               <input type="text" value={txDesc} onChange={e=>setTxDesc(e.target.value)} required className="w-full h-9 bg-transparent border-b border-white/[0.1] text-[14px] text-white focus:border-emerald-500 outline-none placeholder:text-neutral-700" placeholder="e.g. Server Hosting" />
+               <label htmlFor="tx-desc" className="block text-[12px] font-medium text-neutral-400 mb-1.5">Description</label>
+               <input id="tx-desc" type="text" value={txDesc} onChange={e=>setTxDesc(e.target.value)} required className="w-full h-9 bg-transparent border-b border-white/[0.1] text-[14px] text-white focus:border-emerald-500 outline-none placeholder:text-neutral-700" placeholder="e.g. Server Hosting" />
              </div>
 
              <div className="grid grid-cols-2 gap-4">
@@ -502,7 +502,7 @@ export default function TransactionsPage() {
              ) : <div />}
              <div className="flex items-center gap-3">
                <button type="button" onClick={() => setIsDrawerOpen(false)} className="px-4 py-2 text-[13px] font-medium text-neutral-400 hover:text-white transition-colors">Cancel</button>
-               <button type="submit" disabled={saving} className="px-4 py-2 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 transition-colors disabled:opacity-50">
+               <button id="tx-save-btn" type="submit" disabled={saving} className="px-4 py-2 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 transition-colors disabled:opacity-50">
                  {saving ? 'Saving...' : 'Save Record'}
                </button>
              </div>

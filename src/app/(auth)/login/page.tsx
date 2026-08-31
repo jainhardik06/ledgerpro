@@ -53,6 +53,7 @@ export default function LoginPage() {
         <div>
           <label className="block text-[13px] font-medium mb-1.5 text-neutral-300">Username</label>
           <Input 
+            id="login-username"
             type="text" 
             value={username} 
             onChange={e => setUsername(e.target.value)} 
@@ -70,6 +71,7 @@ export default function LoginPage() {
             </Link>
           </div>
           <Input 
+            id="login-password"
             type="password" 
             value={password} 
             onChange={e => setPassword(e.target.value)} 
@@ -80,6 +82,7 @@ export default function LoginPage() {
         </div>
         
         <Button 
+          id="login-submit"
           type="submit" 
           disabled={loading || !username || !password} 
           className="w-full h-12 bg-white text-black hover:bg-neutral-200 text-[15px] font-medium mt-4 group"
