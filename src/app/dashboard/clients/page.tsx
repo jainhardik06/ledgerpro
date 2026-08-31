@@ -88,7 +88,7 @@ export default function ClientsPage() {
           <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-white mb-1">{clientTerm}s Directory</h1>
           <p className="text-[12px] sm:text-[13px] text-neutral-400">Manage relationships and track historical revenue per entity.</p>
         </div>
-        <button onClick={openNew} className="h-9 px-4 shrink-0 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 flex items-center justify-center gap-2">
+        <button id="add-client-btn" onClick={openNew} className="h-9 px-4 shrink-0 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 flex items-center justify-center gap-2">
           <Plus className="w-4 h-4" /> Add {clientTerm}
         </button>
       </div>
@@ -130,13 +130,13 @@ export default function ClientsPage() {
         <form onSubmit={handleSave} className="space-y-6 flex flex-col h-full">
            <div className="space-y-5 flex-1">
              <div>
-               <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">Legal Name / Entity</label>
-               <input type="text" value={cName} onChange={e=>setCName(e.target.value)} required className="w-full h-9 bg-transparent border-b border-white/[0.1] text-[14px] text-white focus:border-emerald-500 outline-none" placeholder="e.g. Acme Corp" />
+               <label htmlFor="cli-name" className="block text-[12px] font-medium text-neutral-400 mb-1.5">Legal Name / Entity</label>
+               <input id="cli-name" type="text" value={cName} onChange={e=>setCName(e.target.value)} required className="w-full h-9 bg-transparent border-b border-white/[0.1] text-[14px] text-white focus:border-emerald-500 outline-none" placeholder="e.g. Acme Corp" />
              </div>
 
              <div>
-               <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">Primary Email</label>
-               <input type="email" value={cEmail} onChange={e=>setCEmail(e.target.value)} className="w-full h-9 bg-white/[0.02] border border-white/[0.05] rounded-md px-3 text-[13px] text-white focus:border-white/[0.2] outline-none" placeholder="billing@acmecorp.com" />
+               <label htmlFor="cli-email" className="block text-[12px] font-medium text-neutral-400 mb-1.5">Primary Email</label>
+               <input id="cli-email" type="email" value={cEmail} onChange={e=>setCEmail(e.target.value)} className="w-full h-9 bg-white/[0.02] border border-white/[0.05] rounded-md px-3 text-[13px] text-white focus:border-white/[0.2] outline-none" placeholder="billing@acmecorp.com" />
              </div>
            </div>
 
@@ -146,7 +146,7 @@ export default function ClientsPage() {
              ) : <div />}
              <div className="flex items-center gap-3">
                <button type="button" onClick={() => setIsDrawerOpen(false)} className="px-4 py-2 text-[13px] font-medium text-neutral-400 hover:text-white transition-colors">Cancel</button>
-               <button type="submit" disabled={saving} className="px-4 py-2 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 transition-colors disabled:opacity-50">
+               <button id="cli-save-btn" type="submit" disabled={saving} className="px-4 py-2 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 transition-colors disabled:opacity-50">
                  {saving ? 'Saving...' : 'Save Record'}
                </button>
              </div>

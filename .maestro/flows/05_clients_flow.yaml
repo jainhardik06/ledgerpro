@@ -1,0 +1,23 @@
+url: "http://localhost:3000/login"
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    file: ../subflows/login.yaml
+    env:
+      USERNAME: "user@example.com"
+      PASSWORD: "password"
+- tapOn: "Clients"
+- assertVisible: "Clients Directory"
+- tapOn:
+    id: "add-client-btn"
+- assertVisible: "Add Client"
+- tapOn:
+    id: "cli-name"
+- inputText: "Test Client LLC"
+- tapOn:
+    id: "cli-email"
+- inputText: "billing@testclient.com"
+- tapOn:
+    id: "cli-save-btn"
+- assertVisible: "Test Client LLC"

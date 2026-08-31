@@ -1,0 +1,26 @@
+url: "http://localhost:3000/login"
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    file: ../subflows/login.yaml
+    env:
+      USERNAME: "user@example.com"
+      PASSWORD: "password"
+- tapOn: "Accounts"
+- assertVisible: "Financial Infrastructure"
+- tapOn:
+    id: "add-account-btn"
+- assertVisible: "Add Account"
+- tapOn:
+    id: "acc-name"
+- inputText: "Test Savings Account"
+- tapOn:
+    id: "acc-type"
+- tapOn: "Savings"
+- tapOn:
+    id: "acc-balance"
+- inputText: "5000"
+- tapOn:
+    id: "acc-save-btn"
+- assertVisible: "Test Savings Account"

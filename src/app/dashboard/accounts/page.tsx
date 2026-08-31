@@ -105,7 +105,7 @@ export default function AccountsPage() {
           <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-white mb-1">Financial Infrastructure</h1>
           <p className="text-[12px] sm:text-[13px] text-neutral-400">Manage bank accounts, wallets, and cash reserves.</p>
         </div>
-        <button onClick={openNew} className="h-9 px-4 shrink-0 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 flex items-center justify-center gap-2">
+        <button id="add-account-btn" onClick={openNew} className="h-9 px-4 shrink-0 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 flex items-center justify-center gap-2">
           <Plus className="w-4 h-4" /> Add Account
         </button>
       </div>
@@ -154,13 +154,13 @@ export default function AccountsPage() {
         <form onSubmit={handleSave} className="space-y-6 flex flex-col h-full">
            <div className="space-y-5 flex-1">
              <div>
-               <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">Account Name</label>
-               <input type="text" value={accName} onChange={e=>setAccName(e.target.value)} required className="w-full h-9 bg-transparent border-b border-white/[0.1] text-[14px] text-white focus:border-emerald-500 outline-none" placeholder="e.g. Chase Business Checking" />
+               <label htmlFor="acc-name" className="block text-[12px] font-medium text-neutral-400 mb-1.5">Account Name</label>
+               <input id="acc-name" type="text" value={accName} onChange={e=>setAccName(e.target.value)} required className="w-full h-9 bg-transparent border-b border-white/[0.1] text-[14px] text-white focus:border-emerald-500 outline-none" placeholder="e.g. Chase Business Checking" />
              </div>
 
              <div>
-               <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">Account Type</label>
-               <select value={accType} onChange={e=>setAccType(e.target.value)} className="w-full h-9 bg-white/[0.02] border border-white/[0.05] rounded-md px-2 text-[13px] text-white focus:border-white/[0.2] outline-none [&>option]:bg-[#000000]">
+               <label htmlFor="acc-type" className="block text-[12px] font-medium text-neutral-400 mb-1.5">Account Type</label>
+               <select id="acc-type" value={accType} onChange={e=>setAccType(e.target.value)} className="w-full h-9 bg-white/[0.02] border border-white/[0.05] rounded-md px-2 text-[13px] text-white focus:border-white/[0.2] outline-none [&>option]:bg-[#000000]">
                  <option value="Checking">Checking</option>
                  <option value="Savings">Savings</option>
                  <option value="Credit Card">Credit Card</option>
@@ -170,8 +170,8 @@ export default function AccountsPage() {
              </div>
 
              <div>
-               <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">Initial Balance (₹)</label>
-               <input type="number" value={accBalance} onChange={e=>setAccBalance(e.target.value)} required step="0.01" className="w-full h-9 bg-white/[0.02] border border-white/[0.05] rounded-md px-3 text-[13px] text-white focus:border-white/[0.2] outline-none tabular-nums" />
+               <label htmlFor="acc-balance" className="block text-[12px] font-medium text-neutral-400 mb-1.5">Initial Balance (₹)</label>
+               <input id="acc-balance" type="number" value={accBalance} onChange={e=>setAccBalance(e.target.value)} required step="0.01" className="w-full h-9 bg-white/[0.02] border border-white/[0.05] rounded-md px-3 text-[13px] text-white focus:border-white/[0.2] outline-none tabular-nums" />
                <p className="text-[11px] text-neutral-500 mt-1.5">The balance of the account before any transactions are recorded.</p>
              </div>
            </div>
@@ -182,7 +182,7 @@ export default function AccountsPage() {
              ) : <div />}
              <div className="flex items-center gap-3">
                <button type="button" onClick={() => setIsDrawerOpen(false)} className="px-4 py-2 text-[13px] font-medium text-neutral-400 hover:text-white transition-colors">Cancel</button>
-               <button type="submit" disabled={saving} className="px-4 py-2 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 transition-colors disabled:opacity-50">
+               <button id="acc-save-btn" type="submit" disabled={saving} className="px-4 py-2 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 transition-colors disabled:opacity-50">
                  {saving ? 'Saving...' : 'Save Account'}
                </button>
              </div>
