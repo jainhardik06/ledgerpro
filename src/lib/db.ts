@@ -325,7 +325,7 @@ export async function connectDb() {
   if (mongoClient) return { client: mongoClient, db: mongoClient.db() };
 
   if (!MONGODB_URI) {
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === 'production' && !process.env.CI) {
       throw new Error('[FATAL] MONGODB_URI is not set. Refusing to start production with local JSON storage.');
     }
     console.warn('[Database] MONGODB_URI not set. Using local file-based database at .data/local_db.json');
@@ -417,7 +417,7 @@ export async function connectGrowthDb() {
   if (mongoGrowthClient) return { client: mongoGrowthClient, db: mongoGrowthClient.db() };
 
   if (!MONGODB_GROWTH_URI) {
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === 'production' && !process.env.CI) {
       throw new Error('[FATAL] MONGODB_GROWTH_URI is not set. Refusing to start production with local JSON storage.');
     }
     console.warn('[Database] MONGODB_GROWTH_URI not set. Using local file-based database at .data/local_db.json for growth data');

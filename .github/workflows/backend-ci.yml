@@ -29,9 +29,23 @@ jobs:
 
       - name: Run Build
         run: npm run build
+        env:
+          NEXT_PUBLIC_APP_URL: "http://localhost:3000"
 
       - name: Run API Tests (Bruno)
-        run: npm run test:api
+        run: |
+          npm run start &
+          for i in {1..30}; do
+            if curl -s http://localhost:3000/api/health; then
+              echo "Next.js server is up and healthy!"
+              break
+            fi
+            echo "Waiting for Next.js server to start..."
+            sleep 1
+          done
+          npm run test:api
+        env:
+          NEXT_PUBLIC_APP_URL: "http://localhost:3000"
 
   security-gate:
     name: Security & Secrets

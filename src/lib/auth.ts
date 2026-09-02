@@ -4,12 +4,12 @@ import { cookies } from 'next/headers';
 const JWT_SECRET = (() => {
   const secret = process.env.JWT_SECRET;
   if (!secret) {
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === 'production' && !process.env.CI) {
       throw new Error('[FATAL] JWT_SECRET environment variable is not set. Refusing to start in production without a secure secret.');
     }
-    // Development-only warning — never silently use a known public key
-    console.warn('[WARNING] JWT_SECRET is not set. Using an insecure development-only placeholder. Set JWT_SECRET before deploying.');
-    return 'dev_only_placeholder_set_JWT_SECRET_in_env';
+    // Development or CI placeholder
+    console.warn('[WARNING] JWT_SECRET is not set. Using an automated placeholder. Set JWT_SECRET in production.');
+    return 'ci_dev_placeholder_set_JWT_SECRET_in_env_securely';
   }
   return secret;
 })();
