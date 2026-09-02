@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 export default async function DirectoriesCRM() {
   const { db } = await connectGrowthDb();
   let directories: any[] = [];
-  let submissionsByDirectory: Record<string, any> = {};
+  const submissionsByDirectory: Record<string, any> = {};
 
   if (db) {
     directories = await db.collection('directories').find({}).sort({ authority: -1 }).toArray();

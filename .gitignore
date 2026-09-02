@@ -32,6 +32,9 @@ yarn-error.log*
 
 # env files — never commit real secrets.
 .env*
+**/.env*
+secrets.md
+*.bak
 
 # vercel
 .vercel

@@ -21,8 +21,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
-    "patch_*.js",
-    "fix_*.js",
+    "tests/**",
+    "test-*.js",
+    "test-*.mjs",
+    "*.bak",
     // money-os-discovery is an independent Astro project (own repo, own lint config).
     "money-os-discovery/**",
   ]),

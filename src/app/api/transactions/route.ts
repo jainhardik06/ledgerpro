@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
-import { getTransactions, createTransaction, createLog } from '@/lib/db';
+import { createLog } from '@/lib/db';
 import { logError } from '@/lib/logger';
 import { validateAmount, validateDateString, validateString } from '@/lib/validation';
 import PostHogClient from '@/lib/posthog-server';
+import { TransactionService } from '@/services/transactionService';
 
 export async function GET(req: NextRequest) {
   try {
@@ -13,7 +14,8 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const transactions = await getTransactions(session.tenantId, {
+    const transactionService = new TransactionService(session.tenantId);
+    const transactions = await transactionService.getTransactions({
       page: Number(searchParams.get('page') || 1),
       limit: Number(searchParams.get('limit') || 50),
     });
@@ -56,8 +58,8 @@ export async function POST(req: NextRequest) {
     const cleanNotes = validateString(notes, 'Notes', { max: 2000, required: false });
     if (cleanNotes instanceof NextResponse) return cleanNotes;
 
-    const newTx = await createTransaction({
-      tenantId: session.tenantId,
+    const transactionService = new TransactionService(session.tenantId);
+    const newTx = await transactionService.createTransaction({
       userId: session.userId,
       username: session.username,
       accountId: cleanAccountId,
