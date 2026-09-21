@@ -1,0 +1,27 @@
+meta {
+  name: Time E2E 18 - Admin Approves Economics Compute
+  type: http
+  seq: 18
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/time/{{timeEntryId}}/approve
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.timeEntry.approvalStatus: eq APPROVED
+  res.body.timeEntry.financialStatus: eq READY
+  res.body.timeEntry.calculatedCost.amount: eq 1800
+  res.body.timeEntry.calculatedCost.currency: eq INR
+  res.body.timeEntry.calculatedBillableAmount.amount: eq 5000
+  res.body.timeEntry.calculatedBillableAmount.currency: eq INR
+}
+
+docs {
+  §23 — THE calculation moment: 2 hours × 900 = ₹1,800 internal cost,
+  2 hours × 2,500 = ₹5,000 client value, from the snapshots frozen at
+  creation. "Person worked" became money, honestly.
+}

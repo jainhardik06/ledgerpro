@@ -1,0 +1,38 @@
+meta {
+  name: Alerts E2E 66 - Patch Due Soon Days 10
+  type: http
+  seq: 66
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/alert-rules/{{dueSoonRuleId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "configuration": {
+      "days": 10
+    }
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.rule.enabled: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (raw.rule.configuration.days !== 10) {
+    throw new Error('Tenant overlay must store days 10, got ' + JSON.stringify(raw.rule.configuration));
+  }
+}
+
+docs {
+  §24 — the tenant configuration overlay. Widening the window to 10 days
+  keeps INV-000001 (due +3) inside it, so the next evaluation refreshes —
+  proving config PATCH takes effect without disturbing the counts.
+}

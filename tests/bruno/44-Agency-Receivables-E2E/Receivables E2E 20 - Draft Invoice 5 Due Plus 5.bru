@@ -1,0 +1,32 @@
+meta {
+  name: Receivables E2E 20 - Draft Invoice 5 Due Plus 5
+  type: http
+  seq: 20
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "clientId": "{{clientIdB}}",
+    "issueDate": "{{rcvToday}}",
+    "dueDate": "{{duePlus5}}",
+    "notes": "The §105 partial: 100k total, 70k paid, 30k outstanding"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.invoice.status: eq DRAFT
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('inv5Id', raw.invoice.id);
+  if (!raw.invoice.id) throw new Error('Create must return the invoice id');
+}

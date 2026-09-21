@@ -1,0 +1,25 @@
+meta {
+  name: Settings E2E 8 - PATCH General Bad Timezone 400
+  type: http
+  seq: 8
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/settings/general
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "timezone": "IST+5:30"
+  }
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  §44 — a real IANA zone or nothing; offsets and free text are rejected.
+}

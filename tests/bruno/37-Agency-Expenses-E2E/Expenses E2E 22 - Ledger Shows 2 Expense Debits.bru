@@ -1,0 +1,38 @@
+meta {
+  name: Expenses E2E 22 - Ledger Shows 2 Expense Debits
+  type: http
+  seq: 22
+}
+
+get {
+  url: {{BASE_URL}}/api/transactions?limit=100
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const expenseDebits = raw.transactions.filter(t => t.category === 'Expense' && t.type === 'Debit');
+  if (expenseDebits.length !== 2) throw new Error('expected 2 expense Debits, got ' + expenseDebits.length);
+  const sum = expenseDebits.reduce((s, t) => s + Number(t.amount), 0);
+  if (sum !== 12000) throw new Error('expense debits must total 12000, got ' + sum);
+  const byAmount = expenseDebits.map(t => Number(t.amount)).sort((a, b) => a - b);
+  if (byAmount[0] !== 2000 || byAmount[1] !== 10000) throw new Error('expected debits 2000 and 10000, got ' + byAmount.join(','));
+  // §41 — the transaction carries the RAW COST (10000), never the marked-up charge.
+  const txMainId = bru.getVar('txMainId');
+  const main = raw.transactions.find(t => t.id === txMainId || t._id === txMainId);
+  if (!main) throw new Error('txMainId must exist in the ledger');
+  if (Number(main.amount) !== 10000) throw new Error('main transaction must be the 10000 cost, got ' + main.amount);
+  if (main.date !== bru.getVar('expDate')) throw new Error('transaction date must mirror expenseDate');
+}
+
+docs {
+  Ledger linkage: exactly one Transaction per approval — the internal
+  2000 (PM-approved) and the billable 10000 (admin-approved), totaling
+  12000. §41 — the ledger records the COST, never the client charge.
+}

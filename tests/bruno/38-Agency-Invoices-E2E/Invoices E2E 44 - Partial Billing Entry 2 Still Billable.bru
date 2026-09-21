@@ -1,0 +1,27 @@
+meta {
+  name: Invoices E2E 44 - Partial Billing Entry 2 Still Billable
+  type: http
+  seq: 44
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/invoices/billable-sources?projectId={{projectId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  // PARTIAL BILLING — only the selected work was invoiced: entry 1, the
+  // expense and the milestone are gone from the selector; entry 2 (never
+  // billed, released from draft B) remains exactly the future billable set.
+  if (raw.time.length !== 1) throw new Error('expected exactly 1 remaining billable entry, got ' + raw.time.length);
+  if (raw.time[0].id !== bru.getVar('entry2Id')) throw new Error('the remaining entry must be entry 2');
+  if (raw.expenses.length !== 0) throw new Error('the invoiced expense must not be billable again');
+  if (raw.milestones.length !== 0) throw new Error('the invoiced milestone must not be billable again');
+}

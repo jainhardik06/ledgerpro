@@ -1,0 +1,25 @@
+meta {
+  name: Receivables E2E 15 - Add MANUAL Line 20000 to Invoice 3
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{inv3Id}}/lines
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "type": "MANUAL",
+    "description": "Advisory retainer — October",
+    "amount": 20000
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.line.type: eq MANUAL
+  res.body.invoice.subtotal.amount: eq 20000
+}

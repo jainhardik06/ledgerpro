@@ -1,0 +1,29 @@
+meta {
+  name: Reports E2E 34 - Confirm Payment Invoice B Partially Paid
+  type: http
+  seq: 34
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payments/{{paymentId}}/confirm
+  body: json
+  auth: none
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.payment.status: eq CONFIRMED
+  res.body.invoice.status: eq PARTIALLY_PAID
+  res.body.invoice.amountDue.amount: eq 100000
+}
+
+docs {
+  The §35 partially-paid overdue row: total 150000, paid 50000,
+  outstanding 100000 — the receivables report must carry all three plus
+  the engine-derived PARTIALLY_PAID stored status and OVERDUE verdict.
+}

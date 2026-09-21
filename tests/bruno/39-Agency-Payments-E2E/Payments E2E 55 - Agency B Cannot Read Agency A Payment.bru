@@ -1,0 +1,21 @@
+meta {
+  name: Payments E2E 55 - Agency B Cannot Read Agency A Payment
+  type: http
+  seq: 55
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/payments/{{payA1Id}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 404
+  res.body.error: eq Payment not found
+}
+
+docs {
+  §113 — the identical-404: Agency B's admin learns nothing about Agency
+  A's payment, not even that it exists.
+}

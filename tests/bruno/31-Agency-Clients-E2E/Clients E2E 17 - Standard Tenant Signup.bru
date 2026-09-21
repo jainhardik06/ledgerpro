@@ -1,0 +1,40 @@
+meta {
+  name: Clients E2E 17 - Standard Tenant Cannot Invoke
+  type: http
+  seq: 17
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "E2E Standard Client Probe",
+    "username": "{{stdUsername}}",
+    "password": "E2eStd#2026"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('stdUsername', 'e2e_stdprobe_' + suffix);
+}
+
+script:post-response {
+  // The signup cookie jar now holds the STANDARD tenant's session — the
+  // next request in the sequence (Clients E2E 18) probes the agency gate
+  // with it.
+}
+
+docs {
+  A fresh STANDARD tenant replaces the session cookie — the agency client
+  endpoints must refuse it (§28/§33 authorization).
+}

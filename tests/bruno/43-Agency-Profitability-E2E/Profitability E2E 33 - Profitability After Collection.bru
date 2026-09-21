@@ -1,0 +1,44 @@
+meta {
+  name: Profitability E2E 33 - Profitability After Collection
+  type: http
+  seq: 33
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/profitability
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const p = raw.profitability;
+  const near = (a, b, what) => {
+    if (a === null || a === undefined || Math.abs(a - b) > 0.001) {
+      throw new Error(what + ': expected ' + b + ', got ' + a);
+    }
+  };
+
+  // §66 dimension 5 — collected 3000, outstanding 3100.
+  near(p.collectedAmount.amount, 3000, 'collected');
+  near(p.billedAmount.amount, 6100, 'billed');
+  near(p.outstandingAmount.amount, 3100, 'outstanding');
+
+  // §66 — THE separation: cash landed and the margin did not move. The
+  // remaining 3100 is a receivable question (Module 14), not a 0% margin.
+  near(p.applicableRevenue.amount, 5000, 'revenue still earned value');
+  near(p.grossProfit.amount, 1300, 'profit unchanged by cash');
+  near(p.marginPercent, 26, 'margin unchanged by cash');
+  if (p.health !== 'AT_RISK') throw new Error('health unchanged by cash: ' + p.health);
+}
+
+docs {
+  The §66 headline read: collecting 3000 moves the COLLECTED dimension and
+  nothing else. Profitability and cash collection are separate views — the
+  snapshot proves they stayed separate.
+}

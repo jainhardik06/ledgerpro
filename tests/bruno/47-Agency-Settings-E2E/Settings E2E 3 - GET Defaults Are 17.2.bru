@@ -1,0 +1,47 @@
+meta {
+  name: Settings E2E 3 - GET Defaults Are 17.2
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/settings
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.settings.general.defaultCurrency: eq INR
+  res.body.settings.general.timezone: eq Asia/Kolkata
+  res.body.settings.general.fiscalYearStartMonth: eq 4
+  res.body.settings.billing.numberingMode: eq FISCAL_YEAR_SEQUENCE
+  res.body.settings.payment.razorpayEnabled: eq false
+  res.body.settings.payment.hasKeySecret: eq false
+  res.body.settings.payment.hasWebhookSecret: eq false
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const s = raw.settings;
+  // §17.2 — every default equals the pre-Module-17 deterministic constant.
+  const t = s.profitability.hourWarningThresholds;
+  if (!t || t.first !== 75 || t.warning !== 80 || t.critical !== 100) {
+    throw new Error('hour bands: ' + JSON.stringify(t));
+  }
+  if (s.profitability.overdueWarningDays !== undefined) throw new Error('overdueWarningDays must be absent pre-configure');
+  if (!Array.isArray(s.billing.defaultPaymentMethods) || s.billing.defaultPaymentMethods.length !== 0) {
+    throw new Error('defaultPaymentMethods must be []');
+  }
+  if (s.billing.paymentTermsDays !== undefined) throw new Error('paymentTermsDays must be absent (client terms rule)');
+  if (s.tax.defaultSacCode !== undefined) throw new Error('defaultSacCode must be absent');
+  if (s.general.agencyName !== undefined) throw new Error('agencyName must be absent');
+  if ('razorpayKeyId' in s.payment) throw new Error('razorpayKeyId must be absent');
+}
+
+docs {
+  §17.2 — an unconfigured tenant sees the exact pre-Module-17 behavior:
+  INR, Asia/Kolkata, April fiscal year, 75/80/100 hour bands, Razorpay
+  disabled, and every optional field honestly absent.
+}

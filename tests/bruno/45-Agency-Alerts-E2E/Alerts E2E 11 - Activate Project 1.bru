@@ -1,0 +1,24 @@
+meta {
+  name: Alerts E2E 11 - Activate Project 1
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/activate
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.project.status: eq ACTIVE
+}
+
+docs {
+  §9 scope discipline: operational rules (hours bands, over-budget, margin,
+  unbilled) only speak for ACTIVE/ON_HOLD projects — so the journey must
+  activate before delivery. The §75 core (client, name, billing model,
+  currency) is present, and plannedHours 10 satisfies the T&M advisory.
+}

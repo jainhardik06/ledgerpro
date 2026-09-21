@@ -1,0 +1,20 @@
+meta {
+  name: Reports E2E 51 - Limit Zero Is 400
+  type: http
+  seq: 51
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/portfolio?limit=0
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  §39 — pagination is fail-closed: limit is 1..1000, and 0 is rejected,
+  never silently defaulted.
+}

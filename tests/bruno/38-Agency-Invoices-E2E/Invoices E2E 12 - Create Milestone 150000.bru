@@ -1,0 +1,33 @@
+meta {
+  name: Invoices E2E 12 - Create Milestone 150000
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/milestones
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Discovery and strategy sign-off",
+    "sequence": 1,
+    "amount": 150000,
+    "dueDate": "2026-10-15"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.milestone.status: eq PLANNED
+  res.body.milestone.amount: eq 150000
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('milestoneId', raw.milestone.id);
+  if (!raw.milestone.id) throw new Error('Create must return the milestone id');
+}

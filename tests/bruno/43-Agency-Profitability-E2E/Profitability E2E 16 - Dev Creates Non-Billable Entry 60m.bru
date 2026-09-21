@@ -1,0 +1,41 @@
+meta {
+  name: Profitability E2E 16 - Dev Creates Non-Billable Entry 60m
+  type: http
+  seq: 16
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/time
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "projectId": "{{projectId}}",
+    "date": "{{entryDate}}",
+    "durationMinutes": 60,
+    "billable": false,
+    "notes": "Internal sprint planning"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.timeEntry.approvalStatus: eq DRAFT
+  res.body.timeEntry.billable: eq false
+  res.body.timeEntry.costRateSnapshot.amount: eq 900
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('entry2Id', raw.timeEntry.id);
+  if (!raw.timeEntry.id) throw new Error('Create must return the entry id');
+}
+
+docs {
+  Entry 2 — the COST-only hour: 1h × 900 = 900 internal cost, zero client
+  value. §63 counts it in delivery cost; §62 never counts it in revenue —
+  the profit number must feel both sides of that asymmetry.
+}

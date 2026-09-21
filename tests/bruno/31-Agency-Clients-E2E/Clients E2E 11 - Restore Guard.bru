@@ -1,0 +1,28 @@
+meta {
+  name: Clients E2E 11 - Set Inactive then Archive then Restore
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/clients/{{clientId}}/restore
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  // Restore is ARCHIVED-only — the ACTIVE client must be refused.
+  if (!raw.error || !raw.error.includes('archived')) {
+    throw new Error('Restoring a non-archived client must fail with the ARCHIVED-only error');
+  }
+}
+
+docs {
+  Restore guard: only ARCHIVED clients restore (to INACTIVE, §14). This
+  request deliberately fails against the still-ACTIVE client.
+}

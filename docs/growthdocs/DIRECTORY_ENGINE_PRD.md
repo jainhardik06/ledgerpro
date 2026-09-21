@@ -63,7 +63,7 @@ Finance-specific and audience-specific directories.
 Product Name:     Money OS
 Tagline:          The Financial Command Center for Modern Teams
 Category:         Expense Management / Personal Finance / Business Finance
-Website:          https://moneyos.app
+Website:          https://moneyos.webasthetic.in
 Logo:             /og/brand/logo-512.png (512×512 PNG, transparent bg)
 Screenshot 1:     /og/screenshots/dashboard.png (1280×800)
 Screenshot 2:     /og/screenshots/transactions.png (1280×800)
@@ -133,12 +133,12 @@ Starting price:   $0
 - [ ] Logo uploaded to `/public/brand/logo-512.png` (512×512, transparent)
 - [ ] 3 screenshots at 1280×800 captured from live app
 - [ ] All description variants written and spell-checked
-- [ ] Landing page canonical URL confirmed: `https://moneyos.app`
-- [ ] Contact email set up: `hello@moneyos.app`
+- [ ] Landing page canonical URL confirmed: `https://moneyos.webasthetic.in`
+- [ ] Contact email set up: `hello@moneyos.webasthetic.in`
 
 ### Submission Process
 
-1. Create directory account with `hello@moneyos.app`
+1. Create directory account with `hello@moneyos.webasthetic.in`
 2. Fill all fields with content from this spec — do not abbreviate
 3. Upload all visual assets
 4. Save submission URL + confirmation in `directory_submissions` MongoDB collection

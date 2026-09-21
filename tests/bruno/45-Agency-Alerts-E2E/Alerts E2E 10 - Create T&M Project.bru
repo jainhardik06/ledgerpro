@@ -1,0 +1,68 @@
+meta {
+  name: Alerts E2E 10 - Create T&M Project
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "clientId": "{{clientId}}",
+    "name": "Alert Ops Overrun",
+    "code": "E2E-ALR-OVERRUN",
+    "billingModel": "TIME_AND_MATERIALS",
+    "currency": "INR",
+    "startDate": "{{alToday}}",
+    "revenueBudget": 20000,
+    "budgetCost": 2000,
+    "targetMargin": 40,
+    "plannedHours": 10
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.project.billingModel: eq TIME_AND_MATERIALS
+  res.body.project.status: eq DRAFT
+  res.body.project.plannedHours: eq 10
+  res.body.project.targetMargin: eq 40
+}
+
+script:pre-request {
+  // §102 — every date in this suite derives from the tenant-timezone today
+  // (Asia/Kolkata default), computed once here and reused by every request.
+  const ist = new Date(Date.now() + 5.5 * 60 * 60 * 1000);
+  const today = ist.toISOString().slice(0, 10);
+  const add = (d, n) => {
+    const t = new Date(d + 'T00:00:00Z');
+    t.setUTCDate(t.getUTCDate() + n);
+    return t.toISOString().slice(0, 10);
+  };
+  bru.setVar('alToday', today);
+  bru.setVar('alEntryDate', today);
+  bru.setVar('alDuePlus3', add(today, 3));
+  bru.setVar('alDueMinus10', add(today, -10));
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('projectId', raw.project.id);
+  if (!raw.project.id) throw new Error('Create must return the project id');
+}
+
+docs {
+  The §11/§12/§13 subject, tuned so every project rule fires provably:
+  plannedHours 10 (8.2h will be logged → 82% → the 80 band only), budgetCost
+  2000 (8380 will be delivered → 419% → OVER_BUDGET), targetMargin 40 (the
+  journey lands at −2.2% → CRITICAL margin alert), plus unbilled time (8.2h)
+  and an unbilled expense (1100 charge).
+
+  No projectManagerId on purpose: activation auto-adds the manager as a
+  "Project Manager" member (§39), which would collide with the "Developer"
+  membership the billing card matches (§40 one-membership-per-user).
+}

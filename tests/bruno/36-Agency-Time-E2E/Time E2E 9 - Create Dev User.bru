@@ -1,0 +1,40 @@
+meta {
+  name: Time E2E 9 - Create Dev User
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{BASE_URL}}/api/tenant/users
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{timeDevUsername}}",
+    "password": "E2eTimeDev#2026"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.user.role: eq USER
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('timeDevUsername', 'e2e_time_dev_' + suffix);
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('devUserId', raw.user.id);
+  if (!raw.user.id) throw new Error('Create must return the user id');
+}
+
+docs {
+  The time AUTHOR. The admin stays the APPROVER — §21 forbids approving
+  your own time, so the journey needs both roles as distinct people.
+}

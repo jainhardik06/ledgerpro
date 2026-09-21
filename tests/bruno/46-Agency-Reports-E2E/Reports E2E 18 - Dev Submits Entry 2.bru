@@ -1,0 +1,16 @@
+meta {
+  name: Reports E2E 18 - Dev Submits Entry 2
+  type: http
+  seq: 18
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/time/{{entry2Id}}/submit
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.timeEntry.approvalStatus: eq SUBMITTED
+}

@@ -1,0 +1,25 @@
+meta {
+  name: Receivables E2E 12 - Add MANUAL Line 40000 to Invoice 2
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{inv2Id}}/lines
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "type": "MANUAL",
+    "description": "Portal build — sprint 4 delivery",
+    "amount": 40000
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.line.type: eq MANUAL
+  res.body.invoice.subtotal.amount: eq 40000
+}

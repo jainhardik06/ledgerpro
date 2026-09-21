@@ -1,0 +1,54 @@
+meta {
+  name: Expenses E2E 10 - Dev Creates Billable 10000 with 20pct Markup
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/expenses
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "projectId": "{{projectId}}",
+    "vendorName": "StockAI",
+    "description": "API credits for the portal build",
+    "amount": 10000,
+    "expenseType": "BILLABLE",
+    "billable": true,
+    "markupPercent": 20,
+    "expenseDate": "{{expDate}}"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.expense.status: eq DRAFT
+  res.body.expense.billingStatus: eq UNBILLED
+  res.body.expense.expenseType: eq BILLABLE
+  res.body.expense.clientChargeAmount.amount: eq 12000
+  res.body.expense.clientChargeAmount.currency: eq INR
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const e = raw.expense;
+  bru.setVar('expMainId', e.id);
+  if (!e.id) throw new Error('Create must return the expense id');
+  // §43 — 10000 + 20% = 12000, frozen at creation.
+  if (e.clientChargeAmount.amount !== 12000) throw new Error('markup: expected client charge 12000, got ' + e.clientChargeAmount.amount);
+  // §41 — no core Transaction exists before approval.
+  if (e.transactionId != null) throw new Error('DRAFT expense must have no transactionId');
+  // §99 — the dev is a USER: the cost side (amount, markup) is redacted.
+  if (e.amount !== undefined) throw new Error('§99 redaction violated: amount leaked to a USER');
+  if (e.markupPercent !== undefined) throw new Error('§99 redaction violated: markupPercent leaked to a USER');
+}
+
+docs {
+  The MAIN journey expense: 10000 INR BILLABLE at 20% markup (§43 — the
+  charge freezes at 12000 the moment it is recorded). The dev authored it,
+  so only the admin can ever approve it — §21 in action.
+}

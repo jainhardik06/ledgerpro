@@ -1,0 +1,38 @@
+meta {
+  name: Tax E2E 11 - Add MANUAL Line 100000 SAC 998314
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{invAId}}/lines
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "type": "MANUAL",
+    "description": "IT consulting services — September",
+    "quantity": 1,
+    "unitPrice": 100000,
+    "amount": 0,
+    "classification": { "type": "SAC", "code": "998314" }
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.line.amount.amount: eq 100000
+  res.body.line.classification.type: eq SAC
+  res.body.line.classification.code: eq "998314"
+  res.body.invoice.subtotal.amount: eq 100000
+  res.body.invoice.total.amount: eq 100000
+}
+
+docs {
+  §13/§14 — the line carries its HSN/SAC classification (998314 — IT design
+  and consulting services) and a free-form tax category. The classification
+  is stored, never defaulted.
+}

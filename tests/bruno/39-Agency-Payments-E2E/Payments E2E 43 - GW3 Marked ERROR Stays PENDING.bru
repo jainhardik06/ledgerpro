@@ -1,0 +1,26 @@
+meta {
+  name: Payments E2E 43 - GW3 Marked ERROR Stays PENDING
+  type: http
+  seq: 43
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/payments/{{payGW3Id}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.payment.status: eq PENDING
+  res.body.payment.reconciliationStatus: eq ERROR
+  res.body.invoice.amountPaid.amount: eq 70000
+  res.body.invoice.amountDue.amount: eq 30000
+}
+
+docs {
+  The §115 ERROR state: the payment is still PENDING (no money moved —
+  §114 compensation guarantees nothing half-confirmed), but its
+  reconciliation state is ERROR so the collections view surfaces it.
+}

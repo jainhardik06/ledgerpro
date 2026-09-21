@@ -1,0 +1,24 @@
+meta {
+  name: Rates E2E 34 - Activate Project Website Redesign
+  type: http
+  seq: 34
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/activate
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.project.status: eq ACTIVE
+}
+
+docs {
+  §119's last leg: the fully priced project goes live through the §75
+  activation gate (dedicated lifecycle action, never a PATCH smuggle). The
+  PM is already an active member (step 11), so the §39 auto-add is a no-op —
+  no surprise second member dilutes the readiness counts.
+}

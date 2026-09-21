@@ -1,0 +1,20 @@
+meta {
+  name: Reports E2E 63 - From After To Is 400
+  type: http
+  seq: 63
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/portfolio?from=2026-12-31&to=2026-01-01
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  An inverted window is a contradiction, not an empty result — fail
+  closed rather than returning "no rows" that looks like truth.
+}

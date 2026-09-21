@@ -1,0 +1,42 @@
+meta {
+  name: Receivables E2E 28 - Record Payment 118000 Withholding 2000 on INV-000006
+  type: http
+  seq: 28
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payments
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "invoiceId": "{{inv6Id}}",
+    "amount": 118000,
+    "withholdingAmount": 2000,
+    "method": "BANK_TRANSFER",
+    "accountId": "{{accountId}}",
+    "reference": "NEFT-RCV-WHT",
+    "notes": "TDS withheld at source — §93: settles the invoice in full"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.payment.status: eq PENDING
+  res.body.payment.amount.amount: eq 118000
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('payWhId', raw.payment.id);
+  if (!raw.payment.id) throw new Error('Record must return the payment id');
+}
+
+docs {
+  §93 — withholding is an explicit settlement attribute of the payment, never
+  a reduction of the invoice total: the FULL 118000 settles the invoice while
+  only 116000 lands as cash. The invoice must go PAID and disappear from A/R.
+}

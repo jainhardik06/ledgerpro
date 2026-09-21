@@ -1,0 +1,20 @@
+meta {
+  name: Expenses E2E 14 - Dev Cannot Approve Own Expense
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/expenses/{{expMainId}}/approve
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 403
+}
+
+docs {
+  §21 — no one approves their own expense. No exceptions, not even for
+  the project manager of the project the expense sits on.
+}

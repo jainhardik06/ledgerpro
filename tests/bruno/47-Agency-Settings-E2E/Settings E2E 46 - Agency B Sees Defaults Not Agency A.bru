@@ -1,0 +1,39 @@
+meta {
+  name: Settings E2E 46 - Agency B Sees Defaults Not Agency A
+  type: http
+  seq: 46
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/settings
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.settings.general.defaultCurrency: eq INR
+  res.body.settings.general.timezone: eq Asia/Kolkata
+  res.body.settings.general.fiscalYearStartMonth: eq 4
+  res.body.settings.billing.numberingMode: eq FISCAL_YEAR_SEQUENCE
+  res.body.settings.payment.razorpayEnabled: eq false
+  res.body.settings.payment.hasKeySecret: eq false
+  res.body.settings.payment.hasWebhookSecret: eq false
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const text = JSON.stringify(raw);
+  if (text.includes('USD')) throw new Error('Agency B sees Agency A currency');
+  if (text.includes('rzp_test_e2e')) throw new Error('Agency B sees Agency A keyId');
+  if (text.includes('e2e_secret_value')) throw new Error('Agency B sees Agency A secrets');
+  if (text.includes('998313')) throw new Error('Agency B sees Agency A SAC code');
+}
+
+docs {
+  §113 — the §17.2 defaults, NOT Agency A's writes: no USD, no stored
+  payment credentials, no A tax/billing values anywhere in the response.
+  agencySettings is a field on the Tenant document, so isolation is
+  structural.
+}

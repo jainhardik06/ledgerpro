@@ -38,7 +38,7 @@ export default async function AnalyticsDiagnosticsPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto text-zinc-100 font-sans">
+    <div className="p-4 sm:p-6 lg:p-8 w-full text-zinc-100 font-sans">
       <div className="mb-8">
         <h1 className="text-3xl font-semibold tracking-tight text-white mb-2">Analytics Diagnostics</h1>
         <p className="text-zinc-400">Environment validation and integration health checks.</p>

@@ -1,0 +1,20 @@
+meta {
+  name: Alerts E2E 49 - Dev Acknowledge Is 403
+  type: http
+  seq: 49
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/alerts/{{dueSoonAlertId}}/acknowledge
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 403
+}
+
+docs {
+  §19 — lifecycle moves are admin-only (agency.alerts.manage); the USER
+  gets 403 before any existence check.
+}

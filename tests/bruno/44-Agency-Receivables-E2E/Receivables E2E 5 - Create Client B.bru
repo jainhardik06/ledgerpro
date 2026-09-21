@@ -1,0 +1,37 @@
+meta {
+  name: Receivables E2E 5 - Create Client B
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/clients
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "LedgerWorks Advisory",
+    "email": "finance@ledgerworks-e2e.test",
+    "billingProfile": { "city": "Mumbai", "country": "India", "currency": "INR" },
+    "commercialDefaults": { "billingModel": "TIME_AND_MATERIALS", "paymentTerms": "NET_30", "currency": "INR" }
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.client.status: eq ACTIVE
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('clientIdB', raw.client.id);
+  if (!raw.client.id) throw new Error('Create must return the client id');
+}
+
+docs {
+  Two clients so the §94 by-client breakdown has a real spread: A carries
+  the whole aging ladder, B carries the current + partial invoices.
+}

@@ -1,0 +1,42 @@
+meta {
+  name: Payments E2E 41 - Record Gateway Payment 40000 on C
+  type: http
+  seq: 41
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payments
+  body: json
+  auth: none
+}
+
+script:pre-request {
+  // Same run-unique suffix as E2E 26 — §96 duplicate detection is global
+  // and the local store persists across runs.
+  const suffix = bru.getVar('gwSuffix') || Date.now().toString(36);
+  bru.setVar('gwSuffix', suffix);
+  bru.setVar('gw3External', 'pay_e2e_gw_3_' + suffix);
+}
+
+body:json {
+  {
+    "invoiceId": "{{invCId}}",
+    "amount": 40000,
+    "method": "RAZORPAY",
+    "gatewayPaymentId": "{{gw3External}}",
+    "accountId": "{{accountId}}"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.payment.status: eq PENDING
+  res.body.payment.reconciliationStatus: eq PENDING
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('payGW3Id', raw.payment.id);
+  if (!raw.payment.id) throw new Error('Record must return the payment id');
+}

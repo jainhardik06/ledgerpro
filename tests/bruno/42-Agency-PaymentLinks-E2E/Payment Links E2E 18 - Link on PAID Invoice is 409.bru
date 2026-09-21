@@ -1,0 +1,25 @@
+meta {
+  name: Payment Links E2E 18 - Link on PAID Invoice is 409
+  type: http
+  seq: 18
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{plInvBId}}/payment-link
+  body: json
+  auth: none
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 409
+}
+
+docs {
+  §36 — nothing left to collect: the server-resolved amountDue is zero, so
+  no link can be created against a fully paid invoice. (Reached before the
+  gateway — no 503 masks the domain rule.)
+}

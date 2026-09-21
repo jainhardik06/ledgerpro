@@ -3,6 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { RefreshCw, Wallet, Building2, Plus, Edit2, Trash2 } from 'lucide-react';
 import { Drawer } from '@/components/ui/Drawer';
+import { Select } from '@/components/ui/Select';
+import { Req, Opt } from '@/components/ui/Req';
+import { confirmModal } from '@/components/ui/Dialog';
 
 export default function AccountsPage() {
   const [loading, setLoading] = useState(true);
@@ -18,6 +21,7 @@ export default function AccountsPage() {
   const [accType, setAccType] = useState('Checking');
   const [accBalance, setAccBalance] = useState('0');
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -45,27 +49,48 @@ export default function AccountsPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!accName.trim()) {
+      setFormError('Account name is required.');
+      return;
+    }
+    const parsedBalance = Number(accBalance);
+    if (accBalance.trim() === '' || isNaN(parsedBalance)) {
+      setFormError('Please enter a valid initial balance.');
+      return;
+    }
+
+    setFormError(null);
     setSaving(true);
     try {
       const url = selectedAccount ? `/api/accounts/${selectedAccount.id}` : '/api/accounts';
       const method = selectedAccount ? 'PUT' : 'POST';
       const res = await fetch(url, {
         method, headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: accName, type: accType, initialBalance: Number(accBalance) })
+        body: JSON.stringify({ name: accName.trim(), type: accType, initialBalance: parsedBalance })
       });
       if (res.ok) {
         setIsDrawerOpen(false);
         fetchData();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setFormError(data.error || 'Failed to save account.');
       }
     } catch (e) {
       console.error(e);
+      setFormError('Network error while saving account.');
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this account? Ensure no transactions are tied to it.')) return;
+    const ok = await confirmModal({
+      title: 'Delete Account',
+      message: 'Are you sure you want to delete this account? Ensure no transactions are tied to it.',
+      confirmText: 'Delete',
+      variant: 'danger',
+    });
+    if (!ok) return;
     try {
       const res = await fetch(`/api/accounts/${id}`, { method: 'DELETE' });
       if (res.ok) {
@@ -80,6 +105,7 @@ export default function AccountsPage() {
     setAccName('');
     setAccType('Checking');
     setAccBalance('0');
+    setFormError(null);
     setIsDrawerOpen(true);
   }
 
@@ -88,6 +114,7 @@ export default function AccountsPage() {
     setAccName(acc.name);
     setAccType(acc.type);
     setAccBalance(acc.initialBalance.toString());
+    setFormError(null);
     setIsDrawerOpen(true);
   };
 
@@ -98,7 +125,7 @@ export default function AccountsPage() {
   const formatCurrency = (val: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8 animate-in fade-in duration-500">
+    <div className="p-4 sm:p-6 lg:p-8 w-full space-y-6 sm:space-y-8 animate-in fade-in duration-500">
       
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -110,7 +137,7 @@ export default function AccountsPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {accounts.map(acc => {
           const accTxs = transactions.filter(t => t.accountId === acc.id);
           const cr = accTxs.filter(t => t.type === 'Credit').reduce((s, t) => s + t.amount, 0);
@@ -153,25 +180,72 @@ export default function AccountsPage() {
       <Drawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} title={selectedAccount ? "Edit Account" : "Add Account"}>
         <form onSubmit={handleSave} className="space-y-6 flex flex-col h-full">
            <div className="space-y-5 flex-1">
+             {formError && (
+               <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[12.5px]">
+                 {formError}
+               </div>
+             )}
+
              <div>
-               <label htmlFor="acc-name" className="block text-[12px] font-medium text-neutral-400 mb-1.5">Account Name</label>
-               <input id="acc-name" type="text" value={accName} onChange={e=>setAccName(e.target.value)} required className="w-full h-9 bg-transparent border-b border-white/[0.1] text-[14px] text-white focus:border-emerald-500 outline-none" placeholder="e.g. Chase Business Checking" />
+               <label htmlFor="acc-name" className="block text-[12px] font-medium text-neutral-400 mb-1.5">
+                 Account Name <Req satisfied={Boolean(accName.trim())} />
+               </label>
+               <input
+                 id="acc-name"
+                 type="text"
+                 value={accName}
+                 onChange={e => {
+                   setAccName(e.target.value);
+                   if (formError) setFormError(null);
+                 }}
+                 required
+                 className={`w-full h-9 bg-transparent border-b text-[14px] text-white outline-none transition-colors ${
+                   formError && !accName.trim()
+                     ? 'border-rose-500/80 focus:border-rose-500'
+                     : 'border-white/[0.1] focus:border-emerald-500'
+                 }`}
+                 placeholder="e.g. Chase Business Checking"
+               />
              </div>
 
              <div>
-               <label htmlFor="acc-type" className="block text-[12px] font-medium text-neutral-400 mb-1.5">Account Type</label>
-               <select id="acc-type" value={accType} onChange={e=>setAccType(e.target.value)} className="w-full h-9 bg-white/[0.02] border border-white/[0.05] rounded-md px-2 text-[13px] text-white focus:border-white/[0.2] outline-none [&>option]:bg-[#000000]">
+               <label htmlFor="acc-type" className="block text-[12px] font-medium text-neutral-400 mb-1.5">
+                 Account Type <Req satisfied={Boolean(accType)} />
+               </label>
+               <Select
+                 id="acc-type"
+                 value={accType}
+                 onChange={e => setAccType(e.target.value)}
+                 className="w-full h-9"
+               >
                  <option value="Checking">Checking</option>
                  <option value="Savings">Savings</option>
                  <option value="Credit Card">Credit Card</option>
                  <option value="Digital Wallet">Digital Wallet</option>
                  <option value="Cash">Cash</option>
-               </select>
+               </Select>
              </div>
 
              <div>
-               <label htmlFor="acc-balance" className="block text-[12px] font-medium text-neutral-400 mb-1.5">Initial Balance (₹)</label>
-               <input id="acc-balance" type="number" value={accBalance} onChange={e=>setAccBalance(e.target.value)} required step="0.01" className="w-full h-9 bg-white/[0.02] border border-white/[0.05] rounded-md px-3 text-[13px] text-white focus:border-white/[0.2] outline-none tabular-nums" />
+               <label htmlFor="acc-balance" className="block text-[12px] font-medium text-neutral-400 mb-1.5">
+                 Initial Balance (₹) <Req satisfied={Boolean(accBalance.trim() !== '' && !isNaN(Number(accBalance)))} />
+               </label>
+               <input
+                 id="acc-balance"
+                 type="number"
+                 value={accBalance}
+                 onChange={e => {
+                   setAccBalance(e.target.value);
+                   if (formError) setFormError(null);
+                 }}
+                 required
+                 step="0.01"
+                 className={`w-full h-9 bg-white/[0.02] border rounded-md px-3 text-[13px] text-white outline-none tabular-nums transition-colors ${
+                   formError && (accBalance.trim() === '' || isNaN(Number(accBalance)))
+                     ? 'border-rose-500/80 focus:border-rose-500'
+                     : 'border-white/[0.05] focus:border-white/[0.2]'
+                 }`}
+               />
                <p className="text-[11px] text-neutral-500 mt-1.5">The balance of the account before any transactions are recorded.</p>
              </div>
            </div>

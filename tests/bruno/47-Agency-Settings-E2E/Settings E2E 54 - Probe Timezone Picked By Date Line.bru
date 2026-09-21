@@ -1,0 +1,59 @@
+meta {
+  name: Settings E2E 54 - Probe Timezone Picked By Date Line
+  type: http
+  seq: 54
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/settings/general
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "timezone": "{{stProbeTz}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  // §44 final-validation probe: pick an IANA zone whose CURRENT date differs
+  // from the server-default (Asia/Kolkata) date RIGHT NOW, so the next
+  // request proves the engine's "today" anchor follows the agency timezone
+  // rather than the server locale. All three zones are fixed-offset (no
+  // DST), so plain offset math is exact. Kiritimati (+14) leads Kolkata
+  // (+5:30) between 10:00–18:30 UTC; Pago_Pago (-11) trails it the rest of
+  // the day — one of the two ALWAYS differs.
+  const zoneDate = (offsetHours) => new Date(Date.now() + offsetHours * 3600000).toISOString().slice(0, 10);
+  const kolkata = zoneDate(5.5);
+  const kiritimati = zoneDate(14);
+  const pago = zoneDate(-11);
+  if (kiritimati !== kolkata) {
+    bru.setVar('stProbeTz', 'Pacific/Kiritimati');
+    bru.setVar('stProbeToday', kiritimati);
+  } else {
+    bru.setVar('stProbeTz', 'Pacific/Pago_Pago');
+    bru.setVar('stProbeToday', pago);
+  }
+  bru.setVar('stKolkataToday', kolkata);
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const expected = bru.getVar('stProbeTz');
+  if (raw.settings.general.timezone !== expected) {
+    throw new Error('timezone: expected ' + expected + ', got ' + raw.settings.general.timezone);
+  }
+}
+
+docs {
+  §44 — switch Agency A to a timezone that is on a DIFFERENT calendar date
+  than the server default right now (chosen dynamically in the pre-request
+  script), so the next request's date default is discriminating at any hour
+  the suite runs.
+}

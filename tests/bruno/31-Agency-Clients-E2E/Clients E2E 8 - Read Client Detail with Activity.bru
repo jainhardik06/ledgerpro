@@ -1,0 +1,35 @@
+meta {
+  name: Clients E2E 8 - Read Client Detail with Activity
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/clients/{{clientId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.client.name: eq Acme Studio E2E
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (!Array.isArray(raw.activity)) {
+    throw new Error('activity must be an array (§26 timeline)');
+  }
+  const created = raw.activity.some(a => a.action === 'Add Client');
+  if (!created) {
+    throw new Error('The Client Created audit event must appear in the activity timeline (§27)');
+  }
+  if (!Array.isArray(raw.transactions)) {
+    throw new Error('transactions must be an array (§21 section)');
+  }
+}
+
+docs {
+  §21/§26 — detail returns the client, its activity timeline (audit events
+  exist: Client Created is already there), and core transactions.
+}

@@ -1,0 +1,33 @@
+meta {
+  name: Settings E2E 44 - Agency B Signup
+  type: http
+  seq: 44
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "E2E Settings Agency B",
+    "username": "{{stBAdminUsername}}",
+    "password": "E2eSetAdminB#2026"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  bru.setVar('stBAdminUsername', 'e2e_set_adminb_' + bru.getVar('stRunToken'));
+}
+
+docs {
+  §113 — a second, independent agency. Signup also switches the session
+  cookie to B's admin.
+}

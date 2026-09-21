@@ -1,0 +1,39 @@
+meta {
+  name: Rates E2E 1 - Signup
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "E2E Rates Agency",
+    "username": "{{ratesUsername}}",
+    "password": "{{ratesPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  // Unique credentials per run so the suite is repeatable against a
+  // persistent database.
+  const suffix = Date.now().toString(36);
+  bru.setVar('ratesUsername', 'e2e_rates_' + suffix);
+  bru.setVar('ratesPassword', 'E2eRates#2026');
+}
+
+docs {
+  Module 6.9 E2E — a fresh agency tenant for the §119 cross-module journey
+  and the §136 release-gate scenario: Client → Cost Card → Billing Card →
+  T&M Project → Team → Cost Assignment → Work Item → Resolution → Readiness
+  → §122 rate change → §99/§104 cost privacy → §120 tenant isolation.
+}

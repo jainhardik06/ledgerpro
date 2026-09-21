@@ -1,0 +1,20 @@
+meta {
+  name: Alerts E2E 55 - Re-Acknowledge Is 409
+  type: http
+  seq: 55
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/alerts/{{dueSoonAlertId}}/acknowledge
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 409
+}
+
+docs {
+  §19 — ACKNOWLEDGED is not a repeatable transition; the API answers 409
+  (never a silent second ack).
+}

@@ -1,0 +1,15 @@
+meta {
+  name: Reports E2E 52 - Limit Above Max Is 400
+  type: http
+  seq: 52
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/portfolio?limit=1001
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}

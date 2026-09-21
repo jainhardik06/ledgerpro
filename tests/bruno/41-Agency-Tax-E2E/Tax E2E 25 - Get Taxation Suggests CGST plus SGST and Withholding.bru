@@ -1,0 +1,36 @@
+meta {
+  name: Tax E2E 25 - Get Taxation Suggests CGST plus SGST and Withholding
+  type: http
+  seq: 25
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/invoices/{{invCId}}/taxation?rate=18
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.taxation.taxableAmount.amount: eq 100000
+  res.body.gstSuggestion.structure: eq INTRA_STATE
+  res.body.gstSuggestion.taxes[0].type: eq CGST
+  res.body.gstSuggestion.taxes[0].rate: eq 9
+  res.body.gstSuggestion.taxes[1].type: eq SGST
+  res.body.gstSuggestion.taxes[1].rate: eq 9
+  res.body.withholdingSuggestions[0].amount.amount: eq 2000
+  res.body.withholdingSuggestions[0].adjustment.rate: eq 2
+  res.body.withholdingSuggestions[0].adjustment.jurisdiction: eq IN
+  res.body.withholdingSuggestions[0].rulesVersion: eq gst-rules-2026.1
+}
+
+docs {
+  §10/§30 — the INTRA_STATE suggestion: supplier Maharashtra + recipient
+  Maharashtra → the 18% splits into CGST 9 + SGST 9 (the §22 intra-state
+  worked example). §19/§22/§28 — the same GET also carries the ADVISORY
+  withholding suggestion: the tenant's configured IN rule (2%, threshold
+  30000, from file 6 — Income Tax Act 2025 framework as DATA, never a
+  hard-coded legacy section) against the 100000 taxable value → 2000. Both
+  suggestions are read-only; the caller confirms.
+}

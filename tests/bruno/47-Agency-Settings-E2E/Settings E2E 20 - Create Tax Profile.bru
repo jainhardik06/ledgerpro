@@ -1,0 +1,34 @@
+meta {
+  name: Settings E2E 20 - Create Tax Profile
+  type: http
+  seq: 20
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/tax/profiles
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "GST Registered — Settings E2E",
+    "country": "IN",
+    "registrationType": "GSTIN",
+    "registrationNumber": "27AAPFU0939F1ZV",
+    "taxTreatment": "REGISTERED",
+    "stateOrRegion": "Maharashtra"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.profile.active: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('stTaxProfileId', raw.profile.id);
+  if (!raw.profile.id) throw new Error('Create must return the profile id');
+}

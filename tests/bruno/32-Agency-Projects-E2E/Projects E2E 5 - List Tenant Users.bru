@@ -1,0 +1,31 @@
+meta {
+  name: Projects E2E 5 - List Tenant Users
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{BASE_URL}}/api/tenant/users
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const users = raw.users || [];
+  if (users.length === 0) {
+    throw new Error('Expected at least the signup admin in the tenant user list');
+  }
+  bru.setVar('userId', users[0].id);
+}
+
+docs {
+  Team assignment needs a same-tenant user id (§81) — the signup admin
+  is the first member. Listed BEFORE project creation (§105 order) so
+  the wizard's Manager step can assign them at creation time.
+}

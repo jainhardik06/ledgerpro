@@ -1,0 +1,27 @@
+meta {
+  name: Team E2E 9 - Duplicate Add Rejected
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/members
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "userId": "{{devUserId}}",
+    "role": "Designer"
+  }
+}
+
+assert {
+  res.status: eq 409
+}
+
+docs {
+  §40 — one ACTIVE membership per (tenant, project, user). The second add
+  of the same user is a 409, not a silent second row.
+}

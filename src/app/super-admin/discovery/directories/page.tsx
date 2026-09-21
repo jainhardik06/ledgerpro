@@ -2,6 +2,7 @@ import React from 'react';
 import { connectGrowthDb } from '@/lib/db';
 import { addDirectory, markSubmitted, approveSubmission, rejectSubmission, deleteDirectory } from '@/app/actions/directories';
 import { Plus, Trash2, ExternalLink, CheckCircle2, XCircle, Send } from 'lucide-react';
+import { Select } from '@/components/ui/Select';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,7 +28,7 @@ export default async function DirectoriesCRM() {
   };
 
   return (
-    <div className="p-6 sm:p-8 max-w-[1200px] mx-auto font-sans">
+    <div className="p-4 sm:p-6 lg:p-8 w-full font-sans">
       <div className="mb-10">
         <h1 className="text-[32px] font-semibold text-[#ededed] tracking-tight leading-tight">Directory Submissions CRM</h1>
         <p className="text-[14px] text-[#a1a1aa] mt-2 leading-relaxed">
@@ -55,10 +56,10 @@ export default async function DirectoriesCRM() {
               </div>
               <div>
                 <label className="block text-[11px] uppercase tracking-wider font-medium text-[#525252] mb-1">Tier</label>
-                <select name="tier" defaultValue="2" className="w-full h-9 px-3 text-[13px] rounded-md border border-[#262626] bg-[#000000] text-[#ededed] focus:ring-1 focus:ring-[#ededed] focus:outline-none">
+                <Select name="tier" defaultValue="2" className="w-full h-9 px-3 text-[13px] rounded-md border border-[#262626] bg-[#000000] text-[#ededed] focus:ring-1 focus:ring-[#ededed] focus:outline-none">
                   <option value="1">Tier 1</option>
                   <option value="2">Tier 2</option>
-                </select>
+                </Select>
               </div>
               <button type="submit" className="mt-4 w-full bg-[#ededed] text-black rounded-md px-4 py-2 text-[13px] font-medium hover:bg-white transition-colors flex items-center justify-center gap-2">
                 <Plus className="w-4 h-4" />

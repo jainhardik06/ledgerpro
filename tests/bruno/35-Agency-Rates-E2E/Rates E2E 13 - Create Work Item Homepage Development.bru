@@ -1,0 +1,32 @@
+meta {
+  name: Rates E2E 13 - Create Work Item Homepage Development
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/work-items
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Homepage Development",
+    "estimatedMinutes": 480,
+    "assignedTo": "{{userId}}"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.workItem.name: eq Homepage Development
+  res.body.workItem.status: eq NOT_STARTED
+}
+
+docs {
+  §136 scenario work item: Homepage Development, 480 minutes = the 8 hours
+  the §136 arithmetic prices. The future time entry will attach here and
+  resolve cost/billing through the cards built in steps 5–8.
+}

@@ -1,8 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { RefreshCw, Search, Plus, FileSpreadsheet, ArrowDownRight, ArrowUpRight, Filter, MoreHorizontal, FileText, Calendar, Tag } from 'lucide-react';
 import { Drawer } from '@/components/ui/Drawer';
+import { confirmModal } from '@/components/ui/Dialog';
+import { Select } from '@/components/ui/Select';
+import { DatePicker } from '@/components/ui/DatePicker';
+import { Req, Opt } from '@/components/ui/Req';
+import { FilterPopover } from '@/components/ui/FilterPopover';
+import { SearchBar } from '@/components/ui/SearchBar';
 
 export default function TransactionsPage() {
   const [loading, setLoading] = useState(true);
@@ -15,6 +21,7 @@ export default function TransactionsPage() {
   
   // Filter Popover States
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const filterBtnRef = useRef<HTMLButtonElement>(null);
   const [filterType, setFilterType] = useState<'all' | 'Credit' | 'Debit'>('all');
   const [filterAccountId, setFilterAccountId] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
@@ -37,6 +44,7 @@ export default function TransactionsPage() {
   const [txClientId, setTxClientId] = useState('');
   const [txNotes, setTxNotes] = useState('');
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -70,27 +78,56 @@ export default function TransactionsPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    const parsedAmount = Number(txAmount);
+    if (!txAmount || isNaN(parsedAmount) || parsedAmount <= 0) {
+      setFormError('Please enter a valid amount greater than zero.');
+      return;
+    }
+    if (!txDesc.trim()) {
+      setFormError('Description is required.');
+      return;
+    }
+    if (!txDate) {
+      setFormError('Date is required.');
+      return;
+    }
+    if (!txAccountId) {
+      setFormError('Please select an account.');
+      return;
+    }
+
+    setFormError(null);
     setSaving(true);
     try {
       const url = selectedTx ? `/api/transactions/${selectedTx.id}` : '/api/transactions';
       const method = selectedTx ? 'PUT' : 'POST';
       const res = await fetch(url, {
         method, headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: txType, amount: Number(txAmount), description: txDesc, date: txDate, category: txCategory, accountId: txAccountId, clientId: txClientId, notes: txNotes })
+        body: JSON.stringify({ type: txType, amount: parsedAmount, description: txDesc.trim(), date: txDate, category: txCategory, accountId: txAccountId, clientId: txClientId, notes: txNotes })
       });
       if (res.ok) {
         setIsDrawerOpen(false);
         fetchData();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setFormError(data.error || 'Failed to save transaction.');
       }
     } catch (e) {
       console.error(e);
+      setFormError('Network error while saving transaction.');
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this transaction?')) return;
+    const ok = await confirmModal({
+      title: 'Delete Transaction',
+      message: 'Are you sure you want to delete this transaction? This action cannot be undone.',
+      confirmText: 'Delete',
+      variant: 'danger',
+    });
+    if (!ok) return;
     try {
       const res = await fetch(`/api/transactions/${id}`, { method: 'DELETE' });
       if (res.ok) {
@@ -111,6 +148,7 @@ export default function TransactionsPage() {
     setTxCategory('');
     setTxClientId('');
     setTxNotes('');
+    setFormError(null);
     setIsDrawerOpen(true);
   }
 
@@ -124,6 +162,7 @@ export default function TransactionsPage() {
     setTxAccountId(tx.accountId);
     setTxClientId(tx.clientId || '');
     setTxNotes(tx.notes || '');
+    setFormError(null);
     setIsDrawerOpen(true);
   };
 
@@ -145,6 +184,16 @@ export default function TransactionsPage() {
     setFilterMinAmount('');
     setFilterMaxAmount('');
   };
+
+  const activeFilterCount = [
+    filterType !== 'all',
+    filterAccountId !== 'all',
+    filterCategory !== 'all',
+    filterClientId !== 'all',
+    filterDateRange !== 'all',
+    filterMinAmount !== '',
+    filterMaxAmount !== '',
+  ].filter(Boolean).length;
 
   const filtered = transactions.filter(t => {
     // 1. Search text filter
@@ -194,7 +243,7 @@ export default function TransactionsPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-56px)] animate-in fade-in duration-500">
+    <div className="flex flex-col h-[calc(100vh-56px)] w-full animate-in fade-in duration-500">
       
       {/* Action Bar */}
       <div className="p-4 sm:p-6 shrink-0 border-b border-white/[0.05] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -203,164 +252,158 @@ export default function TransactionsPage() {
           <p className="text-[12px] sm:text-[13px] text-neutral-400">Manage, categorize, and audit your financial records.</p>
         </div>
         <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
-          <div className="relative flex-1 sm:flex-none min-w-0">
-            <Search className="w-4 h-4 text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input 
-              type="text" 
-              placeholder="Search..." 
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="h-9 w-full sm:w-64 bg-[#0a0a0a] border border-white/[0.1] rounded-md pl-9 pr-3 text-[13px] text-white focus:border-white/[0.2] outline-none"
-            />
-          </div>
+          <SearchBar
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search transactions…"
+            aria-label="Search transactions"
+            wrapperClassName="flex-1 sm:w-64"
+          />
           <div className="relative shrink-0">
             <button 
+              ref={filterBtnRef}
               onClick={() => setIsFilterOpen(!isFilterOpen)} 
               className={`h-9 px-3 border rounded-md text-[13px] font-medium flex items-center gap-2 transition-colors ${
                 isFilterActive || isFilterOpen
-                  ? 'bg-white text-black border-white'
+                  ? 'bg-white text-black border-white shadow-sm'
                   : 'border-white/[0.1] text-white hover:bg-white/[0.02]'
               }`}
             >
               <Filter className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Filter</span>
-              {isFilterActive && (
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              {activeFilterCount > 0 && (
+                <span className="w-4 h-4 rounded-full bg-emerald-500 text-black text-[10px] font-bold flex items-center justify-center">
+                  {activeFilterCount}
+                </span>
               )}
             </button>
 
-            {isFilterOpen && (
-              <div className="absolute right-0 mt-2 w-[280px] sm:w-80 bg-[#0a0a0a] border border-white/[0.08] rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] p-4 sm:p-5 z-50 space-y-4 text-left animate-in fade-in slide-in-from-top-1 duration-150">
-                <div className="flex items-center justify-between border-b border-white/[0.05] pb-2">
-                  <span className="text-[12px] font-semibold text-white">Filters</span>
-                  {isFilterActive && (
-                    <button 
-                      onClick={clearFilters}
-                      className="text-[10px] font-semibold text-emerald-500 hover:text-emerald-400 transition-colors"
-                    >
-                      Clear all
-                    </button>
-                  )}
-                </div>
-
-                {/* Filter by Type */}
-                <div className="space-y-1.5">
-                  <label className="block text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">Transaction Type</label>
-                  <div className="flex p-0.5 bg-white/[0.02] border border-white/[0.05] rounded-md">
-                    <button 
-                      type="button" 
-                      onClick={() => setFilterType('all')} 
-                      className={`flex-1 py-1.5 sm:py-1 text-[11px] font-medium rounded transition-colors ${filterType === 'all' ? 'bg-[#111111] text-white shadow-sm border border-white/[0.05]' : 'text-neutral-500 hover:text-white'}`}
-                    >
-                      All
-                    </button>
-                    <button 
-                      type="button" 
-                      onClick={() => setFilterType('Credit')} 
-                      className={`flex-1 py-1.5 sm:py-1 text-[11px] font-medium rounded transition-colors ${filterType === 'Credit' ? 'bg-[#111111] text-white shadow-sm border border-white/[0.05]' : 'text-neutral-500 hover:text-white'}`}
-                    >
-                      Income
-                    </button>
-                    <button 
-                      type="button" 
-                      onClick={() => setFilterType('Debit')} 
-                      className={`flex-1 py-1.5 sm:py-1 text-[11px] font-medium rounded transition-colors ${filterType === 'Debit' ? 'bg-[#111111] text-white shadow-sm border border-white/[0.05]' : 'text-neutral-500 hover:text-white'}`}
-                    >
-                      Expense
-                    </button>
-                  </div>
-                </div>
-
-                {/* Filter by Account */}
-                <div className="space-y-1.5">
-                  <label className="block text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">Account</label>
-                  <select 
-                    value={filterAccountId} 
-                    onChange={e => setFilterAccountId(e.target.value)} 
-                    className="w-full h-9 sm:h-8 bg-white/[0.02] border border-white/[0.05] rounded-md px-2 text-[12px] text-white focus:border-white/[0.2] outline-none [&>option]:bg-[#000000]"
+            <FilterPopover
+              isOpen={isFilterOpen}
+              onClose={() => setIsFilterOpen(false)}
+              triggerRef={filterBtnRef}
+              isFilterActive={isFilterActive}
+              activeCount={activeFilterCount}
+              onClearAll={clearFilters}
+              title="Filter Transactions"
+            >
+              {/* Filter by Type */}
+              <div className="space-y-1.5">
+                <label className="block text-[10.5px] font-semibold text-neutral-400 uppercase tracking-wider">Transaction Type</label>
+                <div className="flex p-0.5 bg-white/[0.02] border border-white/[0.06] rounded-lg">
+                  <button 
+                    type="button" 
+                    onClick={() => setFilterType('all')} 
+                    className={`flex-1 py-1 text-[11px] font-medium rounded-md transition-colors ${filterType === 'all' ? 'bg-[#18181b] text-white shadow-sm border border-white/[0.08]' : 'text-neutral-500 hover:text-white'}`}
                   >
-                    <option value="all">All Accounts</option>
-                    {accounts.map(acc => (
-                      <option key={acc.id} value={acc.id}>{acc.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Filter by Category */}
-                <div className="space-y-1.5">
-                  <label className="block text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">Category</label>
-                  <select 
-                    value={filterCategory} 
-                    onChange={e => setFilterCategory(e.target.value)} 
-                    className="w-full h-9 sm:h-8 bg-white/[0.02] border border-white/[0.05] rounded-md px-2 text-[12px] text-white focus:border-white/[0.2] outline-none [&>option]:bg-[#000000]"
+                    All
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => setFilterType('Credit')} 
+                    className={`flex-1 py-1 text-[11px] font-medium rounded-md transition-colors ${filterType === 'Credit' ? 'bg-[#18181b] text-white shadow-sm border border-white/[0.08]' : 'text-neutral-500 hover:text-white'}`}
                   >
-                    <option value="all">All Categories</option>
-                    {categories.map(cat => (
-                      <option key={cat.id} value={cat.name}>{cat.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Filter by Client */}
-                <div className="space-y-1.5">
-                  <label className="block text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">Client / Sponsor</label>
-                  <select 
-                    value={filterClientId} 
-                    onChange={e => setFilterClientId(e.target.value)} 
-                    className="w-full h-9 sm:h-8 bg-white/[0.02] border border-white/[0.05] rounded-md px-2 text-[12px] text-white focus:border-white/[0.2] outline-none [&>option]:bg-[#000000]"
+                    Income
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => setFilterType('Debit')} 
+                    className={`flex-1 py-1 text-[11px] font-medium rounded-md transition-colors ${filterType === 'Debit' ? 'bg-[#18181b] text-white shadow-sm border border-white/[0.08]' : 'text-neutral-500 hover:text-white'}`}
                   >
-                    <option value="all">All Clients/Sponsors</option>
-                    {clients.map(client => (
-                      <option key={client.id} value={client.id}>{client.name}</option>
-                    ))}
-                  </select>
+                    Expense
+                  </button>
                 </div>
+              </div>
 
-                {/* Filter by Date Range */}
-                <div className="space-y-1.5">
-                  <label className="block text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">Date Period</label>
-                  <select 
-                    value={filterDateRange} 
-                    onChange={e => setFilterDateRange(e.target.value as any)} 
-                    className="w-full h-9 sm:h-8 bg-white/[0.02] border border-white/[0.05] rounded-md px-2 text-[12px] text-white focus:border-white/[0.2] outline-none [&>option]:bg-[#000000]"
-                  >
-                    <option value="all">All Time</option>
-                    <option value="this-month">This Month</option>
-                    <option value="last-30">Last 30 Days</option>
-                    <option value="this-year">This Year</option>
-                  </select>
-                </div>
+              {/* Filter by Account */}
+              <div className="space-y-1.5">
+                <label className="block text-[10.5px] font-semibold text-neutral-400 uppercase tracking-wider">Account</label>
+                <Select 
+                  value={filterAccountId} 
+                  onChange={e => setFilterAccountId(e.target.value)} 
+                  className="w-full h-8.5 bg-white/[0.02] border border-white/[0.06] rounded-lg px-2.5 text-[12px] text-white"
+                >
+                  <option value="all">All Accounts</option>
+                  {accounts.map((acc, idx) => {
+                    const accId = acc.id || acc._id?.toString?.() || String(acc._id || `acc-${idx}`);
+                    return <option key={accId} value={accId}>{acc.name}</option>;
+                  })}
+                </Select>
+              </div>
 
-                {/* Min / Max Amount */}
-                <div className="space-y-1.5">
-                  <label className="block text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">Amount Range (₹)</label>
-                  <div className="flex gap-2">
+              {/* Filter by Category */}
+              <div className="space-y-1.5">
+                <label className="block text-[10.5px] font-semibold text-neutral-400 uppercase tracking-wider">Category</label>
+                <Select 
+                  value={filterCategory} 
+                  onChange={e => setFilterCategory(e.target.value)} 
+                  className="w-full h-8.5 bg-white/[0.02] border border-white/[0.06] rounded-lg px-2.5 text-[12px] text-white"
+                >
+                  <option value="all">All Categories</option>
+                  {categories.map((cat, idx) => {
+                    const catKey = cat.id || cat._id?.toString?.() || cat.name || `cat-${idx}`;
+                    return <option key={catKey} value={cat.name}>{cat.name}</option>;
+                  })}
+                </Select>
+              </div>
+
+              {/* Filter by Client */}
+              <div className="space-y-1.5">
+                <label className="block text-[10.5px] font-semibold text-neutral-400 uppercase tracking-wider">Client / Sponsor</label>
+                <Select 
+                  value={filterClientId} 
+                  onChange={e => setFilterClientId(e.target.value)} 
+                  className="w-full h-8.5 bg-white/[0.02] border border-white/[0.06] rounded-lg px-2.5 text-[12px] text-white"
+                >
+                  <option value="all">All Clients/Sponsors</option>
+                  {clients.map((client, idx) => {
+                    const clientId = client.id || client._id?.toString?.() || String(client._id || `client-${idx}`);
+                    return <option key={clientId} value={clientId}>{client.name}</option>;
+                  })}
+                </Select>
+              </div>
+
+              {/* Filter by Date Range */}
+              <div className="space-y-1.5">
+                <label className="block text-[10.5px] font-semibold text-neutral-400 uppercase tracking-wider">Date Period</label>
+                <Select 
+                  value={filterDateRange} 
+                  onChange={e => setFilterDateRange(e.target.value as any)} 
+                  className="w-full h-8.5 bg-white/[0.02] border border-white/[0.06] rounded-lg px-2.5 text-[12px] text-white"
+                >
+                  <option value="all">All Time</option>
+                  <option value="this-month">This Month</option>
+                  <option value="last-30">Last 30 Days</option>
+                  <option value="this-year">This Year</option>
+                </Select>
+              </div>
+
+              {/* Min / Max Amount */}
+              <div className="space-y-1.5">
+                <label className="block text-[10.5px] font-semibold text-neutral-400 uppercase tracking-wider">Amount Range (₹)</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="relative">
+                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[11px] text-neutral-500">₹</span>
                     <input 
                       type="number" 
                       placeholder="Min" 
                       value={filterMinAmount}
                       onChange={e => setFilterMinAmount(e.target.value)}
-                      className="w-1/2 h-9 sm:h-8 bg-white/[0.02] border border-white/[0.05] rounded-md px-2.5 text-[12px] text-white placeholder:text-neutral-700 focus:border-white/[0.2] outline-none"
+                      className="w-full h-8.5 bg-white/[0.02] border border-white/[0.06] rounded-lg pl-6 pr-2.5 text-[12px] text-white placeholder:text-neutral-600 focus:border-white/[0.2] outline-none"
                     />
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[11px] text-neutral-500">₹</span>
                     <input 
                       type="number" 
                       placeholder="Max" 
                       value={filterMaxAmount}
                       onChange={e => setFilterMaxAmount(e.target.value)}
-                      className="w-1/2 h-9 sm:h-8 bg-white/[0.02] border border-white/[0.05] rounded-md px-2.5 text-[12px] text-white placeholder:text-neutral-700 focus:border-white/[0.2] outline-none"
+                      className="w-full h-8.5 bg-white/[0.02] border border-white/[0.06] rounded-lg pl-6 pr-2.5 text-[12px] text-white placeholder:text-neutral-600 focus:border-white/[0.2] outline-none"
                     />
                   </div>
                 </div>
-
-                <div className="flex justify-end pt-2 border-t border-white/[0.05]">
-                  <button 
-                    onClick={() => setIsFilterOpen(false)}
-                    className="px-4 py-2 sm:px-3 sm:py-1.5 bg-white text-black text-[12px] sm:text-[11px] font-semibold rounded hover:bg-neutral-200 transition-colors"
-                  >
-                    Done
-                  </button>
-                </div>
               </div>
-            )}
+            </FilterPopover>
           </div>
           <button onClick={openNew} className="h-9 px-3 shrink-0 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 flex items-center gap-2">
             <Plus className="w-4 h-4" /> <span className="hidden sm:inline">New Record</span>
@@ -396,8 +439,10 @@ export default function TransactionsPage() {
                  </td>
                </tr>
             ) : (
-               filtered.map(tx => (
-                 <tr key={tx.id} onClick={() => openEdit(tx)} className="hover:bg-white/[0.02] transition-colors cursor-pointer group">
+                filtered.map((tx, idx) => {
+                  const rowKey = tx.id || tx._id?.toString?.() || String(tx._id || `tx-${idx}`);
+                  return (
+                    <tr key={rowKey} onClick={() => openEdit(tx)} className="hover:bg-white/[0.02] transition-colors cursor-pointer group">
                    <td className="px-4 sm:px-6 py-3 align-middle max-w-[200px] sm:max-w-none">
                      <div className="flex items-center gap-3">
                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border ${tx.type === 'Credit' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-white/[0.02] border-white/[0.05] text-neutral-400'}`}>
@@ -433,9 +478,10 @@ export default function TransactionsPage() {
                        {tx.type === 'Credit' ? '+' : '-'}₹{tx.amount.toLocaleString()}
                      </span>
                    </td>
-                 </tr>
-               ))
-            )}
+                  </tr>
+                );
+              })
+             )}
           </tbody>
         </table>
       </div>
@@ -443,57 +489,143 @@ export default function TransactionsPage() {
       <Drawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} title={selectedTx ? "Edit Transaction" : "New Transaction"}>
         <form onSubmit={handleSave} className="space-y-6 flex flex-col h-full">
            <div className="space-y-5 flex-1">
-             
-             {/* Type Switcher */}
-             <div className="flex p-1 bg-white/[0.02] border border-white/[0.05] rounded-lg">
-               <button type="button" onClick={()=>setTxType('Debit')} className={`flex-1 py-1.5 text-[13px] font-medium rounded-md transition-colors ${txType==='Debit' ? 'bg-[#111111] text-white shadow-sm border border-white/[0.05]' : 'text-neutral-500 hover:text-white'}`}>Expense</button>
-               <button type="button" onClick={()=>setTxType('Credit')} className={`flex-1 py-1.5 text-[13px] font-medium rounded-md transition-colors ${txType==='Credit' ? 'bg-[#111111] text-white shadow-sm border border-white/[0.05]' : 'text-neutral-500 hover:text-white'}`}>Income</button>
-             </div>
+              {formError && (
+                <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[12.5px]">
+                  {formError}
+                </div>
+              )}
+              
+              {/* Type Switcher */}
+              <div className="flex p-1 bg-white/[0.02] border border-white/[0.05] rounded-lg">
+                <button type="button" onClick={()=>setTxType('Debit')} className={`flex-1 py-1.5 text-[13px] font-medium rounded-md transition-colors ${txType==='Debit' ? 'bg-[#111111] text-white shadow-sm border border-white/[0.05]' : 'text-neutral-500 hover:text-white'}`}>Expense</button>
+                <button type="button" onClick={()=>setTxType('Credit')} className={`flex-1 py-1.5 text-[13px] font-medium rounded-md transition-colors ${txType==='Credit' ? 'bg-[#111111] text-white shadow-sm border border-white/[0.05]' : 'text-neutral-500 hover:text-white'}`}>Income</button>
+              </div>
 
-             <div>
-               <label htmlFor="tx-amount" className="block text-[12px] font-medium text-neutral-400 mb-1.5">Amount (₹)</label>
-               <input id="tx-amount" type="number" value={txAmount} onChange={e=>setTxAmount(e.target.value)} required min="0" step="0.01" className="w-full h-12 bg-transparent border-b border-white/[0.1] text-3xl font-semibold text-white focus:border-emerald-500 outline-none tabular-nums" placeholder="0.00" />
-             </div>
+              <div>
+                <label htmlFor="tx-amount" className="block text-[12px] font-medium text-neutral-400 mb-1.5">
+                  Amount (₹) <Req satisfied={Boolean(txAmount && Number(txAmount) > 0)} />
+                </label>
+                <input
+                  id="tx-amount"
+                  type="number"
+                  value={txAmount}
+                  onChange={e => {
+                    setTxAmount(e.target.value);
+                    if (formError) setFormError(null);
+                  }}
+                  required
+                  min="0"
+                  step="0.01"
+                  className={`w-full h-12 bg-transparent border-b text-3xl font-semibold text-white outline-none tabular-nums transition-colors ${
+                    formError && (!txAmount || Number(txAmount) <= 0)
+                      ? 'border-rose-500/80 focus:border-rose-500'
+                      : 'border-white/[0.1] focus:border-emerald-500'
+                  }`}
+                  placeholder="0.00"
+                />
+              </div>
 
-             <div>
-               <label htmlFor="tx-desc" className="block text-[12px] font-medium text-neutral-400 mb-1.5">Description</label>
-               <input id="tx-desc" type="text" value={txDesc} onChange={e=>setTxDesc(e.target.value)} required className="w-full h-9 bg-transparent border-b border-white/[0.1] text-[14px] text-white focus:border-emerald-500 outline-none placeholder:text-neutral-700" placeholder="e.g. Server Hosting" />
-             </div>
+              <div>
+                <label htmlFor="tx-desc" className="block text-[12px] font-medium text-neutral-400 mb-1.5">
+                  Description <Req satisfied={Boolean(txDesc.trim())} />
+                </label>
+                <input
+                  id="tx-desc"
+                  type="text"
+                  value={txDesc}
+                  onChange={e => {
+                    setTxDesc(e.target.value);
+                    if (formError) setFormError(null);
+                  }}
+                  required
+                  className={`w-full h-9 bg-transparent border-b text-[14px] text-white outline-none placeholder:text-neutral-700 transition-colors ${
+                    formError && !txDesc.trim()
+                      ? 'border-rose-500/80 focus:border-rose-500'
+                      : 'border-white/[0.1] focus:border-emerald-500'
+                  }`}
+                  placeholder="e.g. Server Hosting"
+                />
+              </div>
 
-             <div className="grid grid-cols-2 gap-4">
-               <div>
-                 <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">Date</label>
-                 <input type="date" value={txDate} onChange={e=>setTxDate(e.target.value)} required className="w-full h-9 bg-white/[0.02] border border-white/[0.05] rounded-md px-3 text-[13px] text-white focus:border-white/[0.2] outline-none" />
-               </div>
-               <div>
-                 <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">Account</label>
-                 <select value={txAccountId} onChange={e=>setTxAccountId(e.target.value)} required className="w-full h-9 bg-white/[0.02] border border-white/[0.05] rounded-md px-2 text-[13px] text-white focus:border-white/[0.2] outline-none [&>option]:bg-[#000000]">
-                   {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-                 </select>
-               </div>
-             </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">
+                    Date <Req satisfied={Boolean(txDate)} />
+                  </label>
+                  <DatePicker
+                    value={txDate}
+                    onChange={e => {
+                      setTxDate(e.target.value);
+                      if (formError) setFormError(null);
+                    }}
+                    required
+                    placeholder="dd-mm-yyyy"
+                    className={`w-full h-9 ${formError && !txDate ? 'border-rose-500/80' : ''}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">
+                    Account <Req satisfied={Boolean(txAccountId)} />
+                  </label>
+                  <Select
+                    value={txAccountId}
+                    onChange={e => {
+                      setTxAccountId(e.target.value);
+                      if (formError) setFormError(null);
+                    }}
+                    required
+                    className={`w-full h-9 ${formError && !txAccountId ? 'border-rose-500/80' : ''}`}
+                  >
+                    <option value="">Select Account</option>
+                    {accounts.map((a, idx) => {
+                      const accId = a.id || a._id?.toString?.() || String(a._id || `modal-acc-${idx}`);
+                      return <option key={accId} value={accId}>{a.name}</option>;
+                    })}
+                  </Select>
+                </div>
+              </div>
 
-             <div className="grid grid-cols-2 gap-4">
-               <div>
-                 <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">Category</label>
-                 <select value={txCategory} onChange={e=>setTxCategory(e.target.value)} className="w-full h-9 bg-white/[0.02] border border-white/[0.05] rounded-md px-2 text-[13px] text-white focus:border-white/[0.2] outline-none [&>option]:bg-[#000000]">
-                   <option value="">Uncategorized</option>
-                   {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-                 </select>
-               </div>
-               <div>
-                 <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">Client / Sponsor</label>
-                 <select value={txClientId} onChange={e=>setTxClientId(e.target.value)} className="w-full h-9 bg-white/[0.02] border border-white/[0.05] rounded-md px-2 text-[13px] text-white focus:border-white/[0.2] outline-none [&>option]:bg-[#000000]">
-                   <option value="">None</option>
-                   {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                 </select>
-               </div>
-             </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">
+                    Category <Opt />
+                  </label>
+                  <Select
+                    value={txCategory}
+                    onChange={e => setTxCategory(e.target.value)}
+                    className="w-full h-9"
+                  >
+                    <option value="">Uncategorized</option>
+                    {categories.map((c, idx) => {
+                      const catKey = c.id || c._id?.toString?.() || c.name || `modal-cat-${idx}`;
+                      return <option key={catKey} value={c.name}>{c.name}</option>;
+                    })}
+                  </Select>
+                </div>
+                <div>
+                  <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">
+                    Client / Sponsor <Opt />
+                  </label>
+                  <Select
+                    value={txClientId}
+                    onChange={e => setTxClientId(e.target.value)}
+                    className="w-full h-9"
+                  >
+                    <option value="">None</option>
+                    {clients.map((c, idx) => {
+                      const clientId = c.id || c._id?.toString?.() || String(c._id || `modal-cl-${idx}`);
+                      return <option key={clientId} value={clientId}>{c.name}</option>;
+                    })}
+                  </Select>
+                </div>
+              </div>
 
-             <div>
-               <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">Notes (Optional)</label>
-               <textarea value={txNotes} onChange={e=>setTxNotes(e.target.value)} rows={3} className="w-full bg-white/[0.02] border border-white/[0.05] rounded-md p-3 text-[13px] text-white focus:border-white/[0.2] outline-none resize-none" placeholder="Add context to this transaction..." />
-             </div>
+              <div>
+                <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">
+                  Notes <Opt />
+                </label>
+                <textarea value={txNotes} onChange={e=>setTxNotes(e.target.value)} rows={3} className="w-full bg-white/[0.02] border border-white/[0.05] rounded-md p-3 text-[13px] text-white focus:border-white/[0.2] outline-none resize-none" placeholder="Add context to this transaction..." />
+              </div>
            </div>
 
            <div className="flex items-center justify-between pt-6 border-t border-white/[0.05]">

@@ -1,0 +1,31 @@
+meta {
+  name: Rates E2E 9 - Create T&M Project Website Redesign
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{BASE_URL}}/api/tenant/users
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const users = raw.users || [];
+  if (users.length === 0) {
+    throw new Error('Expected the signup admin in the tenant user list');
+  }
+  bru.setVar('userId', users[0].id);
+  bru.setVar('adminUsername', users[0].username);
+}
+
+docs {
+  Grab the signup admin's id (the §136 scenario's developer) ahead of project
+  creation so the manager step can assign them (§105 order).
+}

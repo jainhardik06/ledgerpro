@@ -1,0 +1,36 @@
+meta {
+  name: Tax E2E 15 - Create Bank Account
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{BASE_URL}}/api/accounts
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "E2E Tax Collections HDFC",
+    "type": "Bank",
+    "initialBalance": 0
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('accountId', raw.account.id);
+  if (!raw.account.id) throw new Error('Create must return the account id');
+  if (raw.account.initialBalance !== 0) throw new Error('Account must start at 0');
+}
+
+docs {
+  The collections account for the withholding journey — cash received will be
+  amount − withholdingAmount (§92).
+}

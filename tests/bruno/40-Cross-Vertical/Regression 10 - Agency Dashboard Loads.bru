@@ -1,0 +1,24 @@
+meta {
+  name: Regression 10 - Agency Dashboard Loads
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/dashboard?period=THIS_MONTH
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.data.period: isDefined
+  res.body.data.financial: isDefined
+  res.body.data.projects: isDefined
+}
+
+docs {
+  All three verticals verified: Standard unchanged, Student Club unchanged,
+  Agency available. Money OS's broader product strategy is protected.
+}

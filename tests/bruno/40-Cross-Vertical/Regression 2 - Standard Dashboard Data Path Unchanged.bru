@@ -1,0 +1,22 @@
+meta {
+  name: Regression 2 - Standard Dashboard Data Path Unchanged
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{BASE_URL}}/api/transactions
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+docs {
+  The Standard dashboard's primary data source (transactions) must behave
+  exactly as before Module 1 — same endpoint, same session gate, same
+  response shape. The Agency vertical must not have touched it.
+}

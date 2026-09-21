@@ -1,0 +1,23 @@
+meta {
+  name: Invoices E2E 15 - Login as Dev
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{invDevUsername}}",
+    "password": "E2eInvDev#2026"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}

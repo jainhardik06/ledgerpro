@@ -1,0 +1,36 @@
+meta {
+  name: Team E2E 17 - History Preserved
+  type: http
+  seq: 17
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/members?includeInactive=true
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const members = raw.members || [];
+  if (members.length !== 1) {
+    throw new Error('Expected exactly 1 historical membership, got ' + members.length);
+  }
+  if (members[0].active !== false) {
+    throw new Error('Removed membership must read back with active=false (§37)');
+  }
+  if (members[0].role !== 'Senior Designer') {
+    throw new Error('History must keep the last written state, not a blank row');
+  }
+}
+
+docs {
+  §37 — membership history is never deleted. includeInactive=true surfaces
+  the removed row, exactly as the Team tab's "Past members" section and
+  future time-record questions need.
+}

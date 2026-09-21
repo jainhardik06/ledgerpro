@@ -1,0 +1,24 @@
+meta {
+  name: Payments E2E 56 - Agency B Cannot Confirm Agency A Payment
+  type: http
+  seq: 56
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payments/{{payA1Id}}/confirm
+  body: json
+  auth: none
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 404
+}
+
+docs {
+  §113 at the write edge — the money-moving action is tenant-scoped: a
+  cross-tenant confirm is an identical 404, never a mutation.
+}

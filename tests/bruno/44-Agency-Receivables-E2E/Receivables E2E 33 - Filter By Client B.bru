@@ -1,0 +1,27 @@
+meta {
+  name: Receivables E2E 33 - Filter By Client B
+  type: http
+  seq: 33
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/receivables?clientId={{clientIdB}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const r = raw.receivables;
+  if (r.outstanding !== 45000) throw new Error('client B outstanding must be 45000, got ' + r.outstanding);
+  if (r.openInvoiceCount !== 2) throw new Error('client B must have 2 open invoices');
+  if (r.overdueAmount !== 0) throw new Error('client B has nothing overdue');
+  if (r.dueSoon !== 45000) throw new Error('both client B invoices are due soon');
+  if (!r.invoices.every(i => i.clientId === bru.getVar('clientIdB'))) throw new Error('every row must be client B');
+  if (r.byClient.length !== 1) throw new Error('byClient narrows with the filter (one fact set)');
+}

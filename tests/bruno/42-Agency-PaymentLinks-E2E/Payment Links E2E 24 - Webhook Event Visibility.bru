@@ -1,0 +1,37 @@
+meta {
+  name: Payment Links E2E 24 - Webhook Event Visibility
+  type: http
+  seq: 24
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/webhook-events?limit=200
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (!Array.isArray(raw.webhookEvents)) throw new Error('§43: must return the webhookEvents array');
+  // §42 — the rows are metadata only: every one carries a processingStatus
+  // and NEVER a payload field.
+  for (const e of raw.webhookEvents) {
+    if (!e.processingStatus) throw new Error('§44: every row carries processingStatus');
+    if ('payload' in e) throw new Error('§42: a row must never expose the payload');
+  }
+}
+
+docs {
+  §43 — operational visibility: "processed? failed? retried?" must be
+  answerable instead of losing the request. The webhook deliveries from
+  requests 20–23 were for UNKNOWN links, so they never resolved to this
+  tenant and the tenant-scoped list is legitimately empty here — the shape
+  and the gate are what this proves; the populated view is asserted in
+  vitest (agency-payment-link-loop.test.ts, listWebhookEvents after the
+  full loop).
+}

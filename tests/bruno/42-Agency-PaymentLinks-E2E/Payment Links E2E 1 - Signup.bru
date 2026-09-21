@@ -1,0 +1,43 @@
+meta {
+  name: Payment Links E2E 1 - Signup
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "E2E Payment Links Agency",
+    "username": "{{plAdminUsername}}",
+    "password": "{{plAdminPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('plAdminUsername', 'e2e_pl_admin_' + suffix);
+  bru.setVar('plAdminPassword', 'E2ePlAdmin#2026');
+  // run-unique token: gateway ids must never collide across runs (the store
+  // is persistent across Bruno runs)
+  bru.setVar('plRunToken', 'pl_' + suffix);
+}
+
+docs {
+  Fresh agency for the Module 12 payment-link journey (§31–§57). Bruno
+  cannot reach real Razorpay, so this suite pins everything reachable
+  locally: the §36 server-resolved amount, the §54 fail-closed create, the
+  §34 link history, §113 404 discipline, and the §40/§42 link-event webhook
+  matrix (signature, unknown link, replay). The FULL happy loop (create →
+  pay → webhook → payment → invoice → transaction) is proven by the vitest
+  integration suite agency-payment-link-loop.test.ts.
+}

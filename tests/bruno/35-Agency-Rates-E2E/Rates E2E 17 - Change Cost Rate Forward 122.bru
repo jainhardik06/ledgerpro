@@ -1,0 +1,29 @@
+meta {
+  name: Rates E2E 17 - Change Cost Rate Forward 122
+  type: http
+  seq: 17
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/rate-cards/{{costCardId}}/entries/{{costEntryId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "amount": 1000,
+    "effectiveFrom": "2027-01-01"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+docs {
+  §122 — "rate changed from 2027-01-01": the 900 version closes at
+  2026-12-31 (inclusive, §79) and a NEW 1000 version begins. History is
+  never rewritten; the next two requests prove it from both sides.
+}

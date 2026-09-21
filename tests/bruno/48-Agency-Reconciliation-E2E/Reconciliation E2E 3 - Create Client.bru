@@ -1,0 +1,35 @@
+meta {
+  name: Reconciliation E2E 3 - Create Client
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/clients
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Reconciliation Industries",
+    "email": "ar@reconciliation-e2e.test",
+    "billingProfile": { "city": "Pune", "country": "India", "currency": "INR" }
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('recClientId', raw.client.id);
+  if (!raw.client.id) throw new Error('Create must return the client id');
+}
+
+docs {
+  Single-currency store (INR) so every aggregate resolves live, never the
+  mixed-currency pending state.
+}

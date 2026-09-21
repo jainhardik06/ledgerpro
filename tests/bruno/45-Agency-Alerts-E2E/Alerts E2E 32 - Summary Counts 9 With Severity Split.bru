@@ -1,0 +1,41 @@
+meta {
+  name: Alerts E2E 32 - Summary Counts 9 With Severity Split
+  type: http
+  seq: 32
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/alerts/summary
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.counts.open: eq 9
+  res.body.counts.acknowledged: eq 0
+  res.body.counts.resolved: eq 0
+  res.body.counts.openBySeverity.CRITICAL: eq 4
+  res.body.counts.openBySeverity.WARNING: eq 3
+  res.body.counts.openBySeverity.INFO: eq 2
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  // §22 — the admin session sees the cost-bearing rows in the top slice.
+  if (!Array.isArray(raw.top) || raw.top.length !== 5) {
+    throw new Error('Admin top must be 5 severity-ranked rows, got ' + (raw.top ? raw.top.length : 'none'));
+  }
+  const types = raw.top.map(a => a.ruleType);
+  if (!types.includes('PROJECT_OVER_BUDGET')) throw new Error('Admin top must include the cost-bearing over-budget row');
+  if (!raw.top.every(a => a.status === 'OPEN' || a.status === 'ACKNOWLEDGED')) {
+    throw new Error('Top rows must be unresolved');
+  }
+}
+
+docs {
+  §22 — the ONE evaluating read: the summary pass (idempotent — this second
+  evaluation updates the 9, changes nothing) then the headline counts and
+  the top severity-ranked unresolved rows.
+}

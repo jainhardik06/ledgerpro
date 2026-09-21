@@ -1,0 +1,25 @@
+meta {
+  name: Settings E2E 41 - User PATCH General 403
+  type: http
+  seq: 41
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/settings/general
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "currency": "EUR"
+  }
+}
+
+assert {
+  res.status: eq 403
+}
+
+docs {
+  §55 — agency.settings.manage gate: a USER can never write settings.
+}

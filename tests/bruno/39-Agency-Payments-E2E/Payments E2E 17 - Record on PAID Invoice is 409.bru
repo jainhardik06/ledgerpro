@@ -1,0 +1,29 @@
+meta {
+  name: Payments E2E 17 - Record on PAID Invoice is 409
+  type: http
+  seq: 17
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payments
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "invoiceId": "{{invAId}}",
+    "amount": 5000,
+    "method": "CASH"
+  }
+}
+
+assert {
+  res.status: eq 409
+}
+
+docs {
+  §91 — overpayment is not supported in Phase 1: a PAID invoice accepts no
+  further payments at all (the refusal at record time, before any money
+  moves).
+}

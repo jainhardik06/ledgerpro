@@ -1,0 +1,48 @@
+meta {
+  name: Team E2E 22 - Workspace Payload and Activity
+  type: http
+  seq: 22
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  // §37 — the workspace splits the team: active vs past.
+  if (!Array.isArray(raw.pastMembers)) {
+    throw new Error('Workspace must expose pastMembers for the Team tab history');
+  }
+  if (raw.pastMembers.length !== 1) {
+    throw new Error('Expected 1 past member in the workspace payload');
+  }
+  if ((raw.members || []).length !== 2) {
+    throw new Error('Expected 2 active members in the workspace payload');
+  }
+  // §87/§50 — the team mutations are audited with the projectId embedded so
+  // the Activity timeline surfaces them, as granular §50 events.
+  const actions = (raw.activity || []).map(a => a.action);
+  for (const expected of [
+    'PROJECT_MEMBER_ADDED', 'PROJECT_MEMBER_ROLE_CHANGED',
+    'PROJECT_MEMBER_ALLOCATION_CHANGED', 'PROJECT_MEMBER_REMOVED',
+    'PROJECT_MANAGER_CHANGED',
+  ]) {
+    if (!actions.includes(expected)) {
+      throw new Error('Activity must include ' + expected + ' (got: ' + actions.join(', ') + ')');
+    }
+  }
+}
+
+docs {
+  The workspace payload feeds the Team tab (§42): members (active) +
+  pastMembers (history, §37), and the Activity timeline carries every team
+  mutation (§87).
+}

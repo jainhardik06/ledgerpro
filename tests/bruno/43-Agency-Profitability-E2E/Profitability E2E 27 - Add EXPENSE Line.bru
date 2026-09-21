@@ -1,0 +1,26 @@
+meta {
+  name: Profitability E2E 27 - Add EXPENSE Line
+  type: http
+  seq: 27
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{invId}}/lines
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "type": "EXPENSE",
+    "sourceId": "{{expenseId}}",
+    "description": "StockAI API credits (10% margin)"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.line.type: eq EXPENSE
+  res.body.invoice.subtotal.amount: eq 6100
+  res.body.invoice.total.amount: eq 6100
+}

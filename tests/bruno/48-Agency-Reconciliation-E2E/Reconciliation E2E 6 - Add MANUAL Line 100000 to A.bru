@@ -1,0 +1,31 @@
+meta {
+  name: Reconciliation E2E 6 - Add MANUAL Line 100000 to A
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{recInvAId}}/lines
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "type": "MANUAL",
+    "description": "Delivery retainer — reconciliation A",
+    "amount": 100000
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.invoice.subtotal.amount: eq 100000
+  res.body.invoice.total.amount: eq 100000
+}
+
+docs {
+  No tax, no discount: total = subtotal = 100000 — keeps every downstream
+  reconciliation number exact.
+}

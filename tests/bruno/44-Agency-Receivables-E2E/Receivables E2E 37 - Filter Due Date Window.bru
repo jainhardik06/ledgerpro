@@ -1,0 +1,30 @@
+meta {
+  name: Receivables E2E 37 - Filter Due Date Window
+  type: http
+  seq: 37
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/receivables?from={{winFrom}}&to={{winTo}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const r = raw.receivables;
+  // [today−50, today+7] keeps INV-000002 (−45), INV-000003 (−10),
+  // INV-000004 (+2), INV-000005 (+5); drops INV-000001 (−95, outside) and
+  // the paid INV-000006 was never here.
+  if (r.openInvoiceCount !== 4) throw new Error('the window keeps 4 invoices, got ' + r.openInvoiceCount);
+  if (r.outstanding !== 105000) throw new Error('window outstanding must be 105000, got ' + r.outstanding);
+  const order = r.invoices.map(i => i.invoiceNumber);
+  const expect = ['INV-000002', 'INV-000003', 'INV-000005', 'INV-000004'];
+  if (JSON.stringify(order) !== JSON.stringify(expect)) throw new Error('window rows: ' + JSON.stringify(order));
+  if (r.byAgingBucket['90+'] !== 0) throw new Error('the −95d invoice is outside the window');
+}

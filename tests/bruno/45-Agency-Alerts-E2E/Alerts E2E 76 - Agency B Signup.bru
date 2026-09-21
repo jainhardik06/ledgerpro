@@ -1,0 +1,30 @@
+meta {
+  name: Alerts E2E 76 - Agency B Signup
+  type: http
+  seq: 76
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "E2E Alerts Agency B",
+    "username": "{{alBUsername}}",
+    "password": "{{alBPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('alBUsername', 'e2e_al_b_' + suffix);
+  bru.setVar('alBPassword', 'E2eAlB#2026');
+}

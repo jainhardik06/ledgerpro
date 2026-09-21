@@ -1,0 +1,25 @@
+meta {
+  name: Settings E2E 7 - PATCH General Bad Currency 400
+  type: http
+  seq: 7
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/settings/general
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "defaultCurrency": "rupees"
+  }
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  §44 — the currency must be a 3-letter ISO code.
+}

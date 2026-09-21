@@ -1,0 +1,38 @@
+meta {
+  name: Payments E2E 47 - Retry Reconcile Recovers
+  type: http
+  seq: 47
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payments/{{payGW3Id}}/reconcile
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "accountId": "{{accountId}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.payment.status: eq CONFIRMED
+  res.body.payment.reconciliationStatus: eq RECONCILED
+  res.body.invoice.status: eq PARTIALLY_PAID
+  res.body.invoice.amountPaid.amount: eq 40000
+  res.body.invoice.amountDue.amount: eq 60000
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (!raw.transactionId) throw new Error('§129: the recovered confirm must create the core transaction');
+}
+
+docs {
+  10F recovery — the same manual retry now confirms through the normal
+  path: one Credit, §104 recompute (settled 40000 of 100000), and the
+  ERROR state resolves to RECONCILED (§115).
+}

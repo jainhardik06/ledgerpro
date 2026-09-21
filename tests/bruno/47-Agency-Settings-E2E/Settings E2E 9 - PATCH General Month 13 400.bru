@@ -1,0 +1,25 @@
+meta {
+  name: Settings E2E 9 - PATCH General Month 13 400
+  type: http
+  seq: 9
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/settings/general
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "fiscalYearStartMonth": 13
+  }
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  §44 — month is 1–12.
+}

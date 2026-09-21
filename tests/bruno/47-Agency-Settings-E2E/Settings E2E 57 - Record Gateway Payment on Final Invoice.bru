@@ -1,0 +1,41 @@
+meta {
+  name: Settings E2E 57 - Record Gateway Payment on Final Invoice
+  type: http
+  seq: 57
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payments
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "invoiceId": "{{stPrefixInvId}}",
+    "amount": 100,
+    "method": "RAZORPAY",
+    "gatewayPaymentId": "pay_stm_{{stRunToken}}"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.payment.status: eq PENDING
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('stXpayId', raw.payment.id);
+  bru.setVar('stXgwId', 'pay_stm_' + bru.getVar('stRunToken'));
+  if (!raw.payment.gatewayPaymentId) throw new Error('10D: the gateway payment must carry its gateway identity');
+}
+
+docs {
+  §51-binding prerequisite — Agency A records a gateway payment (10D manual
+  intake: method RAZORPAY + gatewayPaymentId, lands PENDING — the exact
+  actionable state a forged payment.captured would target). The webhook
+  confirmation path (§108 gateway exemption: no account needed) applies to
+  it, which is what the tenant-binding probes below exercise.
+}

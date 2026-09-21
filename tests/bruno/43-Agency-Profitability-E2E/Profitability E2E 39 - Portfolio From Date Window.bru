@@ -1,0 +1,28 @@
+meta {
+  name: Profitability E2E 39 - Portfolio From Date Window
+  type: http
+  seq: 39
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/profitability?from={{tomorrow}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  const ist = new Date(Date.now() + 5.5 * 60 * 60 * 1000 + 86400000);
+  bru.setVar('tomorrow', ist.toISOString().slice(0, 10));
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  // §80 — the window selects PROJECTS by start date: both started today, so
+  // a from of tomorrow excludes both (their money is never re-sliced).
+  if (raw.portfolio.projects.length !== 0) throw new Error('no projects start tomorrow');
+}

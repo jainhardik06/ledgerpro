@@ -1,0 +1,31 @@
+meta {
+  name: Reports E2E 65 - CSV Matches Filtered JSON
+  type: http
+  seq: 65
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/portfolio/export.csv?status=DRAFT
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+script:post-response {
+  const csv = typeof res.body === 'string' ? res.body : String(res.body);
+  const lines = csv.replace(/\r\n$/, '').split('\r\n');
+  if (lines.length !== 2) throw new Error('header + 1 filtered row expected, got ' + lines.length);
+
+  // §41 — filters apply consistently: the CSV honors the status filter
+  // exactly like the JSON route (one definition, REPORT_ROUTE_RULES).
+  // The fixed-fee project is freshly created → lifecycle DRAFT.
+  if (!lines[1].startsWith('Reports Brand Sprint,')) throw new Error('the DRAFT row only: ' + lines[1]);
+  if (csv.includes('Reports Portal Build,')) throw new Error('the ACTIVE project must be filtered OUT of the CSV');
+
+  const f = lines[1].split(',');
+  if (f[2] !== 'DRAFT') throw new Error('status column: ' + f[2]);
+  if (f[5] !== bru.getVar('p2Revenue')) throw new Error('revenue: csv ' + f[5] + ' vs json ' + bru.getVar('p2Revenue'));
+}

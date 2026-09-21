@@ -1,0 +1,24 @@
+meta {
+  name: Alerts E2E 35 - List Category CASH
+  type: http
+  seq: 35
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/alerts?category=CASH
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.count: eq 3
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const types = raw.alerts.map(a => a.ruleType).sort();
+  if (types.join(',') !== 'INVOICE_DUE_SOON,INVOICE_OVERDUE,LARGE_INVOICE_OVERDUE') {
+    throw new Error('CASH category must be the 3 invoice rules, got ' + types.join(','));
+  }
+}

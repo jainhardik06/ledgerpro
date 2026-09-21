@@ -1,0 +1,35 @@
+meta {
+  name: Team E2E 21 - Change Project Manager
+  type: http
+  seq: 21
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "projectManagerId": "{{devUserId}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (raw.project.projectManagerId !== bru.getVar('devUserId')) {
+    throw new Error('PATCH must persist the new project manager (§48)');
+  }
+}
+
+docs {
+  §48 — PATCHing the project changes projectManagerId after validating
+  tenant membership. The new manager is already an active member, so no
+  second membership row is created (§39 stays consistent, not duplicative).
+}

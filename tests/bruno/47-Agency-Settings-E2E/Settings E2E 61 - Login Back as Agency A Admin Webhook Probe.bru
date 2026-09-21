@@ -1,0 +1,27 @@
+meta {
+  name: Settings E2E 61 - Login Back as Agency A Admin Webhook Probe
+  type: http
+  seq: 61
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{stAdminUsername}}",
+    "password": "{{stAdminPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+docs {
+  Back as Agency A's admin to verify the forged delivery wrote nothing.
+}

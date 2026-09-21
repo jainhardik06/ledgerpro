@@ -1,0 +1,26 @@
+meta {
+  name: Settings E2E 15 - PATCH Profitability Overdue Zero 400
+  type: http
+  seq: 15
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/settings/profitability
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "overdueWarningDays": 0
+  }
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  A 0-day "due soon" window is meaningless — disable the rule instead; the
+  window is 1–365.
+}

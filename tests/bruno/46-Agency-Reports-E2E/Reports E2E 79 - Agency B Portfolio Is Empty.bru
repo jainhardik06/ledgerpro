@@ -1,0 +1,25 @@
+meta {
+  name: Reports E2E 79 - Agency B Portfolio Is Empty
+  type: http
+  seq: 79
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/portfolio
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  // §113 — Agency A's projects are invisible to B; an empty report is the
+  // honest answer, not an error.
+  if (raw.report.rows.length !== 0) throw new Error('rows must be empty, got ' + raw.report.rows.length);
+  if (raw.report.pagination.total !== 0) throw new Error('total: ' + raw.report.pagination.total);
+  if (raw.report.summary.projectCount !== 0) throw new Error('summary count: ' + raw.report.summary.projectCount);
+}

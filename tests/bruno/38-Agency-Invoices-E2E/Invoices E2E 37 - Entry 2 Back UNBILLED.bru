@@ -1,0 +1,21 @@
+meta {
+  name: Invoices E2E 37 - Entry 2 Back UNBILLED
+  type: http
+  seq: 37
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/time/{{entry2Id}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.timeEntry.billingStatus: eq UNBILLED
+}
+
+docs {
+  §66 — the guarded release actually landed on the source row: entry 2 is
+  UNBILLED again and free for any future draft.
+}

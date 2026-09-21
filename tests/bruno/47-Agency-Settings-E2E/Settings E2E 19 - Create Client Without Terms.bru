@@ -1,0 +1,37 @@
+meta {
+  name: Settings E2E 19 - Create Client Without Terms
+  type: http
+  seq: 19
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/clients
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Settings Test Industries",
+    "email": "ap@settings-e2e.test",
+    "billingProfile": { "city": "Pune", "country": "India", "currency": "INR" }
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('stClientId', raw.client.id);
+  if (!raw.client.id) throw new Error('Create must return the client id');
+}
+
+docs {
+  Deliberately WITHOUT commercialDefaults.paymentTerms — so the invoice
+  due-date fallback ladder falls through to the AGENCY billing terms rung
+  (§45): explicit payload > client terms > agency paymentTermsDays > issue
+  date.
+}

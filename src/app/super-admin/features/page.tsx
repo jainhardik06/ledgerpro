@@ -124,7 +124,7 @@ export default function FeaturesPage() {
       )}
 
       <div className="flex-1 overflow-auto p-6">
-        <div className="max-w-5xl space-y-4">
+        <div className="space-y-4">
           
           {loading ? (
              <div className="text-neutral-500 text-[13px]">Loading feature flags...</div>

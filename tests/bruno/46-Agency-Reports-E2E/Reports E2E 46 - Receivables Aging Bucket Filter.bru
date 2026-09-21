@@ -1,0 +1,24 @@
+meta {
+  name: Reports E2E 46 - Receivables Aging Bucket Filter
+  type: http
+  seq: 46
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/receivables?agingBucket=1-30
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const rep = raw.report;
+  if (rep.rows.length !== 1) throw new Error('rows: ' + rep.rows.length);
+  if (rep.rows[0].invoiceNumber !== 'INV-000002') throw new Error('must be the overdue invoice');
+  if (rep.summary.openInvoiceCount !== 1) throw new Error('filtered count: ' + rep.summary.openInvoiceCount);
+}

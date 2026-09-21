@@ -127,7 +127,7 @@ Each entry:
 - Bugs fixed
 - Breaking changes (if any)
 
-**Template**: `src/layouts/ChangelogLayout.astro`
+**Template**: `src/pages/changelog/index.astro` (uses the shared `Layout.astro` — there is no dedicated ChangelogLayout)
 
 ---
 

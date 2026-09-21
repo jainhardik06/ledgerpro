@@ -7,6 +7,7 @@ import { checkRateLimit } from '@/lib/rateLimit';
 import { firstClientIp, validatePassword, validateString } from '@/lib/validation';
 import { logError } from '@/lib/logger';
 import PostHogClient from '@/lib/posthog-server';
+import { resolveVertical } from '@/lib/agency/types/vertical';
 
 const LOGIN_LIMIT = 10;
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
@@ -62,11 +63,8 @@ export async function POST(req: NextRequest) {
     const superAdminUsername = process.env.SUPER_ADMIN_USERNAME;
     const superAdminHash = requireSuperAdminHash();
 
-    console.log('[DEBUG] Super Admin login attempt:', { username, superAdminUsername, hashExists: !!superAdminHash, hashLength: superAdminHash?.length });
-
     if (superAdminUsername && superAdminHash && username === superAdminUsername) {
       const isAdminMatch = await bcrypt.compare(password, superAdminHash);
-      console.log('[DEBUG] Password match result:', isAdminMatch);
       if (!isAdminMatch) {
         await createLog(username, 'FAILED_LOGIN', 'Super Admin: incorrect password', undefined, ipAddress);
         return NextResponse.json({ error: 'Invalid username or password' }, { status: 401 });
@@ -150,6 +148,9 @@ export async function POST(req: NextRequest) {
         role: user.role,
         tenantId: user.tenantId,
       },
+      // Module 1.1 — Agency workspaces land on the Agency Command Center;
+      // other verticals keep the generic dashboard untouched.
+      redirectTo: resolveVertical(tenant?.appMode) === 'Agency' ? '/dashboard/agency' : '/dashboard',
     });
   } catch (error) {
     logError('Login error', error, { ipAddress });

@@ -1,0 +1,63 @@
+meta {
+  name: Reports E2E 45 - Receivables Report
+  type: http
+  seq: 45
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/receivables
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const rep = raw.report;
+  const near = (a, b, what) => {
+    if (a === null || a === undefined || Math.abs(a - b) > 0.001) {
+      throw new Error(what + ': expected ' + b + ', got ' + a);
+    }
+  };
+
+  if (rep.rows.length !== 2) throw new Error('rows: ' + rep.rows.length);
+
+  // §97 — most-overdue-first: the 10-days-past-due invoice B leads.
+  const b = rep.rows[0];
+  if (b.invoiceNumber !== 'INV-000002') throw new Error('row 0 must be the overdue invoice, got ' + b.invoiceNumber);
+  if (b.status !== 'PARTIALLY_PAID') throw new Error('stored status: ' + b.status);
+  if (b.displayStatus !== 'OVERDUE') throw new Error('display verdict: ' + b.displayStatus);
+  near(b.total, 150000, 'B total');
+  near(b.paid, 50000, 'B paid');
+  near(b.outstanding, 100000, 'B outstanding');
+  if (b.ageDays < 9 || b.ageDays > 11) throw new Error('B age: ' + b.ageDays);
+  if (b.agingBucket !== '1-30') throw new Error('B bucket: ' + b.agingBucket);
+
+  // The due-soon invoice follows, still current.
+  const a = rep.rows[1];
+  if (a.invoiceNumber !== 'INV-000001') throw new Error('row 1 must be the due-soon invoice');
+  if (a.displayStatus !== 'SENT') throw new Error('A verdict: ' + a.displayStatus);
+  near(a.outstanding, 40000, 'A outstanding');
+  if (a.ageDays !== 0) throw new Error('A age must be 0 (not yet due), got ' + a.ageDays);
+  if (a.agingBucket !== 'CURRENT') throw new Error('A bucket: ' + a.agingBucket);
+  if (a.projectId !== null) throw new Error('A is standalone — projectId must be null, rendered honestly');
+
+  // §105 — summary over the engine's metrics: 140000 outstanding, 40000
+  // due soon (within 7), 100000 overdue on one invoice.
+  const s = rep.summary;
+  if (s.openInvoiceCount !== 2) throw new Error('open invoices: ' + s.openInvoiceCount);
+  near(s.outstanding, 140000, 'summary outstanding');
+  near(s.dueSoon, 40000, 'summary due soon');
+  near(s.overdueAmount, 100000, 'summary overdue');
+  if (s.overdueCount !== 1) throw new Error('overdue count: ' + s.overdueCount);
+}
+
+docs {
+  §35 — the receivables report over Module 14's engine: engine-derived
+  aging (B: 10 days → 1-30) and the stored/derived status distinction
+  (stored PARTIALLY_PAID, verdict OVERDUE), most-overdue-first.
+}

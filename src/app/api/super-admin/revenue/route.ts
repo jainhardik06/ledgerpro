@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
 import { getTenants } from '@/lib/db';
+import { PLAN_CATALOG } from '@/lib/plans';
 
 export async function GET() {
   try {
@@ -19,15 +20,17 @@ export async function GET() {
       FREE: 0
     };
 
-    // ENTERPRISE_PRICE/STARTER_PRICE are Money OS's real published list prices —
-    // MRR here is a legitimate estimate (real active tenant counts x list price),
-    // not fabricated. There is no Stripe/billing integration in this codebase,
-    // so net retention and churn cannot be computed (both require historical
-    // subscription lifecycle events — upgrades, downgrades, cancellations —
-    // that nothing here tracks yet). Returning null rather than a placeholder
-    // number is intentional: the UI must show "not available", not fake data.
-    const ENTERPRISE_PRICE = 299;
-    const STARTER_PRICE = 49;
+    // The published list prices (STARTER/ENTERPRISE) live in the shared plan
+    // catalog so the Organizations page's plan picker and this MRR estimate can
+    // never disagree. MRR here is a legitimate estimate (real active tenant
+    // counts x list price), not fabricated. There is no Stripe/billing
+    // integration in this codebase, so net retention and churn cannot be
+    // computed (both require historical subscription lifecycle events —
+    // upgrades, downgrades, cancellations — that nothing here tracks yet).
+    // Returning null rather than a placeholder number is intentional: the UI
+    // must show "not available", not fake data.
+    const ENTERPRISE_PRICE = PLAN_CATALOG.ENTERPRISE.monthlyListPrice;
+    const STARTER_PRICE = PLAN_CATALOG.STARTER.monthlyListPrice;
 
     tenants.forEach(t => {
       if (t.status === 'ACTIVE') {

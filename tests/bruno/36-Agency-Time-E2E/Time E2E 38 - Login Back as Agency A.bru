@@ -1,0 +1,29 @@
+meta {
+  name: Time E2E 38 - Login Back as Agency A
+  type: http
+  seq: 38
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{timeAdminUsername}}",
+    "password": "{{timeAdminPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+docs {
+  Switch the cookie jar back to A's admin for the §117 dashboard-economics
+  assertions (the admin sees full economics; agency B's session ends the
+  isolation probes).
+}

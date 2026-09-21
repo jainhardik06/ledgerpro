@@ -1,0 +1,63 @@
+meta {
+  name: Receivables E2E 6 - Create Project
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "clientId": "{{clientIdA}}",
+    "name": "Receivables Portal Build",
+    "code": "E2E-RCV-PORTAL",
+    "billingModel": "TIME_AND_MATERIALS",
+    "currency": "INR",
+    "startDate": "{{rcvToday}}",
+    "revenueBudget": 500000,
+    "budgetCost": 100000,
+    "targetMargin": 40
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.project.billingModel: eq TIME_AND_MATERIALS
+}
+
+script:pre-request {
+  // §102 — every date in this suite derives from the tenant-timezone today
+  // (Asia/Kolkata default), computed once here and reused by every request.
+  const ist = new Date(Date.now() + 5.5 * 60 * 60 * 1000);
+  const today = ist.toISOString().slice(0, 10);
+  const add = (d, n) => {
+    const t = new Date(d + 'T00:00:00Z');
+    t.setUTCDate(t.getUTCDate() + n);
+    return t.toISOString().slice(0, 10);
+  };
+  bru.setVar('rcvToday', today);
+  bru.setVar('duePlus2', add(today, 2));
+  bru.setVar('duePlus5', add(today, 5));
+  bru.setVar('dueMinus3', add(today, -3));
+  bru.setVar('dueMinus10', add(today, -10));
+  bru.setVar('dueMinus45', add(today, -45));
+  bru.setVar('dueMinus95', add(today, -95));
+  bru.setVar('winFrom', add(today, -50));
+  bru.setVar('winTo', add(today, 7));
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('projectId', raw.project.id);
+  if (!raw.project.id) throw new Error('Create must return the project id');
+}
+
+docs {
+  The §95 subject: two of the open invoices will carry this project, three
+  are standalone (null project) — proving both the project row and the
+  honest "no project" fold.
+}

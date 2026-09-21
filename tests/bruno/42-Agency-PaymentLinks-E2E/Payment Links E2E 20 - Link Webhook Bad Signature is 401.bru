@@ -1,0 +1,32 @@
+meta {
+  name: Payment Links E2E 20 - Link Webhook Bad Signature is 401
+  type: http
+  seq: 20
+}
+
+post {
+  url: {{BASE_URL}}/api/webhooks/razorpay
+  body: text
+  auth: none
+}
+
+body:text {
+  {"event":"payment_link.paid","payload":{"payment_link":{"entity":{"id":"plink_liar"}},"payment":{"entity":{"id":"pay_liar","amount":999999999}}}}
+}
+
+headers {
+  Content-Type: application/json
+  x-razorpay-signature: deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef
+}
+
+assert {
+  res.status: eq 401
+  res.body.received: eq false
+  res.body.outcome: eq SIGNATURE_INVALID
+}
+
+docs {
+  §97/§39 — the signature is verified over the RAW body BEFORE parsing; an
+  invalid HMAC on a payment_link.paid is a 401 and nothing else about the
+  request is read.
+}

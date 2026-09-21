@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Settings2, Database, Mail, Shield } from 'lucide-react';
+import { Select } from '@/components/ui/Select';
 
 export default function SettingsPage() {
   return (
@@ -15,7 +16,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div className="p-6 max-w-4xl space-y-8">
+      <div className="p-6 space-y-8 w-full">
          
          <section>
            <h2 className="text-[13px] font-medium text-white uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -36,11 +37,11 @@ export default function SettingsPage() {
                   <h3 className="text-[14px] font-medium text-white mb-1">Session Timeout</h3>
                   <p className="text-[12px] text-neutral-500">Maximum idle time before forcing re-authentication.</p>
                 </div>
-                <select disabled title="Not yet configurable — no global settings store exists yet" className="bg-[#000000] border border-white/[0.1] rounded-md px-3 py-1.5 text-[13px] text-white outline-none cursor-not-allowed">
+                <Select disabled title="Not yet configurable — no global settings store exists yet" className="bg-[#000000] border border-white/[0.1] rounded-md px-3 py-1.5 text-[13px] text-white outline-none cursor-not-allowed">
                   <option>15 Minutes</option>
                   <option>1 Hour</option>
                   <option>4 Hours</option>
-                </select>
+                </Select>
               </div>
               <p className="px-5 pb-4 text-[12px] text-amber-500">Global security policy controls are not yet backed by persistent storage — displayed for reference only.</p>
            </div>

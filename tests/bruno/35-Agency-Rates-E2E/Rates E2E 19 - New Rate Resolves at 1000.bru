@@ -1,0 +1,24 @@
+meta {
+  name: Rates E2E 19 - New Rate Resolves at 1000
+  type: http
+  seq: 19
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/rates/resolve?userId={{userId}}&date=2027-06-15
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.cost.status: eq RESOLVED
+  res.body.cost.amount: eq 1000
+  res.body.cost.effectiveFrom: eq 2027-01-01
+  res.body.cost.effectiveTo: eq null
+}
+
+docs {
+  The forward side of §122: from 2027-01-01 the new ₹1000 version applies,
+  open-ended until the next change. Rates only ever move forward in time.
+}

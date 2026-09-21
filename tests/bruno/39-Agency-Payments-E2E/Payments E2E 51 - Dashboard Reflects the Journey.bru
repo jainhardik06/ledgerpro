@@ -1,0 +1,65 @@
+meta {
+  name: Payments E2E 51 - Dashboard Reflects the Journey
+  type: http
+  seq: 51
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/dashboard?period=THIS_MONTH
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const d = raw.data;
+
+  // §131 — the flagship journey ends here: "Dashboard Updates".
+  // Invoiced = 3 issued invoices x 100000 (§2).
+  const inv = d.financial.invoicedRevenue;
+  if (inv.sourceReady !== true) throw new Error('invoicedRevenue must be live (§117)');
+  if (inv.value !== 300000) throw new Error('invoicedRevenue must be 300000, got ' + inv.value);
+
+  // Collected = Σ CONFIRMED payments (§3): A 100000 + B gateway 100000 +
+  // C gateway 40000. The two reversed manual payments left the set.
+  const col = d.financial.collectedRevenue;
+  if (col.sourceReady !== true) throw new Error('collectedRevenue must be live (§117)');
+  if (col.value !== 240000) throw new Error('collectedRevenue must be 240000, got ' + col.value);
+
+  // Receivables = invoice C's remaining 60000 (§5) — matches the ledger
+  // truth of step 48 and the aging ladder of step 50.
+  const out = d.receivables.outstanding;
+  if (out.sourceReady !== true) throw new Error('outstanding must be live');
+  if (out.value !== 60000) throw new Error('outstanding must be 60000, got ' + out.value);
+
+  // §117 after-Payments — Cash Collection Rate: collected ÷ invoiced =
+  // 240000 / 300000 = 80 (0-100 scale).
+  const rate = d.financial.cashCollectionRate;
+  if (rate.sourceReady !== true) throw new Error('cashCollectionRate must be live once both sides resolve (§117)');
+  if (rate.value !== 80) throw new Error('cashCollectionRate must be 80, got ' + rate.value);
+
+  // §118 (Module 13, landed) — profit is LIVE from the ONE engine. This
+  // tenant has NO projects (the whole journey invoiced at client level),
+  // so the engine's empty portfolio is a REAL zero (§13): profit 0, live —
+  // not pending. §82: revenue 0 → margin null (live no-baseline, "—").
+  if (d.profitability.grossProfit.sourceReady !== true) throw new Error('grossProfit must be live from the engine (§118)');
+  if (d.profitability.grossProfit.value !== 0) throw new Error('grossProfit must be a real 0 (no projects — the engine resolved), got ' + d.profitability.grossProfit.value);
+  if (d.profitability.grossMargin.sourceReady !== true || d.profitability.grossMargin.value !== null) {
+    throw new Error('grossMargin must be live null (§82: revenue 0 → no baseline), got ' + JSON.stringify(d.profitability.grossMargin));
+  }
+}
+
+docs {
+  §131 — the closing step of the flagship cross-module E2E: after Time →
+  Expenses → Invoicing → Payments, the dashboard carries the whole
+  journey's money. Invoiced 300000, collected 240000 (reversals excluded),
+  outstanding 60000, collection rate 80% — the same truth the ledger audit
+  (step 48) and the aging ladder (step 50) independently confirm. §118:
+  no projects exist, so the engine's portfolio profit is a live real 0 and
+  margin a live null (§82).
+}

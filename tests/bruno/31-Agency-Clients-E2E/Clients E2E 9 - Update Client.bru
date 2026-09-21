@@ -1,0 +1,30 @@
+meta {
+  name: Clients E2E 9 - Update Client
+  type: http
+  seq: 9
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/clients/{{clientId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "phone": "+91 91111 11111",
+    "notes": "Preferred contact hours: mornings"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.client.phone: eq +91 91111 11111
+  res.body.client.notes: eq Preferred contact hours: mornings
+}
+
+docs {
+  §29 partial update — a PATCH without a name is legal; only the sent
+  fields change.
+}

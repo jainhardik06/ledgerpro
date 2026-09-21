@@ -1,0 +1,21 @@
+meta {
+  name: Alerts E2E 57 - Resolve Again Is 409
+  type: http
+  seq: 57
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/alerts/{{dueSoonAlertId}}/resolve
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 409
+}
+
+docs {
+  §19 — RESOLVED is terminal for manual moves. The only way back is the
+  evaluator's REOPEN (proven two steps down: the invoice is still open, so
+  the condition returns and the alert re-opens as a fresh detection).
+}

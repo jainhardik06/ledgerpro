@@ -1,0 +1,24 @@
+meta {
+  name: Reconciliation E2E 10 - Finalize Invoice B
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{recInvBId}}/finalize
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.invoice.status: eq SENT
+  res.body.invoice.invoiceNumber: eq INV-000002
+  res.body.invoice.amountDue.amount: eq 50000
+}
+
+docs {
+  INV-000002, 50000 due. The store now holds exactly 150000 of finalized
+  invoices — the number every aggregate below must reproduce.
+}

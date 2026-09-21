@@ -1,0 +1,20 @@
+meta {
+  name: Reports E2E 56 - Time status Is 400
+  type: http
+  seq: 56
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/time?status=DRAFT
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  The time report has no status dimension — the basis (§33) is the only
+  population switch, so status is a 400.
+}

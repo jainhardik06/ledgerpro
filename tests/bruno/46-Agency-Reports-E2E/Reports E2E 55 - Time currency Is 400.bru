@@ -1,0 +1,20 @@
+meta {
+  name: Reports E2E 55 - Time currency Is 400
+  type: http
+  seq: 55
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/time?currency=INR
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  Hours are currency-free — a currency filter on the time report is
+  rejected rather than ignored (§28/§32).
+}

@@ -1,0 +1,34 @@
+meta {
+  name: Settings E2E 53 - Finalized Number Uses Custom Prefix
+  type: http
+  seq: 53
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{stPrefixInvId}}/finalize
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.invoice.status: eq SENT
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const number = raw.invoice.invoiceNumber;
+  // First finalized invoice of the tenant: prefix + 6-digit sequence (§74).
+  if (number !== 'RSD-000001') {
+    throw new Error('number: expected RSD-000001 (configured prefix + first sequence), got ' + number);
+  }
+}
+
+docs {
+  §45 engine consumption, end to end: settings write-through (request 51) →
+  billingProfile.invoicePrefix → allocateInvoiceNumber at finalization
+  (§74/§23). The sequence after the prefix stays server-controlled
+  (fiscal-year sequence, request 5 set a January start). Suite 38 pinned
+  the default INV- path; this pins the CONFIGURED prefix path.
+}

@@ -1,0 +1,28 @@
+meta {
+  name: Reports E2E 54 - Portfolio userId Is 400
+  type: http
+  seq: 54
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/portfolio?userId=abc
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (!String(raw.error).includes('not a valid filter')) {
+    throw new Error('400 must name the rejected filter, got ' + JSON.stringify(raw));
+  }
+}
+
+docs {
+  §28 fail-closed discipline: a filter the report does not honor is a
+  400, never a silently ignored param (an ignored filter would produce an
+  unfiltered report that looks complete).
+}

@@ -1,0 +1,45 @@
+meta {
+  name: Settings E2E 13 - Alert Rules Received The Bands
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/alert-rules
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const rules = raw.rules;
+  const find = (type) => rules.find(r => r.type === type);
+  // §46/§13(17.13) — the settings write-through landed on the RULE
+  // configurations the evaluator consumes (effectiveRuleConfiguration).
+  const expectations = {
+    PROJECT_HOURS_75: { percentage: 70 },
+    PROJECT_HOURS_80: { percentage: 85 },
+    PROJECT_HOURS_100: { percentage: 100 },
+    INVOICE_DUE_SOON: { days: 14 },
+  };
+  for (const [type, cfg] of Object.entries(expectations)) {
+    const rule = find(type);
+    if (!rule) throw new Error('rule missing: ' + type);
+    for (const [k, v] of Object.entries(cfg)) {
+      if (rule.configuration?.[k] !== v) {
+        throw new Error(type + '.' + k + ': expected ' + v + ', got ' + rule.configuration?.[k]);
+      }
+    }
+  }
+}
+
+docs {
+  The engine write-through proof: 70/85/100 sit on the PROJECT_HOURS_* rule
+  configurations and 14 on INVOICE_DUE_SOON — not just in the settings
+  document. The Module 15 evaluator consumes exactly these.
+}

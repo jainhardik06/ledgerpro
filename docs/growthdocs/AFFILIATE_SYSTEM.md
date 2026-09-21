@@ -2,162 +2,109 @@
 
 ## Architecture
 
-All affiliate links use a redirect layer hosted on the main Next.js app. This provides:
-- Click tracking in MongoDB
-- Clean URLs for readers (`moneyos.app/go/wise` vs raw affiliate URL)
-- Ability to update destination URLs without changing content
+All affiliate links use a redirect layer hosted on the **money-os-discovery**
+Astro site (an on-demand serverless route). This provides:
+- Click tracking in the Growth DB (MongoDB)
+- Clean URLs for readers (`discovermoneyos.webasthetic.in/go/wise` vs raw affiliate URL)
+- Ability to update destination URLs without changing content (DB rows take
+  precedence over the static fallback map)
 - Centralized disclosure and UTM management
 
 ---
 
 ## Redirect Implementation
 
-### Route Handler
+### Route Handler (as implemented)
 
 ```typescript
-// src/app/go/[slug]/route.ts
+// money-os-discovery/src/pages/go/[slug].ts  (Astro APIRoute, prerender = false)
 
-import { NextResponse } from 'next/server';
-import { connectGrowthDb } from '@/lib/db';
+import type { APIRoute } from 'astro';
+import { getGrowthDb } from '../../lib/growth-db';
 
-export async function GET(
-  request: Request,
-  { params }: { params: { slug: string } }
-) {
-  const db = await connectGrowthDb();
-  
-  const link = await db.collection('affiliate_links').findOne({
-    slug: params.slug,
-    is_active: true
-  });
-  
-  if (!link) {
-    return NextResponse.redirect('https://moneyos.app');
-  }
-  
-  // Log click (fire-and-forget — don't await)
-  db.collection('affiliate_clicks').insertOne({
-    affiliate_link_id: link._id,
-    click_timestamp: new Date(),
-    source_page: request.headers.get('referer') || null,
-    user_agent: request.headers.get('user-agent') || null,
-    ip_hash: null, // Do not store raw IPs — hash only if needed for fraud detection
-  }).catch(() => {}); // Swallow logging errors — never block the redirect
-  
-  return NextResponse.redirect(link.destination_url, { status: 302 });
-}
+export const GET: APIRoute = async ({ params, request }) => {
+  const slug = (params.slug ?? '').toLowerCase();
+
+  let target: string | null = null;
+  // 1. Prefer the database row (source of truth — links can change without a deploy).
+  try {
+    const db = await getGrowthDb();
+    const link = await db.collection('affiliate_links').findOne({ slug, active: { $ne: false } });
+    if (link?.target_url) {
+      target = link.target_url as string;
+      // 2. Fire-and-forget click log — never blocks or breaks the redirect.
+      void db.collection('affiliate_clicks').insertOne({
+        slug, target_url: target,
+        user_agent: request.headers.get('user-agent') ?? '',
+        referer: request.headers.get('referer') ?? '',
+        clicked_at: new Date(),
+      }).catch(() => {});
+    }
+  } catch { /* DB unavailable — fall through to the static map */ }
+
+  target ??= FALLBACK[slug] ?? null;   // static fallback for core partners
+  if (!target) return new Response(null, { status: 302, headers: { Location: '/comparisons' } });
+  return new Response(null, { status: 302, headers: { Location: target, 'Cache-Control': 'no-store' } });
+};
 ```
 
-### MongoDB Schema
+### MongoDB Schema (as implemented — seeded by `scripts/seed-growth-db.mjs`)
 
 ```javascript
-// affiliate_links collection
+// affiliate_links collection (unique index on slug)
 {
   _id: ObjectId,
   slug: "wise",                           // URL: /go/wise
-  partner_name: "Wise (TransferWise)",
-  destination_url: "https://wise.com/invite/...",
-  program_url: "https://wise.com/affiliates",
-  commission_type: "flat",                 // flat | percentage | recurring
-  commission_amount: 35,
-  commission_currency: "USD",
-  payment_threshold: 50,                   // minimum payout
-  payment_schedule: "monthly",
+  partner: "Wise",
+  target_url: "https://wise.com/",
   category: "banking",
-  audience: ["freelancers", "agencies"],
-  content_placement: [                     // which pages/posts use this link
-    "/blog/best-banking-for-freelancers",
-    "/use-cases/freelancers"               // Note: only if genuinely helpful — no ads on use case pages
-  ],
-  is_active: true,
-  created_at: ISODate,
-  last_updated: ISODate,
-  notes: "Pays $35 per funded account. 30-day cookie."
+  active: true,
+  recommended_for: "International payments & FX",
+  added_at: ISODate,
+  created_at: ISODate
 }
 
-// affiliate_clicks collection (TTL: 180 days)
+// affiliate_clicks collection (one row per redirect served from a DB row)
 {
   _id: ObjectId,
-  affiliate_link_id: ObjectId,
-  click_timestamp: ISODate,
-  source_page: "/blog/...",
+  slug: "wise",
+  target_url: "https://wise.com/",
   user_agent: "Mozilla/5.0...",
-  ip_hash: null,
-  converted: false,                        // updated manually when conversion is confirmed
-  conversion_id: null                      // from affiliate_conversions when tracked
+  referer: "https://discovermoneyos.webasthetic.in/blog/...",
+  clicked_at: ISODate
 }
 
-// affiliate_conversions collection
-{
-  _id: ObjectId,
-  affiliate_link_id: ObjectId,
-  click_id: ObjectId,                      // ref to affiliate_clicks
-  conversion_timestamp: ISODate,
-  commission_earned: 35.00,
-  status: "pending",                       // pending | confirmed | paid
-  payout_date: null,
-  notes: "Wise conversion confirmed in partner dashboard 2024-07-01"
-}
+// affiliate_conversions collection — exists in the growth DB (created by the
+// seed script) but is not yet written by any code; conversions are confirmed
+// manually in partner dashboards until tracking is wired.
 ```
 
 ---
 
 ## Link Inventory
 
-### Initial Links to Create
+### Seeded Links (as implemented — `scripts/seed-growth-db.mjs`)
+
+The seed upserts these rows by `slug` (replace `target_url` with your tracked
+referral link once each partner program approves you — the DB row always wins
+over the static fallback):
 
 ```javascript
-db.affiliate_links.insertMany([
-  {
-    slug: "wise",
-    partner_name: "Wise",
-    destination_url: "https://wise.com/invite/u/XXXXX",
-    commission_type: "flat",
-    commission_amount: 35,
-    commission_currency: "USD",
-    category: "banking",
-    audience: ["freelancers", "agencies", "creators"],
-    is_active: true,
-    notes: "International money transfers. Great for freelancers with foreign clients."
-  },
-  {
-    slug: "bonsai",
-    partner_name: "Bonsai",
-    destination_url: "https://www.hellobonsai.com/r/XXXXX",
-    commission_type: "percentage",
-    commission_amount: 25,
-    commission_currency: "USD",
-    category: "invoicing",
-    audience: ["freelancers"],
-    is_active: true,
-    notes: "Contracts + invoicing for freelancers. 25% of first payment."
-  },
-  {
-    slug: "honeybook",
-    partner_name: "HoneyBook",
-    destination_url: "https://www.honeybook.com/referral/XXXXX",
-    commission_type: "percentage",
-    commission_amount: 35,
-    commission_currency: "USD",
-    category: "client-management",
-    audience: ["freelancers", "agencies"],
-    is_active: true,
-    notes: "Client management + invoicing. 35% of first month."
-  },
-  {
-    slug: "mercury",
-    partner_name: "Mercury Bank",
-    destination_url: "https://mercury.com/r/XXXXX",
-    commission_type: "flat",
-    commission_amount: 75,
-    commission_currency: "USD",
-    category: "banking",
-    audience: ["startups", "small-businesses"],
-    is_active: true,
-    notes: "US business banking. $75 per funded account. US entities only."
-  }
-])
+// money-os-discovery/scripts/seed-growth-db.mjs — seedAffiliateLinks()
+const links = [
+  { slug: 'wise',      partner: 'Wise',        target_url: 'https://wise.com/',                  category: 'banking',           active: true, recommended_for: 'International payments & FX', added_at: now },
+  { slug: 'bonsai',    partner: 'Bonsai',      target_url: 'https://www.hellobonsai.com/',       category: 'freelance-suite',   active: true, recommended_for: 'Freelance contracts & invoicing', added_at: now },
+  { slug: 'honeybook', partner: 'HoneyBook',   target_url: 'https://www.honeybook.com/',         category: 'client-management', active: true, recommended_for: 'Client management for creatives', added_at: now },
+  { slug: 'mercury',   partner: 'Mercury',     target_url: 'https://mercury.com/',               category: 'banking',           active: true, recommended_for: 'Startup business banking', added_at: now },
+  { slug: 'quickbooks', partner: 'QuickBooks', target_url: 'https://quickbooks.intuit.com/',     category: 'accounting',        active: true, recommended_for: 'Full accounting when you outgrow tracking', added_at: now },
+  { slug: 'wave',      partner: 'Wave',        target_url: 'https://www.waveapps.com/',          category: 'accounting',        active: true, recommended_for: 'Free invoicing + bookkeeping', added_at: now },
+  { slug: 'expensify', partner: 'Expensify',   target_url: 'https://www.expensify.com/',         category: 'expense',           active: true, recommended_for: 'Receipt scanning at company scale', added_at: now },
+];
 ```
+
+Commission terms (type, amount, payout schedule) are tracked in the partner
+dashboards, not in the collection — add them to `recommended_for` or a notes
+field if you want them alongside the link.
 
 ---
 
@@ -213,7 +160,7 @@ All affiliate relationships must be disclosed. This is both legally required (FT
 **Inline link disclosure** (optional, for high-value links):
 
 ```markdown
-[Wise](https://moneyos.app/go/wise)* is the best option for international freelancers.
+[Wise](https://discovermoneyos.webasthetic.in/go/wise)* is the best option for international freelancers.
 
 *Affiliate link — we earn a small commission if you sign up.
 ```
@@ -228,7 +175,7 @@ For each new affiliate partnership:
 2. **Get approval** (usually 1-5 business days)
 3. **Generate tracking link** from partner dashboard
 4. **Insert into MongoDB** `affiliate_links` collection with the slug you choose
-5. **Test the redirect**: `https://moneyos.app/go/[slug]` → should redirect to partner URL
+5. **Test the redirect**: `https://discovermoneyos.webasthetic.in/go/[slug]` → should redirect to partner URL
 6. **Confirm click logging**: Check `affiliate_clicks` collection after clicking
 7. **Add disclosure** to any page that links to this partner
 

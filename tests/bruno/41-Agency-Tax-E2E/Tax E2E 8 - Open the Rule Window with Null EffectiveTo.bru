@@ -1,0 +1,30 @@
+meta {
+  name: Tax E2E 8 - Open the Rule Window with Null EffectiveTo
+  type: http
+  seq: 8
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/withholding-rules/{{whRuleId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "effectiveTo": null
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  // §19 — explicit null CLEARS the window end: the rule is now open-ended.
+  if (raw.rule.effectiveTo != null) {
+    throw new Error('effectiveTo must clear to absent on null — got ' + raw.rule.effectiveTo);
+  }
+}

@@ -1,0 +1,24 @@
+meta {
+  name: Reports E2E 81 - Agency B Time Is Empty
+  type: http
+  seq: 81
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/time
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (raw.report.rows.length !== 0) throw new Error('rows must be empty, got ' + raw.report.rows.length);
+  if (raw.report.summary.employeeCount !== 0) throw new Error('employees: ' + raw.report.summary.employeeCount);
+  // §32 — 0% when total = 0, never NaN.
+  if (raw.report.summary.utilizationPercent !== 0) throw new Error('utilization on empty: ' + raw.report.summary.utilizationPercent);
+}

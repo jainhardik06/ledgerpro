@@ -1,0 +1,23 @@
+meta {
+  name: Reports E2E 23 - Admin Approves Entry 1
+  type: http
+  seq: 23
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/time/{{entry1Id}}/approve
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.timeEntry.approvalStatus: eq APPROVED
+  res.body.timeEntry.calculatedCost.amount: eq 4500
+  res.body.timeEntry.calculatedBillableAmount.amount: eq 12500
+}
+
+docs {
+  §23 — the calculation moment: 5h × 900 = 4500 cost, 5h × 2500 = 12500
+  value. These are the exact numbers the reports must reconcile with.
+}

@@ -1,0 +1,44 @@
+meta {
+  name: Rates E2E 8 - Add Billing Entry Senior Developer 2500
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/rate-cards/{{billingCardId}}/entries
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Senior Developer",
+    "unit": "HOUR",
+    "amount": 2500,
+    "billingType": "HOURLY",
+    "effectiveFrom": "2026-01-01"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.entry.name: eq Senior Developer
+  res.body.entry.amount: eq 2500
+  res.body.entry.unit: eq HOUR
+  res.body.entry.billable: eq true
+  res.body.entry.billingType: eq HOURLY
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('billingEntryId', raw.entry.id);
+  if (!raw.entry.id) {
+    throw new Error('Create must return the entry id for the §122 change step');
+  }
+}
+
+docs {
+  The §136 billing line: "Senior Developer → ₹2,500/hr" for Acme. BILLING
+  entries pick their unit and billing type (§72); HOURLY implies billable.
+}

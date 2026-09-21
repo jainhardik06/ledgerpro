@@ -1,0 +1,33 @@
+meta {
+  name: Invoices E2E 28 - Add TIME Line Entry 1
+  type: http
+  seq: 28
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{invAId}}/lines
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "type": "TIME",
+    "sourceId": "{{entry1Id}}",
+    "description": "Development — portal API scaffolding"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.line.type: eq TIME
+  res.body.line.sourceId: eq {{entry1Id}}
+  res.body.invoice.subtotal.amount: eq 5000
+  res.body.invoice.total.amount: eq 5000
+}
+
+docs {
+  §60/§77 — the T&M line: the amount is the entry's frozen APPROVED
+  billable value (5000), never re-derived by the route or the client.
+}

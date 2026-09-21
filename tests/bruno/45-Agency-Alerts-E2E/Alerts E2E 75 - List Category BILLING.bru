@@ -1,0 +1,30 @@
+meta {
+  name: Alerts E2E 75 - List Category BILLING
+  type: http
+  seq: 75
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/alerts?category=BILLING
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.count: eq 3
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const types = raw.alerts.map(a => a.ruleType).sort();
+  if (types.join(',') !== 'COMPLETED_PROJECT_UNBILLED_WORK,UNBILLED_APPROVED_TIME,UNBILLED_EXPENSE') {
+    throw new Error('BILLING category must be unbilled time + expense + completed-unbilled, got ' + types.join(','));
+  }
+}
+
+docs {
+  The catalog's third category (§23): the completed-unbilled rule lives
+  here, not in PROJECTS — it is an invoicing warning about a project, not a
+  delivery warning. All three are still OPEN at this point of the journey.
+}

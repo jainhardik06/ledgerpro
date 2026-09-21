@@ -1,0 +1,30 @@
+meta {
+  name: Rates E2E 29 - Agency B Resolve Finds Nothing 120
+  type: http
+  seq: 29
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/rates/resolve?userId={{userId}}&clientId={{clientId}}&role=Senior%20Developer&date=2026-06-15
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.cost.status: eq NOT_CONFIGURED
+  res.body.billing.status: eq NOT_CONFIGURED
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (raw.cost.amount !== undefined || raw.billing.amount !== undefined) {
+    throw new Error('NOT_CONFIGURED must carry NO amounts — a missing rate is never a leaked or fabricated zero (§96)');
+  }
+}
+
+docs {
+  §120/§96 — B's admin resolving A's user and client finds NOTHING: B has no
+  assignments, no cards. NOT_CONFIGURED with no amounts — A's ₹900/₹2,500
+  never cross the tenant boundary in either direction.
+}

@@ -1,0 +1,36 @@
+meta {
+  name: Settings E2E 5 - PATCH General Full
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/settings/general
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "agencyName": "E2E Settings Agency One",
+    "logoUrl": "https://cdn.example.com/logo.png",
+    "defaultCurrency": "usd",
+    "timezone": "Europe/Berlin",
+    "fiscalYearStartMonth": 1
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.settings.general.agencyName: eq E2E Settings Agency One
+  res.body.settings.general.defaultCurrency: eq USD
+  res.body.settings.general.timezone: eq Europe/Berlin
+  res.body.settings.general.fiscalYearStartMonth: eq 1
+}
+
+docs {
+  §44 — merge-patch the general section. The currency arrives lowercase and
+  must come back normalized upper (ISO-4217); every other section rides
+  along unchanged in the response projection.
+}

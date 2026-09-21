@@ -1,0 +1,44 @@
+meta {
+  name: Payments E2E 50 - Aging Endpoint Ladder
+  type: http
+  seq: 50
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/receivables/aging
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const a = raw.aging;
+  if (!a) throw new Error('aging section missing');
+  if (typeof a.asOf !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(a.asOf)) throw new Error('asOf must be a business date');
+
+  // Invoices A and B are PAID (nothing outstanding). Invoice C is
+  // PARTIALLY_PAID with 60000 remaining, due NET_30 from today — CURRENT.
+  const b = a.byAgingBucket;
+  if (b.CURRENT !== 60000) throw new Error('CURRENT bucket must be 60000, got ' + b.CURRENT);
+  if (b['1-30'] !== 0) throw new Error('1-30 bucket must be 0, got ' + b['1-30']);
+  if (b['31-60'] !== 0) throw new Error('31-60 bucket must be 0, got ' + b['31-60']);
+  if (b['61-90'] !== 0) throw new Error('61-90 bucket must be 0, got ' + b['61-90']);
+  if (b['90+'] !== 0) throw new Error('90+ bucket must be 0, got ' + b['90+']);
+
+  if (a.openInvoiceCount !== 1) throw new Error('openInvoiceCount must be 1, got ' + a.openInvoiceCount);
+  if (a.overdueCount !== 0) throw new Error('overdueCount must be 0, got ' + a.overdueCount);
+  if (a.currency !== 'INR') throw new Error('currency must be INR, got ' + a.currency);
+  if (a.mixedCurrencies !== false) throw new Error('mixedCurrencies must be false');
+}
+
+docs {
+  §110/§106 — the dedicated aging endpoint: the same ladder engine as the
+  main receivables report, focused for collection follow-up. After the
+  whole journey, exactly one open invoice (C, 60000 remaining) remains,
+  and it is not yet due (NET_30) — so everything sits in CURRENT.
+}

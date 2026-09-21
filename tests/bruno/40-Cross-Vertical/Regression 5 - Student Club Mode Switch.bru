@@ -1,0 +1,22 @@
+meta {
+  name: Regression 5 - Student Club Mode Switch
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{BASE_URL}}/api/settings
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "appMode": "Student_Club"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}

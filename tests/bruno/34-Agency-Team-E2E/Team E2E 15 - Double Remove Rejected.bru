@@ -1,0 +1,20 @@
+meta {
+  name: Team E2E 15 - Double Remove Rejected
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/members/{{memberRowId}}/remove
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  The row already carries active=false — removing it again is a client
+  error, not a second write.
+}

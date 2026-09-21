@@ -1,0 +1,22 @@
+meta {
+  name: Work Items E2E 21 - Archive
+  type: http
+  seq: 21
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/work-items/{{workItemId}}/archive
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.workItem.status: eq ARCHIVED
+}
+
+docs {
+  §11/§16 — archive from IN_PROGRESS via the DEDICATED action. No physical
+  DELETE exists: history stays resolvable for future time tracking.
+}

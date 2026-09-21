@@ -1,0 +1,23 @@
+meta {
+  name: Receivables E2E 3 - Login
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{rcvAdminUsername}}",
+    "password": "{{rcvAdminPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}

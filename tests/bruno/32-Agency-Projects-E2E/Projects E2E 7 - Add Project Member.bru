@@ -1,0 +1,37 @@
+meta {
+  name: Projects E2E 7 - Add Project Member
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/members
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "userId": "{{userId}}",
+    "role": "Project Manager",
+    "allocationPercent": 50
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.member.userId: eq {{userId}}
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (raw.member.allocationPercent !== 50) {
+    throw new Error('Allocation must persist through the member write');
+  }
+}
+
+docs {
+  Assign team (§59/§60): a same-tenant user joins the project at 50%
+  allocation. A duplicate add would 409 (checked in the integration suite).
+}

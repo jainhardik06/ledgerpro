@@ -1,0 +1,55 @@
+meta {
+  name: Payments E2E 49 - Payment Method Summary
+  type: http
+  seq: 49
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/payments
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const summary = raw.methodSummary;
+  if (!Array.isArray(summary)) throw new Error('methodSummary must be an array');
+
+  const byMethod = {};
+  for (const row of summary) byMethod[row.method] = row;
+
+  // §116 — manual transfers: 3 recorded (A1 confirmed; B1 and C1 reversed).
+  // Collected counts CONFIRMED only: 40000.
+  if (!byMethod.BANK_TRANSFER) throw new Error('BANK_TRANSFER row missing');
+  if (byMethod.BANK_TRANSFER.count !== 3) throw new Error('BANK_TRANSFER count must be 3, got ' + byMethod.BANK_TRANSFER.count);
+  if (byMethod.BANK_TRANSFER.collected !== 40000) throw new Error('BANK_TRANSFER collected must be 40000, got ' + byMethod.BANK_TRANSFER.collected);
+  if (byMethod.BANK_TRANSFER.currency !== 'INR') throw new Error('BANK_TRANSFER currency must be INR');
+
+  // §116 — UPI: A2 60000 confirmed + the 70000 on B that never confirmed
+  // (§91 overpay rejection left it PENDING — history is history, it still
+  // counts as a recorded payment of the method).
+  if (!byMethod.UPI) throw new Error('UPI row missing');
+  if (byMethod.UPI.count !== 2) throw new Error('UPI count must be 2, got ' + byMethod.UPI.count);
+  if (byMethod.UPI.collected !== 60000) throw new Error('UPI collected must be 60000, got ' + byMethod.UPI.collected);
+
+  // §116 — gateway payments: 3 recorded, all confirmed by the end of the
+  // journey (gw3 recovered in step 47): 40000 + 60000 + 40000 = 140000.
+  if (!byMethod.RAZORPAY) throw new Error('RAZORPAY row missing');
+  if (byMethod.RAZORPAY.count !== 3) throw new Error('RAZORPAY count must be 3, got ' + byMethod.RAZORPAY.count);
+  if (byMethod.RAZORPAY.collected !== 140000) throw new Error('RAZORPAY collected must be 140000, got ' + byMethod.RAZORPAY.collected);
+
+  // Methods with no history are omitted, never zero-filled.
+  if (byMethod.CASH || byMethod.CARD || byMethod.OTHER) throw new Error('Unused methods must be omitted from the summary');
+}
+
+docs {
+  §116 — the payment method summary over the FULL history: per-method
+  volume and collected money. The reversed manual payments (B1, C1) left
+  the CONFIRMED set and the overpaid 70000 never entered it — collected
+  counts only confirmed money, while the counts keep the whole history.
+}

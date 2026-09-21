@@ -1,0 +1,30 @@
+meta {
+  name: Alerts E2E 37 - List Category PROJECTS
+  type: http
+  seq: 37
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/alerts?category=PROJECTS
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.count: eq 3
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const types = raw.alerts.map(a => a.ruleType).sort();
+  if (types.join(',') !== 'PROJECT_HOURS_80,PROJECT_MARGIN_BELOW_TARGET,PROJECT_OVER_BUDGET') {
+    throw new Error('PROJECTS category must be the 3 delivery rules, got ' + types.join(','));
+  }
+}
+
+docs {
+  Category membership is the catalog's definition (§23), never a client-side
+  table: the completed-unbilled rule is BILLING (it is about invoicing),
+  which is why PROJECTS here is exactly the three delivery rules.
+}

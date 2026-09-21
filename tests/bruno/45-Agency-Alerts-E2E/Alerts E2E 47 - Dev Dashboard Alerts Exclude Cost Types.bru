@@ -1,0 +1,37 @@
+meta {
+  name: Alerts E2E 47 - Dev Dashboard Alerts Exclude Cost Types
+  type: http
+  seq: 47
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/dashboard?period=THIS_MONTH
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const d = raw.data;
+  // §21/§23 — the dashboard reads the STORED alerts read-only; for a USER
+  // the top slice is §114-filtered (no PROJECT_BUDGET / PROJECT_MARGIN).
+  if (!Array.isArray(d.alerts)) throw new Error('Dashboard must carry the alerts source');
+  const badTypes = d.alerts.filter(a => a.type === 'PROJECT_BUDGET' || a.type === 'PROJECT_MARGIN');
+  if (badTypes.length > 0) throw new Error('§114 violated: dev dashboard shows cost alert types');
+  if (d.alerts.length !== 5) throw new Error('Dev dashboard top must be 5, got ' + d.alerts.length);
+  if (!d.alerts.every(a => a.severity === 'CRITICAL' || a.severity === 'WARNING')) {
+    throw new Error('The top slice is severity-ranked — dev sees 2 CRITICAL + 3 WARNING');
+  }
+  // Each row carries its entity link for the panel click-through (§23).
+  if (!d.alerts.every(a => a.id && a.type && a.message)) throw new Error('Alert view rows malformed');
+}
+
+docs {
+  The §21 loop end-to-end for the USER: the dashboard NEVER evaluates — it
+  renders the stored, cost-filtered, top-ranked rows only.
+}

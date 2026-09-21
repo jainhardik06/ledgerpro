@@ -1,0 +1,38 @@
+meta {
+  name: Clients E2E 16 - Dashboard Active Clients Live
+  type: http
+  seq: 16
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/dashboard?period=THIS_MONTH
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const snapshot = raw.data.activity.snapshot;
+  if (!snapshot) {
+    throw new Error('Snapshot section missing from the dashboard payload');
+  }
+  // Step 2.7 — activeClients is LIVE from the client store: the count must
+  // be ready and reflect the clients this suite created (the duplicate
+  // "acme studio e2e" is ACTIVE; the restored one is INACTIVE — not counted).
+  if (snapshot.activeClientsReady !== true) {
+    throw new Error('activeClientsReady must be true after Module 2');
+  }
+  if (typeof snapshot.activeClients !== 'number' || snapshot.activeClients < 1) {
+    throw new Error('Active Clients must be a live count ≥ 1 for this tenant');
+  }
+}
+
+docs {
+  §92 / Step 2.7 — after Module 2 the Agency Snapshot's Active Clients line
+  reads the real client store instead of the pending state.
+}

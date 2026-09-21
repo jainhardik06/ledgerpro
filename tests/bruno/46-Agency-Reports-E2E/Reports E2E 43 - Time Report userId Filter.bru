@@ -1,0 +1,24 @@
+meta {
+  name: Reports E2E 43 - Time Report userId Filter
+  type: http
+  seq: 43
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/time?userId={{devUserId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const rep = raw.report;
+  if (rep.rows.length !== 1) throw new Error('rows: ' + rep.rows.length);
+  if (rep.rows[0].userId !== bru.getVar('devUserId')) throw new Error('row must be the filtered dev');
+  if (rep.summary.employeeCount !== 1) throw new Error('summary count: ' + rep.summary.employeeCount);
+}

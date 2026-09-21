@@ -1,0 +1,21 @@
+meta {
+  name: Time E2E 24 - Approval Queue Admin View
+  type: http
+  seq: 24
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/time/approvals
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+docs {
+  §25/§30 — the manager surface. The dev's entry was approved at step 18,
+  so the queue is honestly empty (an array, never an error).
+}

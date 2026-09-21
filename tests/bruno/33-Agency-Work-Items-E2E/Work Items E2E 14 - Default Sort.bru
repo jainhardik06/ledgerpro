@@ -1,0 +1,29 @@
+meta {
+  name: Work Items E2E 14 - Default Sort
+  type: http
+  seq: 14
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/work-items
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const all = raw.workItems || [];
+  if (all.length !== 2 || all[0].sortOrder !== 0 || all[1].sortOrder !== 1) {
+    throw new Error('Default list sort must be sortOrder ascending (§25)');
+  }
+}
+
+docs {
+  §25 — the default list order is the manual sortOrder; new items append
+  at the end.
+}

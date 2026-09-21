@@ -36,7 +36,7 @@ Export all at exactly 1280×800. Compress with Squoosh to <200KB each.
 Copy the description variants from `DIRECTORY_ENGINE_PRD.md`. Run through:
 - [ ] No spelling errors
 - [ ] No feature claims not live yet (remove "integrations" if not live)
-- [ ] CTA links to `https://moneyos.app` (not staging)
+- [ ] CTA links to `https://moneyos.webasthetic.in` (not staging)
 - [ ] Category selection: "Expense Management" primary, "Business Finance" secondary
 
 ---
@@ -55,7 +55,7 @@ Copy the description variants from `DIRECTORY_ENGINE_PRD.md`. Run through:
 2. Fill all fields — do not leave optional fields empty
 3. Upload all 3 screenshots
 4. Submit for review (3-5 business days)
-5. Note: G2 requires verification. Use `hello@moneyos.app`
+5. Note: G2 requires verification. Use `hello@moneyos.webasthetic.in`
 
 **Day 5: Capterra + GetApp**
 - Capterra and GetApp are owned by Gartner — one submission covers both
@@ -176,7 +176,7 @@ db.directory_submissions.updateOne(
 After each listing goes live, verify the backlink:
 
 1. Go to listing URL
-2. Inspect page source or use browser DevTools → Find anchor pointing to moneyos.app
+2. Inspect page source or use browser DevTools → Find anchor pointing to moneyos.webasthetic.in
 3. Confirm `rel` attribute: `dofollow` (no rel) or `nofollow`
 4. Log in Growth DB: `backlink_type: "dofollow"` or `"nofollow"`
 
@@ -223,7 +223,7 @@ Thank you for the honest feedback. You're right about [specific issue they raise
 [Current status]: [what you've done or are doing about it]
 
 If you're willing, I'd love to connect directly to understand the full picture: 
-hello@moneyos.app
+hello@moneyos.webasthetic.in
 
 Your feedback helps us prioritize correctly.
 ```

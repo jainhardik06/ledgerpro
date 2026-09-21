@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
-import { getAllUsers, updateUserStatus, createLog } from '@/lib/db';
+import { getAllUsers, updateUserStatus, createLog, getTenants } from '@/lib/db';
 
 export async function GET() {
   try {
@@ -9,7 +9,8 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const users = await getAllUsers();
+    const [users, tenants] = await Promise.all([getAllUsers(), getTenants()]);
+    const tenantMap = new Map(tenants.map(t => [t.id, t.name]));
     
     // Remove password hashes before sending to client
     const safeUsers = users.map(u => ({
@@ -17,6 +18,7 @@ export async function GET() {
       username: u.username,
       role: u.role,
       tenantId: u.tenantId,
+      tenantName: u.tenantId ? (tenantMap.get(u.tenantId) || 'Workspace') : 'Platform',
       status: u.status,
       createdAt: u.createdAt,
     }));

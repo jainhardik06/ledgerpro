@@ -1,0 +1,33 @@
+meta {
+  name: Expenses E2E 41 - Agency B Cannot Create with Agency A Project
+  type: http
+  seq: 41
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/expenses
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "projectId": "{{projectId}}",
+    "vendorName": "Cross Tenant Vendor",
+    "description": "Must not be allowed - foreign projectId",
+    "amount": 777,
+    "expenseType": "BILLABLE",
+    "billable": true,
+    "expenseDate": "{{expDate}}"
+  }
+}
+
+assert {
+  res.status: eq 404
+}
+
+docs {
+  Integrity at the boundary: a foreign projectId does not resolve inside
+  Agency B tenant, so the expense is never created — no cross-tenant
+  reference can ever be attached to a new row.
+}

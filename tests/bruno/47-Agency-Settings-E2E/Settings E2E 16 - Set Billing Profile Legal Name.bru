@@ -1,0 +1,30 @@
+meta {
+  name: Settings E2E 16 - Set Billing Profile Legal Name
+  type: http
+  seq: 16
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/billing-profile
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "legalName": "Settings E2E Digital Private Limited",
+    "country": "IN"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.billingProfile.legalName: eq Settings E2E Digital Private Limited
+}
+
+docs {
+  §47 prerequisite — the tax registration write-through targets the Module
+  11 billingProfile, which requires legalName first. Registering tax
+  details before the profile exists is an explicit 400 in the domain.
+}

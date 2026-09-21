@@ -1,0 +1,28 @@
+meta {
+  name: Settings E2E 58 - Login as Agency B Admin
+  type: http
+  seq: 58
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{stBAdminUsername}}",
+    "password": "E2eSetAdminB#2026"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+docs {
+  The §51-binding attack setup: Agency B's admin is a completely legitimate,
+  self-registered tenant administrator — exactly the attacker profile.
+}

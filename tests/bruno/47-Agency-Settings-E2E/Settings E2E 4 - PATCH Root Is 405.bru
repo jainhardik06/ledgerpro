@@ -1,0 +1,27 @@
+meta {
+  name: Settings E2E 4 - PATCH Root Is 405
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/settings
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "general": { "agencyName": "Hostile Whole-Document Write" }
+  }
+}
+
+assert {
+  res.status: eq 405
+}
+
+docs {
+  §52 — PATCH lives per-section only; a bare PATCH to the collection root
+  can never mutate anything (fail closed with an explicit 405 + the section
+  list in the error).
+}

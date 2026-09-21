@@ -1,0 +1,41 @@
+meta {
+  name: Reconciliation E2E 20 - Receivables Engine Truth
+  type: http
+  seq: 20
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/receivables
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const r = raw.receivables;
+
+  // §87 — the position: only invoice B is open, 30000 outstanding, current.
+  if (r.outstanding !== 30000) throw new Error('outstanding: ' + r.outstanding);
+  if (r.openInvoiceCount !== 1) throw new Error('open invoice count: ' + r.openInvoiceCount);
+  if (r.overdueAmount !== 0) throw new Error('overdue: ' + r.overdueAmount);
+  if (r.currency !== 'INR') throw new Error('currency: ' + r.currency);
+  if (r.invoices.length !== 1) throw new Error('receivable rows: ' + r.invoices.length);
+  const row = r.invoices[0];
+  if (row.invoiceNumber !== 'INV-000002') throw new Error('the open receivable must be INV-000002');
+  if (row.due.amount !== 30000) throw new Error('row due: ' + row.due.amount);
+  if (row.paid.amount !== 20000) throw new Error('row paid: ' + row.paid.amount);
+  if (row.displayStatus !== 'PARTIALLY_PAID') throw new Error('row verdict: ' + row.displayStatus);
+
+  // The paid invoice is GONE from A/R (§106 pattern).
+  if (r.invoices.some(i => i.invoiceNumber === 'INV-000001')) throw new Error('PAID invoice must not be a receivable');
+}
+
+docs {
+  Module 14's engine: exactly one open receivable (INV-000002, 30000,
+  current), the PAID invoice excluded. Same numbers the invoice store holds.
+}

@@ -1,0 +1,26 @@
+meta {
+  name: Invoices E2E 50 - Dev Can Read the Invoice List
+  type: http
+  seq: 50
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/invoices
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (raw.invoices.length !== 2) throw new Error('expected the SENT and VOID invoices, got ' + raw.invoices.length);
+}
+
+docs {
+  §28 — the other half of the split: the whole workspace sees the
+  receivables picture. The dev reads the same list the admin does.
+}

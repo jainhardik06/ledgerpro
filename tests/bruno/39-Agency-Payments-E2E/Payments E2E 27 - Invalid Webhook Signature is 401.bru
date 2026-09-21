@@ -1,0 +1,32 @@
+meta {
+  name: Payments E2E 27 - Invalid Webhook Signature is 401
+  type: http
+  seq: 27
+}
+
+post {
+  url: {{BASE_URL}}/api/webhooks/razorpay
+  body: text
+  auth: none
+}
+
+body:text {
+  {"event":"payment.captured","payload":{"payment":{"entity":{"id":"{{gw1External}}","amount":999999999,"notes":{"invoiceId":"LIAR-INVOICE","tenantId":"LIAR-TENANT"}}}}}
+}
+
+headers {
+  Content-Type: application/json
+  x-razorpay-signature: deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef
+}
+
+assert {
+  res.status: eq 401
+  res.body.received: eq false
+  res.body.outcome: eq SIGNATURE_INVALID
+}
+
+docs {
+  §97 — the signature IS the auth (no session exists on a webhook): an
+  invalid HMAC is a 401 BEFORE anything else about the request is read.
+  The payload's amount/invoice/tenant hints are never even parsed.
+}

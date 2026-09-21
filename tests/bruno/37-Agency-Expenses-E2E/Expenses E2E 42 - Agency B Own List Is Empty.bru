@@ -1,0 +1,26 @@
+meta {
+  name: Expenses E2E 42 - Agency B Own List Is Empty
+  type: http
+  seq: 42
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/expenses
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (raw.expenses.length !== 0) throw new Error('Agency B must see zero expenses, got ' + raw.expenses.length);
+}
+
+docs {
+  The isolation bookend: Agency B own view is honestly EMPTY — Agency A
+  rows never leak into another tenant listing. Journey complete.
+}

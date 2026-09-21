@@ -1,0 +1,29 @@
+meta {
+  name: Rates E2E 22 - Login as Read-Only User
+  type: http
+  seq: 22
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{ratesUserUsername}}",
+    "password": "{{ratesUserPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+docs {
+  The cookie jar now carries the USER session — every following request in
+  this leg runs with their permissions (§98: billing.read yes, cost.read
+  and manage no).
+}

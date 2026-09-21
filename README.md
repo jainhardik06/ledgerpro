@@ -68,6 +68,14 @@ It is designed specifically for **Small Businesses, Freelancers, Student Clubs, 
     <h3>🧠 Growth Intelligence Center</h3>
     <p>A founder-grade mission control center pulling from real DB aggregations, PostHog Funnels, GA4, and Google Search Console. Includes Real-time AI crawler detection via Next.js Proxy.</p>
   </div>
+  <div style="border: 1px solid #10b98130; padding: 15px; border-radius: 12px; background: rgba(16, 185, 129, 0.05);">
+    <h3>🏢 Agency Vertical (Phase 1)</h3>
+    <p>A complete agency financial loop on top of core Money OS: Clients → Projects → Budgets → Team → Time & Expenses → Cost → Invoicing (GST/HSN/TDS-ready) → Payments (manual + Razorpay) → Profitability — with versioned rate cards, deterministic alerts, receivables aging, and per-tenant analytics in the Platform Console.</p>
+  </div>
+  <div style="border: 1px solid #6366f130; padding: 15px; border-radius: 12px; background: rgba(99, 102, 241, 0.05);">
+    <h3>📱 Installable PWA</h3>
+    <p>Install Money OS to your home screen (Android/desktop via manifest, iOS via apple-touch-icon). A service worker caches the app shell and public pages; authenticated surfaces and APIs are never cached, and an offline page covers lost connections.</p>
+  </div>
 </div>
 
 ### More Superpowers
@@ -124,15 +132,16 @@ graph TD
 ```text
   🧠 React 19 Engine  ━━━► ⚡ Next.js 16 (App Router) ━━━► 🛡️ JWT & BCrypt Security
                                                                ┃
-  📊 SheetJS Exports  ◄━━━  🍃 Native MongoDB Driver  ◄━━━━━━━━┛
+  🧪 Vitest + Bruno  ◄━━━  🍃 Native MongoDB Driver  ◄━━━━━━━━━━┛
 ```
 
 * **Client**: React 19, Next.js 16 (App Router), Lucide React
 * **Data Visualization**: Recharts, d3-color
 * **Styling**: Tailwind CSS v4, custom glassmorphism, responsive grid layout
-* **Persistence**: MongoDB Native Driver, Node File System (`fs`) adapter
-* **Authentication**: Signed HTTP-Only session cookies (HMAC SHA-256, 24-hour lifetime)
-* **Encryption**: BCrypt password hashing (12 salt rounds)
+* **Persistence**: MongoDB Native Driver (separate primary + growth clusters), Node File System (`fs`) local fallback for dev/CI
+* **Authentication**: Signed HTTP-Only session cookies (JWT, 7-day lifetime)
+* **Encryption**: BCrypt password hashing (12 salt rounds); AES-256-GCM for tenant-stored payment credentials
+* **Testing**: Vitest (unit/integration), Bruno CLI (API E2E regression), gitleaks (secret scanning)
 
 ---
 
@@ -151,15 +160,19 @@ Money OS mitigates modern security risks using these strategies:
 | **Brute Force Login** | Per-IP Rate Limiting | `/api/auth/login` allows 10 attempts per 15-minute window. |
 | **Super Admin Secrets** | Hash-Only Admin Password | Super Admin authentication reads `SUPER_ADMIN_PASSWORD_HASH`; plaintext admin passwords are not accepted in production. |
 | **Clickjacking & XSS** | Security Headers | `proxy.ts` applies CSP, `X-Frame-Options`, `X-Content-Type-Options`, Referrer Policy, Permissions Policy, and HSTS in production. |
+| **Forged Webhooks** | Signature + Tenant Binding | Razorpay webhooks verify HMAC-SHA256 signatures, and a delivery may only act on a tenant whose OWN stored (or the deployment's) webhook secret verifies it. Duplicate deliveries are idempotent via `gatewayPaymentId`. |
+| **Credential Theft at Rest** | AES-256-GCM Encryption | Tenant-stored Razorpay credentials are encrypted with `AGENCY_MASTER_KEY`; without the key the app refuses secret storage (503) rather than storing plaintext. |
+| **Misconfigured Deploys** | Fail-Closed Startup | Production refuses to start without `MONGODB_URI`, `MONGODB_GROWTH_URI`, `JWT_SECRET`, and `SUPER_ADMIN_PASSWORD_HASH`; the local JSON DB is dev/CI-only. |
+| **Dependency Vulnerabilities** | Audited Supply Chain | `npm audit` clean (0 vulnerabilities); risky transitive versions pinned via `package.json` overrides; gitleaks runs in CI. |
 
 ---
 
 ## 🏁 Getting Started
 
 ### Prerequisites
-- Node.js v18.0.0+
+- Node.js v22+ (the `engines` field pins `22.x`)
 - NPM v9.0.0+
-- Optional: MongoDB Atlas cluster URI
+- Optional: MongoDB Atlas cluster URIs (primary + growth)
 
 ### 1. Installation
 Clone the repository and install dependencies:
@@ -170,43 +183,48 @@ npm install
 ```
 
 ### 2. Configuration
-Create a `.env.local` file in the project root. **The Super Admin account is strictly managed via environment variables for highest security.**
-```env
-# MongoDB Connection String (leave blank to use Local File fallback)
-MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/ledger_db
+Create a `.env.local` file in the project root — the full, documented variable
+inventory lives in [`.env.example`](./.env.example) (copy it and fill in real
+values; never commit a populated env file). The essentials:
 
-# SHA-256 HMAC Secret Key for Signing Cookies
-JWT_SECRET=generatetodaysupersecretrandomkeyvaluehere
+```env
+# MongoDB (required in production — the app refuses to start without them;
+# leave blank locally to use the .data/local_db.json fallback)
+MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/ledger_db
+MONGODB_GROWTH_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/money_os_growth
+
+# JWT signing secret (required in production) — generate: openssl rand -base64 48
+JWT_SECRET=<long-random-secret>
 
 # Application URL
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-# Super Admin Dashboard Credentials (hash generated with bcrypt)
+# Super Admin credentials (hash generated with bcrypt — required in production)
 SUPER_ADMIN_USERNAME=admin
 SUPER_ADMIN_PASSWORD_HASH=$2b$12$replace_this_with_a_bcrypt_hash
 
-# Analytics & Measurement Infrastructure
-NEXT_PUBLIC_GA_MEASUREMENT_ID=G-JZ0LD0YTJE
-NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION=your-google-verification-code
-NEXT_PUBLIC_POSTHOG_KEY=phc_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+# Agency vertical — payment gateway + credential encryption (optional)
+RAZORPAY_WEBHOOK_SECRET=
+RAZORPAY_KEY_ID=
+RAZORPAY_KEY_SECRET=
+AGENCY_MASTER_KEY=   # openssl rand -base64 32 — encrypts tenant-stored secrets
+
+# Analytics & measurement (optional — features degrade to null when unset)
+NEXT_PUBLIC_GA_MEASUREMENT_ID=
+NEXT_PUBLIC_POSTHOG_KEY=
 NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
-
-# Growth Intelligence Center API Keys (Server-Side)
-POSTHOG_PERSONAL_API_KEY=phx_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-POSTHOG_PROJECT_ID=463167
-
-# Google Cloud API Credentials for GA4 and Search Console API
-# Provide the absolute path to your Google Service Account JSON key file
-GOOGLE_APPLICATION_CREDENTIALS=path/to/your/google-service-account.json
-GA4_PROPERTY_ID=540972599
+POSTHOG_PERSONAL_API_KEY=
+POSTHOG_PROJECT_ID=
+GA4_PROPERTY_ID=
+GOOGLE_APPLICATION_CREDENTIALS_JSON=
 ```
 
 Generate a local Super Admin hash:
 ```bash
-node -e "const bcrypt=require('bcryptjs'); console.log(bcrypt.hashSync('your-strong-password', 12));"
+node -e "require('bcryptjs').hash('your-strong-password', 12).then(h => console.log(h))"
 ```
 
-Use a unique 64+ character `JWT_SECRET` for every environment. The app refuses to start in production without `JWT_SECRET` and `SUPER_ADMIN_PASSWORD_HASH`.
+Use a unique 64+ character `JWT_SECRET` for every environment. The app refuses to start in production without `MONGODB_URI`, `MONGODB_GROWTH_URI`, `JWT_SECRET`, and `SUPER_ADMIN_PASSWORD_HASH`.
 
 ### 3. Spin Up Workspace
 Run in development mode:
@@ -254,7 +272,12 @@ interface Tenant {
   id?: string;
   _id?: any;
   name: string;
+  status: 'ACTIVE' | 'SUSPENDED';
+  plan: 'FREE' | 'STARTER' | 'ENTERPRISE';
   appMode?: 'Standard' | 'Student_Club' | 'Agency';
+  // Agency vertical expansions (present when configured):
+  billingProfile?: AgencyBillingProfile;   // issuer identity, invoice prefix
+  agencySettings?: AgencySettings;         // timezone, tax, Razorpay (encrypted)
   createdAt: Date;
 }
 ```
@@ -266,8 +289,9 @@ interface User {
   _id?: any;
   username: string;
   passwordHash: string;
-  role: 'TENANT_ADMIN' | 'USER';
+  role: 'SUPER_ADMIN' | 'TENANT_ADMIN' | 'USER';
   tenantId: string;
+  attribution?: Record<string, string>;   // UTM captured at signup
   createdAt: Date;
 }
 ```
@@ -287,6 +311,10 @@ interface Transaction {
   accountId?: string;
   clientId?: string;
   notes?: string;
+  // Agency expense expansion (§26 — agency metadata enriches core finance):
+  projectId?: string;
+  billable?: boolean;
+  expenseStatus?: string;
   createdAt: Date;
 }
 ```
@@ -350,10 +378,30 @@ interface SystemLog {
 ```
 </details>
 
+## 🧪 Testing
+
+Money OS ships with a three-layer verification suite (all green) — see
+[TESTING.md](./TESTING.md) for how to run everything and what each layer
+covers:
+
+| Layer | Tool | Command | Scale |
+| :--- | :--- | :--- | :--- |
+| Unit + Integration | Vitest 5 | `npm run test:unit` | 55 files, 1251 tests |
+| API E2E Regression | Bruno CLI (49 suites) | `npm run test:api` (needs the prod build running on :3000) | 731 requests, 2161 assertions |
+| Secret Scanning | gitleaks | runs in CI | — |
+
+The Bruno suites cover every agency module end-to-end — signup → agency mode →
+client → project → rates → time (timer + manual + approval) → expenses →
+invoices (GST/HSN/TDS) → payments (manual + Razorpay webhook attack proofs)
+→ profitability → receivables → reconciliation across six read surfaces —
+plus tenant-isolation and privilege-escalation negatives. Dependency
+vulnerabilities are audited to zero via the `security-auditor` skill
+(`~/.claude/skills/security-auditor`).
+
 ## Production Hardening Notes
 
 * List endpoints for transactions, clients, and audit logs support `page` and `limit` query parameters, capped at 100 records per request.
-* MongoDB startup creates indexes for transactions, logs, clients, users, and unique tenant/category/month budgets.
+* MongoDB startup creates indexes for every core AND agency collection (tenant-scoped compound indexes per query contract).
 * Local fallback data is stored at `.data/local_db.json`, outside `src/`, and local IDs use `crypto.randomUUID()`.
 * Super Admin tenant impersonation is represented only in the server-signed JWT, never `localStorage`.
 * Public contact and support endpoints include rate limiting and bounded input validation.
@@ -363,12 +411,14 @@ interface SystemLog {
 <summary><b>📂 Show Directory Layout (Next.js App Router)</b></summary>
 
 ```text
-ledger/
+ledgerpro/
 ├── src/
 │   ├── app/
 │   │   ├── api/
 │   │   │   ├── auth/                 # Auth Gateway
-│   │   │   ├── super-admin/          # Super Admin API Routes
+│   │   │   ├── super-admin/          # Super Admin APIs (+ agency analytics)
+│   │   │   ├── agency/               # Agency vertical APIs (17 modules)
+│   │   │   ├── webhooks/razorpay/    # Signed gateway webhooks
 │   │   │   ├── tenant/               # Organization API Routes
 │   │   │   ├── transactions/         # Live ledger API
 │   │   │   ├── accounts/             # Bank/Asset endpoints
@@ -381,6 +431,10 @@ ledger/
 │   │   ├── dashboard/                # Main Post-Login Experience
 │   │   │   ├── layout.tsx            # Nested sidebar + context provider
 │   │   │   ├── page.tsx              # Command Center Snapshot
+│   │   │   ├── agency/               # Agency vertical UI (dashboard, clients,
+│   │   │   │                         #   projects, time, expenses, invoices,
+│   │   │   │                         #   payments, receivables, profitability,
+│   │   │   │                         #   rate cards, alerts, reports, settings)
 │   │   │   ├── transactions/         # Data table & Drawer
 │   │   │   ├── accounts/             # Visual account tracking
 │   │   │   ├── budgets/              # Progress bars & limits
@@ -395,18 +449,23 @@ ledger/
 │   │       ├── layout.tsx            # Global admin layout
 │   │       ├── page.tsx              # Mission Control Dashboard
 │   │       ├── tenants/              # Tenant provisioner
-│   │       ├── usage/                # Global resource consumption
+│   │       ├── agency/               # Agency Intelligence (platform analytics)
+│   │       ├── growth/               # Growth Intelligence Center
 │   │       └── ...
 │   │
 │   ├── components/
 │   │   ├── ui/                       # Reusable primitives
 │   │   │   ├── Drawer.tsx            # Slide-over overlay
 │   │   │   └── CommandPalette.tsx    # Cmd+K fuzzy search navigator
+│   │   ├── agency/                   # Agency vertical components
 │   │   └── dashboard/
 │   │       └── DashboardProvider.tsx # Global state orchestrator
 │   │
 │   └── lib/
 │       ├── auth.ts                   # JWT & Encryption
-│       └── db.ts                     # MongoDB + Fallback File DB
+│       ├── db.ts                     # MongoDB + Fallback File DB
+│       └── agency/                   # Agency domain layer (domain, queries,
+│                                     #   profitability engine, alerts, reports,
+│                                     #   permissions, validators)
 ```
 </details>

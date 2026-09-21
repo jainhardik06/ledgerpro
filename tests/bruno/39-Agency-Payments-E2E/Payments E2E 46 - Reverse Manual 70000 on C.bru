@@ -1,0 +1,32 @@
+meta {
+  name: Payments E2E 46 - Reverse Manual 70000 on C
+  type: http
+  seq: 46
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payments/{{payC1Id}}/reverse
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "reason": "settlement failed — recovering room for the gateway payment"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.payment.status: eq REVERSED
+  res.body.invoice.status: eq SENT
+  res.body.invoice.amountPaid.amount: eq 0
+  res.body.invoice.amountDue.amount: eq 100000
+}
+
+docs {
+  The recovery setup: reversing the manual 70000 (compensating Debit)
+  restores INV-000003 to 100000 outstanding — now the 40000 gateway
+  payment fits, and the retry can succeed.
+}

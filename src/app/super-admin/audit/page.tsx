@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Search, Download } from 'lucide-react';
+import { SearchBar } from '@/components/ui/SearchBar';
 
 export default function AuditPage() {
   const [search, setSearch] = useState('');
@@ -52,24 +53,21 @@ export default function AuditPage() {
     <div className="flex flex-col h-[calc(100vh-56px)] animate-in fade-in duration-500">
       
       {/* Header Actions */}
-      <div className="p-6 shrink-0 border-b border-white/[0.05] flex items-center justify-between">
+      <div className="p-4 sm:p-6 shrink-0 border-b border-white/[0.05] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-semibold tracking-tight text-white mb-1">Global Audit Command Center</h1>
-          <p className="text-[13px] text-neutral-400">Immutable log of all platform-level and tenant-level events.</p>
+          <p className="text-[12px] sm:text-[13px] text-neutral-400">Immutable log of all platform-level and tenant-level events.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Search className="w-4 h-4 text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input 
-              type="text" 
-              placeholder="Search by Action or Actor..." 
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="h-9 w-64 bg-[#0a0a0a] border border-white/[0.1] rounded-md pl-9 pr-3 text-[13px] text-white focus:border-white/[0.2] outline-none"
-            />
-          </div>
-          <button onClick={exportCsv} disabled={filteredAudits.length === 0} className="h-9 px-3 border border-white/[0.1] bg-[#0a0a0a] rounded-md flex items-center gap-2 text-[13px] font-medium text-white hover:bg-white/[0.05] transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-            <Download className="w-4 h-4 text-neutral-400" /> Export CSV
+        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+          <SearchBar
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search by Action or Actor…"
+            aria-label="Search audit events"
+            wrapperClassName="flex-1 sm:w-64"
+          />
+          <button onClick={exportCsv} disabled={filteredAudits.length === 0} className="h-9 px-3 shrink-0 border border-white/[0.1] bg-[#0a0a0a] rounded-md flex items-center gap-2 text-[13px] font-medium text-white hover:bg-white/[0.05] transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+            <Download className="w-4 h-4 text-neutral-400" /> <span className="hidden sm:inline">Export CSV</span><span className="sm:hidden">Export</span>
           </button>
         </div>
       </div>

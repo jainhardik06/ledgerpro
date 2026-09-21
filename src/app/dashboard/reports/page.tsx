@@ -34,6 +34,8 @@ import {
   Legend 
 } from 'recharts';
 import { captureEvent } from '@/lib/posthog';
+import { Select } from '@/components/ui/Select';
+import { DatePicker } from '@/components/ui/DatePicker';
 
 export default function ReportsPage() {
   const [loading, setLoading] = useState(true);
@@ -482,7 +484,7 @@ export default function ReportsPage() {
 
   if (loading) {
     return (
-      <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8 animate-pulse">
+      <div className="p-4 sm:p-6 lg:p-8 w-full space-y-8 animate-pulse">
         <div className="flex justify-between items-center">
           <div className="space-y-2">
             <div className="h-6 w-48 bg-white/[0.05] rounded"></div>
@@ -521,7 +523,7 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-300 w-full overflow-hidden">
+    <div className="p-4 sm:p-6 lg:p-8 w-full space-y-6 animate-in fade-in duration-300 overflow-hidden">
       
       {/* CSS style injection for printing formatting */}
       <style jsx global>{`
@@ -572,7 +574,7 @@ export default function ReportsPage() {
         {/* Date Ranges */}
         <div className="space-y-1">
           <label className="block text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">Date Period</label>
-          <select 
+          <Select 
             value={dateRange} 
             onChange={e => setDateRange(e.target.value as any)} 
             className="w-full h-9 bg-black border border-white/[0.1] rounded px-2 text-[12px] sm:text-[13px] text-white outline-none"
@@ -582,7 +584,7 @@ export default function ReportsPage() {
             <option value="90d">Last 90 Days</option>
             <option value="12m">Last 12 Months</option>
             <option value="custom">Custom Range</option>
-          </select>
+          </Select>
         </div>
 
         {/* Custom Start */}
@@ -590,20 +592,17 @@ export default function ReportsPage() {
           <>
             <div className="space-y-1">
               <label className="block text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">Start Date</label>
-              <input 
-                type="date" 
+              <DatePicker 
                 value={customStart} 
                 onChange={e => setCustomStart(e.target.value)} 
-                className="w-full h-9 bg-black border border-white/[0.1] rounded px-2 text-[12px] sm:text-[13px] text-white outline-none" 
               />
             </div>
             <div className="space-y-1">
               <label className="block text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">End Date</label>
-              <input 
-                type="date" 
+              <DatePicker 
                 value={customEnd} 
+                min={customStart}
                 onChange={e => setCustomEnd(e.target.value)} 
-                className="w-full h-9 bg-black border border-white/[0.1] rounded px-2 text-[12px] sm:text-[13px] text-white outline-none" 
               />
             </div>
           </>
@@ -612,53 +611,53 @@ export default function ReportsPage() {
         {/* Account Filter */}
         <div className="space-y-1">
           <label className="block text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">Account</label>
-          <select 
+          <Select 
             value={filterAccount} 
             onChange={e => setFilterAccount(e.target.value)} 
             className="w-full h-9 bg-black border border-white/[0.1] rounded px-2 text-[12px] sm:text-[13px] text-white outline-none"
           >
             <option value="all">All Accounts</option>
             {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-          </select>
+          </Select>
         </div>
 
         {/* Category Filter */}
         <div className="space-y-1">
           <label className="block text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">Category</label>
-          <select 
+          <Select 
             value={filterCategory} 
             onChange={e => setFilterCategory(e.target.value)} 
             className="w-full h-9 bg-black border border-white/[0.1] rounded px-2 text-[12px] sm:text-[13px] text-white outline-none"
           >
             <option value="all">All Categories</option>
             {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-          </select>
+          </Select>
         </div>
 
         {/* Client Filter */}
         <div className="space-y-1">
           <label className="block text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">Client</label>
-          <select 
+          <Select 
             value={filterClient} 
             onChange={e => setFilterClient(e.target.value)} 
             className="w-full h-9 bg-black border border-white/[0.1] rounded px-2 text-[12px] sm:text-[13px] text-white outline-none"
           >
             <option value="all">All Clients</option>
             {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
+          </Select>
         </div>
 
         {/* Team Member Filter */}
         <div className="space-y-1">
           <label className="block text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">Team Member</label>
-          <select 
+          <Select 
             value={filterTeam} 
             onChange={e => setFilterTeam(e.target.value)} 
             className="w-full h-9 bg-black border border-white/[0.1] rounded px-2 text-[12px] sm:text-[13px] text-white outline-none"
           >
             <option value="all">All Team</option>
             {team.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
-          </select>
+          </Select>
         </div>
 
         {/* Comparison Toggle */}

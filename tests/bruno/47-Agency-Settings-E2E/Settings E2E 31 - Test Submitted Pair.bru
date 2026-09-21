@@ -1,0 +1,41 @@
+meta {
+  name: Settings E2E 31 - Test Submitted Pair
+  type: http
+  seq: 31
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/settings/payment/test
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "razorpayKeyId": "rzp_test_e2e",
+    "razorpayKeySecret": "e2e_secret_wrong"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  // The pair is fake: Razorpay must reject it (invalid) or be unreachable
+  // from this environment — it can NEVER be 'ok', and the answer is a
+  // tri-state that never echoes the secret.
+  if (raw.result !== 'invalid' && raw.result !== 'unreachable') {
+    throw new Error('fake credentials must not pass: ' + raw.result);
+  }
+  const text = JSON.stringify(raw);
+  if (text.includes('e2e_secret_wrong')) throw new Error('tested secret echoed');
+}
+
+docs {
+  §52 — POST /payment/test with a SUBMITTED pair (tested as submitted,
+  nothing stored): the cheap authenticated Razorpay edge answers a
+  tri-state. A fake pair can never yield 'ok'.
+}

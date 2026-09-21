@@ -1,0 +1,50 @@
+meta {
+  name: Profitability E2E 29 - Profitability After Invoicing
+  type: http
+  seq: 29
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/profitability
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const p = raw.profitability;
+  const near = (a, b, what) => {
+    if (a === null || a === undefined || Math.abs(a - b) > 0.001) {
+      throw new Error(what + ': expected ' + b + ', got ' + a);
+    }
+  };
+
+  // §66 dimension 4 — the issued invoice: billed 6100, still nothing
+  // collected, and 6100 outstanding.
+  near(p.billedAmount.amount, 6100, 'billed');
+  near(p.collectedAmount.amount, 0, 'collected');
+  near(p.outstandingAmount.amount, 6100, 'outstanding');
+
+  // §67 — entry 1 and the expense are INVOICED now: nothing waits.
+  near(p.unbilledAmount.amount, 0, 'unbilled');
+
+  // §62 — invoiced time is STILL EARNED: revenue, cost, profit and margin
+  // are byte-identical to the pre-invoice snapshot. Invoicing moves the
+  // billed dimension only — it never re-prices the work.
+  near(p.applicableRevenue.amount, 5000, 'revenue unchanged');
+  near(p.deliveryCost.amount, 3700, 'cost unchanged');
+  near(p.grossProfit.amount, 1300, 'profit unchanged');
+  near(p.marginPercent, 26, 'margin unchanged');
+  if (p.health !== 'AT_RISK') throw new Error('health unchanged: ' + p.health);
+}
+
+docs {
+  The §62/§66 boundary in one read: after finalization the BILLED dimension
+  moves (0 → 6100) and nothing else does. Profitability is about earned
+  value, not paperwork.
+}

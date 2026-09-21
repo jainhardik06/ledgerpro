@@ -1,0 +1,46 @@
+meta {
+  name: Payments E2E 14 - Gate 156 Cash 100000 No Duplicates
+  type: http
+  seq: 14
+}
+
+get {
+  url: {{BASE_URL}}/api/transactions?limit=100
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const txs = raw.transactions;
+  const invAId = bru.getVar('invAId');
+  const payA1Id = bru.getVar('payA1Id');
+  const payA2Id = bru.getVar('payA2Id');
+
+  // §156 — exactly two Credits, one per confirmed payment, never more.
+  if (txs.length !== 2) throw new Error('§156: expected exactly 2 transactions, found ' + txs.length);
+  const paymentIds = txs.map(t => t.paymentId);
+  if (new Set(paymentIds).size !== 2) throw new Error('§129: a payment produced more than one transaction');
+  if (!paymentIds.includes(payA1Id) || !paymentIds.includes(payA2Id)) throw new Error('Both payments must be linked');
+  for (const t of txs) {
+    if (t.type !== 'Credit') throw new Error('Expected only Credits, found ' + t.type);
+    if (t.invoiceId !== invAId) throw new Error('Lineage broken');
+    if (t.amount !== 40000 && t.amount !== 60000) throw new Error('Unexpected amount ' + t.amount);
+  }
+
+  // §156 — the account cash = Σ Credit − Σ Debit = 100000, never negative.
+  const net = txs.reduce((sum, t) => sum + (t.type === 'Credit' ? t.amount : -t.amount), 0);
+  if (net !== 100000) throw new Error('§156: expected account cash 100000, got ' + net);
+}
+
+docs {
+  THE §156 GATE — the full Module 10 collection contract in one check:
+  ₹100000 invoice → 40000 payment → core transaction → 60000 payment → PAID,
+  account cash +100000, exactly two transactions, zero duplicates, no
+  negative balance.
+}

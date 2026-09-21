@@ -1,0 +1,25 @@
+meta {
+  name: Reports E2E 47 - Receivables Due Date Window
+  type: http
+  seq: 47
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/receivables?from={{repDueMinus20}}&to={{repDueMinus5}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const rep = raw.report;
+  // The due-date window (§96) selects INVOICES by due date: only B (due
+  // 10 days ago) falls inside [−20, −5].
+  if (rep.rows.length !== 1) throw new Error('rows: ' + rep.rows.length);
+  if (rep.rows[0].invoiceNumber !== 'INV-000002') throw new Error('must be invoice B');
+}

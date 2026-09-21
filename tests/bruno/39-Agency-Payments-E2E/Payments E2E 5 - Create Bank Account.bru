@@ -1,0 +1,37 @@
+meta {
+  name: Payments E2E 5 - Create Bank Account
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{BASE_URL}}/api/accounts
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "E2E Collections HDFC",
+    "type": "Bank",
+    "initialBalance": 0
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('accountId', raw.account.id);
+  if (!raw.account.id) throw new Error('Create must return the account id');
+  if (raw.account.initialBalance !== 0) throw new Error('Account must start at 0 — §156 measures cash purely through payment transactions');
+}
+
+docs {
+  §108 — the tracked account confirmed payment money enters. It starts at
+  ZERO so the §156 gate can verify cash purely as Σ Credit − Σ Debit of the
+  core transactions this journey creates.
+}

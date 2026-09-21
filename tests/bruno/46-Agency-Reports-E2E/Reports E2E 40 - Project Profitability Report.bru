@@ -1,0 +1,55 @@
+meta {
+  name: Reports E2E 40 - Project Profitability Report
+  type: http
+  seq: 40
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/project-profitability
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const rep = raw.report;
+  const near = (a, b, what) => {
+    if (a === null || a === undefined || Math.abs(a - b) > 0.001) {
+      throw new Error(what + ': expected ' + b + ', got ' + a);
+    }
+  };
+
+  if (rep.rows.length !== 2) throw new Error('rows: ' + rep.rows.length);
+  const p1 = rep.rows.find(r => r.projectId === bru.getVar('projectId'));
+  if (!p1) throw new Error('the T&M project must be present');
+
+  // §31 — the cost split lens: labor 6000 (all approved time × 900,
+  // non-billable included) + expenses 1000 = delivery 7000.
+  near(p1.applicableRevenue, 12500, 'revenue');
+  near(p1.laborCost, 6000, 'labor cost');
+  near(p1.expenseCost, 1000, 'expense cost');
+  near(p1.deliveryCost, 7000, 'delivery cost');
+  near(p1.profit, 5500, 'profit');
+  near(p1.marginPercent, 44, 'margin');
+  if (p1.plannedHours !== 10) throw new Error('planned hours: ' + p1.plannedHours);
+  near(p1.actualHours, 6.67, 'actual hours (engine rounds hours to 2 decimals)');
+
+  // §31 summary — same weighting discipline as §29.
+  const s = rep.summary;
+  near(s.laborCost, 6000, 'summary labor');
+  near(s.expenseCost, 1000, 'summary expense');
+  near(s.deliveryCost, 7000, 'summary delivery');
+  near(s.profit, 55500, 'summary profit');
+  near(s.weightedMarginPercent, 88.8, 'summary weighted margin');
+}
+
+docs {
+  §31 — the profitability lens over the same engine rows: the labor /
+  expense / delivery split and the planned-vs-actual hours, with no
+  formula duplicated anywhere in the report layer.
+}

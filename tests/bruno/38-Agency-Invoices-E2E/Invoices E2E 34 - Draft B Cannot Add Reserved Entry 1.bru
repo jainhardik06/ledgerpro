@@ -1,0 +1,30 @@
+meta {
+  name: Invoices E2E 34 - Draft B Cannot Add Reserved Entry 1
+  type: http
+  seq: 34
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{invBId}}/lines
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "type": "TIME",
+    "sourceId": "{{entry1Id}}",
+    "description": "Duplicate attempt on reserved entry"
+  }
+}
+
+assert {
+  res.status: eq 409
+  res.body.code: eq SOURCE_ALREADY_RESERVED
+}
+
+docs {
+  §65/§84 — DUPLICATE BILLING IS IMPOSSIBLE: entry 1 is reserved by draft
+  A, so draft B gets an explicit 409 (never a silent skip, never a
+  double-billed line). This is the §148 gate's concurrency guarantee.
+}

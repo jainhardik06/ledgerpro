@@ -1,0 +1,37 @@
+meta {
+  name: Expenses E2E 34 - By-Vendor Report Filter
+  type: http
+  seq: 34
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/expenses?vendor=stockai
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const mainId = bru.getVar('expMainId');
+  // §53 "Expenses by Vendor" — case-insensitive substring match on vendorName
+  // (the rework in step 28 renamed the vendor to "StockAI India").
+  if (raw.expenses.length !== 1) throw new Error('expected exactly 1 StockAI expense, got ' + raw.expenses.length);
+  if (raw.expenses[0].id !== mainId) throw new Error('vendor filter must return the StockAI main expense, got ' + raw.expenses[0].id);
+  if (!/^stockai/i.test(raw.expenses[0].vendorName)) throw new Error('unexpected vendor: ' + raw.expenses[0].vendorName);
+  // The other vendors (Office Supplies Co, CloudHost Ltd) must not leak in.
+  const ids = raw.expenses.map(x => x.id);
+  const adminId = bru.getVar('expAdminId');
+  const secondId = bru.getVar('expSecondId');
+  if (ids.includes(adminId) || ids.includes(secondId)) throw new Error('other vendors leaked into the by-vendor view');
+}
+
+docs {
+  §53 report "Expenses by Vendor": ?vendor=stockai (different case) must
+  return exactly the StockAI expense — case-insensitive substring match,
+  no other vendor's rows.
+}

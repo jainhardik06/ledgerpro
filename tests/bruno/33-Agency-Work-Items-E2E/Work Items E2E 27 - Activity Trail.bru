@@ -1,0 +1,33 @@
+meta {
+  name: Work Items E2E 27 - Activity Trail
+  type: http
+  seq: 27
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const actions = (raw.activity || []).map(a => a.action || a.type || '').filter(Boolean);
+  const required = ['WORK_ITEM_CREATED', 'WORK_ITEM_ASSIGNED', 'WORK_ITEM_UNASSIGNED',
+    'WORK_ITEM_STATUS_CHANGED', 'WORK_ITEM_ARCHIVED'];
+  const missing = required.filter(a => !actions.includes(a));
+  if (missing.length > 0) {
+    throw new Error('Missing §26 audit events: ' + missing.join(', ') + ' — saw: ' + actions.join(', '));
+  }
+}
+
+docs {
+  §26 — the full Module 4 event vocabulary landed in the tenant audit trail:
+  CREATED, ASSIGNED, UNASSIGNED, STATUS_CHANGED, ARCHIVED (UPDATED fires on
+  plain PATCHes, which this suite exercises through the dedicated actions).
+}

@@ -1,0 +1,35 @@
+meta {
+  name: Rates E2E 26 - Agency B Signup
+  type: http
+  seq: 26
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "E2E Rates Agency B",
+    "username": "{{ratesBUsername}}",
+    "password": "{{ratesBPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('ratesBUsername', 'e2e_rates_b_' + suffix);
+  bru.setVar('ratesBPassword', 'E2eRatesB#2026');
+}
+
+docs {
+  §120 — a SECOND agency tenant for the bidirectional isolation probes.
+  The cookie jar switches to B's admin from here on.
+}

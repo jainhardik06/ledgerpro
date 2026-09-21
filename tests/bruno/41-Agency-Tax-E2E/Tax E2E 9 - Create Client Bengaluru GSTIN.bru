@@ -1,0 +1,50 @@
+meta {
+  name: Tax E2E 9 - Create Client Bengaluru GSTIN
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/clients
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Bengaluru Systems",
+    "legalName": "Bengaluru Systems LLP",
+    "email": "ops@bengaluru-systems.test",
+    "billingProfile": { "country": "India", "currency": "INR", "city": "Bengaluru" },
+    "taxProfile": {
+      "country": "IN",
+      "state": "Karnataka",
+      "taxTreatment": "REGISTERED",
+      "registrationType": "GSTIN",
+      "registrationNumber": "29AAFCA5212M1Z8",
+      "taxIdentifiers": [
+        { "type": "GSTIN", "value": "29AAFCA5212M1Z8", "country": "IN" }
+      ]
+    },
+    "commercialDefaults": { "billingModel": "TIME_AND_MATERIALS", "paymentTerms": "NET_30", "currency": "INR" }
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.client.taxProfile.state: eq Karnataka
+  res.body.client.taxProfile.taxIdentifiers[0].type: eq GSTIN
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('clientId', raw.client.id);
+  if (!raw.client.id) throw new Error('Create must return the client id');
+}
+
+docs {
+  §9 — the client's canonical taxIdentifiers[] store (never a GSTIN-only
+  column): the 29 prefix is Karnataka, the recipient side of the §15
+  mechanism and the §26 e-invoice GSTIN check.
+}

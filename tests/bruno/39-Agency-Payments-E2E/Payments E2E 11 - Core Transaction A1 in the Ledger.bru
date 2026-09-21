@@ -1,0 +1,42 @@
+meta {
+  name: Payments E2E 11 - Core Transaction A1 in the Ledger
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{BASE_URL}}/api/transactions?limit=100
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const txs = raw.transactions;
+  const invAId = bru.getVar('invAId');
+  const payA1Id = bru.getVar('payA1Id');
+  const accountId = bru.getVar('accountId');
+
+  // §129 — exactly one transaction for the confirmed payment, full lineage.
+  const forPayment = txs.filter(t => t.paymentId === payA1Id);
+  if (forPayment.length !== 1) throw new Error('§129: expected exactly 1 transaction for payment ' + payA1Id + ', found ' + forPayment.length);
+  const tx = forPayment[0];
+  if (tx.type !== 'Credit') throw new Error('Expected a Credit, got ' + tx.type);
+  if (tx.amount !== 40000) throw new Error('Expected 40000, got ' + tx.amount);
+  if (tx.invoiceId !== invAId) throw new Error('Transaction must carry the invoice lineage');
+  if (tx.accountId !== accountId) throw new Error('§108: the Credit must enter the tracked account');
+  if (tx.category !== 'Payment') throw new Error('Expected category Payment, got ' + tx.category);
+
+  // §156 — the ledger holds NOTHING else yet.
+  if (txs.length !== 1) throw new Error('Expected exactly 1 transaction so far, found ' + txs.length);
+}
+
+docs {
+  §94/§95/§129 — the core Transaction is a real ledger row: Credit 40000,
+  category Payment, carrying invoiceId + paymentId + clientId + accountId.
+}

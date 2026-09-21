@@ -1,0 +1,45 @@
+meta {
+  name: Settings E2E 17 - PATCH Tax Sac And Registration
+  type: http
+  seq: 17
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/settings/tax
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "defaultSacCode": "998313",
+    "registrationType": "GSTIN",
+    "gstin": "27aapfu0939f1zv",
+    "stateCode": "Maharashtra"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const tax = raw.settings.tax;
+  // The SAC code round-trips as the string it was sent as.
+  if (tax.defaultSacCode !== '998313') {
+    throw new Error('defaultSacCode: expected 998313, got ' + tax.defaultSacCode);
+  }
+  // §47 — the registration facts live in the BILLING PROFILE, never in the
+  // stored settings section.
+  if ('gstin' in tax || 'registrationType' in tax || 'stateCode' in tax) {
+    throw new Error('tax section must not store registration fields: ' + JSON.stringify(tax));
+  }
+}
+
+docs {
+  §47 — the SAC default stays in settings; the registration triple writes
+  THROUGH to the Module 11 billingProfile (asserted next). The GSTIN is sent
+  lowercase to prove the §30 shape-tolerant normalization.
+}

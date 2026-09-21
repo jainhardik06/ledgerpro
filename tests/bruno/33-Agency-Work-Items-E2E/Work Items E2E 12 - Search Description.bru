@@ -1,0 +1,29 @@
+meta {
+  name: Work Items E2E 12 - Search Description
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/work-items?search=spacing
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const found = raw.workItems || [];
+  if (found.length !== 1 || found[0].id !== bru.getVar('workItemId')) {
+    throw new Error('search must match the work item description, got ' + found.length);
+  }
+}
+
+docs {
+  §24 — search covers the work item DESCRIPTION ("spacing" appears only
+  there, never in a name).
+}

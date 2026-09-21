@@ -1,0 +1,29 @@
+meta {
+  name: Payments E2E 40 - Confirm Manual 70000 on C
+  type: http
+  seq: 40
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payments/{{payC1Id}}/confirm
+  body: json
+  auth: none
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.invoice.status: eq PARTIALLY_PAID
+  res.body.invoice.amountPaid.amount: eq 70000
+  res.body.invoice.amountDue.amount: eq 30000
+}
+
+docs {
+  70000 of 100000 settled by a manual transfer — only 30000 remains. The
+  gateway payment recorded next is for 40000: its webhook confirmation
+  will be a §91 business rejection.
+}

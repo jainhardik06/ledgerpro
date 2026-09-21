@@ -1,0 +1,27 @@
+meta {
+  name: Settings E2E 39 - Login as User
+  type: http
+  seq: 39
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{stUserUsername}}",
+    "password": "E2eSetUser#2026"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+docs {
+  §55 permission matrix — become the plain USER created in request 25.
+}

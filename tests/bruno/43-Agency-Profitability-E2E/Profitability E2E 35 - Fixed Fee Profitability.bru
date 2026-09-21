@@ -1,0 +1,56 @@
+meta {
+  name: Profitability E2E 35 - Fixed Fee Profitability
+  type: http
+  seq: 35
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/projects/{{project2Id}}/profitability
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const p = raw.profitability;
+  const near = (a, b, what) => {
+    if (a === null || a === undefined || Math.abs(a - b) > 0.001) {
+      throw new Error(what + ': expected ' + b + ', got ' + a);
+    }
+  };
+
+  // §62 — the contract IS the revenue concept for fixed fee.
+  if (p.revenueModel !== 'FIXED_FEE') throw new Error('revenue model: ' + p.revenueModel);
+  near(p.contractValue.amount, 80000, 'contract value');
+  near(p.applicableRevenue.amount, 80000, 'applicable revenue = contract');
+  near(p.deliveryCost.amount, 0, 'no delivery yet');
+
+  // §65 — 80000 / 80000 = 100% margin, an honest number (revenue ≠ 0).
+  near(p.grossProfit.amount, 80000, 'profit');
+  near(p.marginPercent, 100, 'margin');
+
+  // §67 — the fixed-fee contract-level read: nothing billed of the 80000.
+  near(p.billedAmount.amount, 0, 'billed');
+  near(p.unbilledAmount.amount, 80000, 'unbilled = contract − billed');
+
+  // §74/§75 — no baselines on this project: all burns null, and a null
+  // baseline never becomes a risk. Margin 100 ≥ the 40 default → HEALTHY.
+  if (p.burn.hours !== null || p.burn.cost !== null || p.burn.revenue !== null) {
+    throw new Error('no baselines → all burns must be null');
+  }
+  if (p.budgetBurnPercent !== null) throw new Error('headline burn must be null without baselines');
+  if (p.health !== 'HEALTHY') throw new Error('health: expected HEALTHY, got ' + p.health);
+  if (p.marginAlert !== null) throw new Error('no margin alert at 100% margin');
+  if (p.hoursWarning !== null) throw new Error('no hours warning without a plan');
+}
+
+docs {
+  The fixed-fee half of §62: revenue = contract value, unbilled = the
+  un-invoiced remainder of the contract (§67), and the §82/§75 null
+  discipline — no baselines means null burns, never fake 0%, never risk.
+}

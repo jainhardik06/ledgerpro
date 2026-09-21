@@ -1,0 +1,23 @@
+meta {
+  name: Clients E2E 18 - Standard Tenant Refused
+  type: http
+  seq: 18
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/clients
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 403
+  res.body.code: eq NOT_AGENCY_TENANT
+  res.body.redirectTo: eq /dashboard
+}
+
+docs {
+  §33 authorization — a Standard tenant cannot invoke the Agency clients
+  API; the response is the application-level redirect contract, not a bare
+  auth failure.
+}

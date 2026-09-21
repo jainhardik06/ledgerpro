@@ -1,0 +1,32 @@
+meta {
+  name: Payments E2E 21 - Record Manual Payment 40000 on B
+  type: http
+  seq: 21
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payments
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "invoiceId": "{{invBId}}",
+    "amount": 40000,
+    "method": "BANK_TRANSFER",
+    "accountId": "{{accountId}}"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.payment.status: eq PENDING
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('payB1Id', raw.payment.id);
+  if (!raw.payment.id) throw new Error('Record must return the payment id');
+}

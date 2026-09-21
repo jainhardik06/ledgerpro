@@ -1,0 +1,30 @@
+meta {
+  name: Reports E2E 77 - Agency B Signup
+  type: http
+  seq: 77
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "E2E Reports Agency B",
+    "username": "{{repBUsername}}",
+    "password": "{{repBPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('repBUsername', 'e2e_rep_b_' + suffix);
+  bru.setVar('repBPassword', 'E2eRepB#2026');
+}

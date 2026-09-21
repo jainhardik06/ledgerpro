@@ -1,0 +1,29 @@
+meta {
+  name: Settings E2E 30 - GET After Rotate Still Masked
+  type: http
+  seq: 30
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/settings
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.settings.payment.hasKeySecret: eq true
+  res.body.settings.payment.hasWebhookSecret: eq true
+  res.body.settings.payment.razorpayKeyId: eq rzp_test_e2e
+}
+
+script:post-response {
+  const text = typeof res.body === 'string' ? res.body : JSON.stringify(res.body);
+  if (text.includes('e2e_secret_value_2') || text.includes('e2e_secret_value_1')) throw new Error('plaintext leaked');
+}
+
+docs {
+  Post-rotate state: still exactly one hasKeySecret boolean — the rotation
+  replaced the value, and neither the old nor the new plaintext is ever
+  returned.
+}

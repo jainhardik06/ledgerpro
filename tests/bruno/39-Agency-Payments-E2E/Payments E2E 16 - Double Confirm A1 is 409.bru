@@ -1,0 +1,25 @@
+meta {
+  name: Payments E2E 16 - Double Confirm A1 is 409
+  type: http
+  seq: 16
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payments/{{payA1Id}}/confirm
+  body: json
+  auth: none
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 409
+}
+
+docs {
+  §102 — the state machine IS the no-duplicate-transaction guard: a
+  CONFIRMED payment can never confirm again (there is no
+  CONFIRMED→CONFIRMED edge).
+}

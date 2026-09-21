@@ -1,0 +1,42 @@
+meta {
+  name: Team E2E 18 - Re-Add After Remove
+  type: http
+  seq: 18
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/members
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "userId": "{{devUserId}}",
+    "role": "Developer",
+    "allocationPercent": 100
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.member.userId: eq {{devUserId}}
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const previousRowId = bru.getVar('memberRowId');
+  bru.setVar('memberRowId', raw.member.id);
+  if (!raw.member.id) {
+    throw new Error('Re-add must return the fresh membership id');
+  }
+  if (previousRowId && raw.member.id === previousRowId) {
+    throw new Error('Re-add must create a FRESH row, not reactivate history');
+  }
+}
+
+docs {
+  §40 — uniqueness applies to ACTIVE membership only. A removed member may
+  return as a FRESH row; the earlier membership stays in history.
+}

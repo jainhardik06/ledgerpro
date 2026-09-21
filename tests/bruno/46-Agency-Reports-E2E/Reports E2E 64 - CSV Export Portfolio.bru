@@ -1,0 +1,62 @@
+meta {
+  name: Reports E2E 64 - CSV Export Portfolio
+  type: http
+  seq: 64
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/portfolio/export.csv
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+script:post-response {
+  const csv = typeof res.body === 'string' ? res.body : String(res.body);
+  const ct = res.headers['content-type'] || res.headers['Content-Type'] || '';
+  if (!String(ct).includes('text/csv')) throw new Error('content-type must be text/csv, got ' + ct);
+  const cd = res.headers['content-disposition'] || res.headers['Content-Disposition'] || '';
+  if (!String(cd).includes('attachment')) throw new Error('must be an attachment, got ' + cd);
+
+  const lines = csv.replace(/\r\n$/, '').split('\r\n');
+  if (lines.length !== 3) throw new Error('header + 2 rows expected, got ' + lines.length + ' lines');
+
+  // §41 — the header is the table's column contract.
+  const HEADER = 'Project,Client,Status,Currency,Contract Value,Applicable Revenue,Billed,Collected,Delivery Cost,Profit,Margin %';
+  if (lines[0] !== HEADER) throw new Error('header: ' + lines[0]);
+
+  // §41 — the CSV must match the JSON table field by field: the values
+  // frozen in step 35 reappear verbatim (float formatting included).
+  const row = lines.find(l => l.startsWith('Reports Portal Build,'));
+  if (!row) throw new Error('the T&M project row is missing');
+  const f = row.split(',');
+  if (f[0] !== 'Reports Portal Build') throw new Error('project name');
+  if (f[1] !== 'Repsoft Industries') throw new Error('client name');
+  if (f[2] !== 'ACTIVE') throw new Error('status');
+  if (f[3] !== 'INR') throw new Error('currency');
+  if (f[4] !== '') throw new Error('null contract must render EMPTY, got ' + f[4]);
+  if (f[5] !== bru.getVar('p1Revenue')) throw new Error('revenue: csv ' + f[5] + ' vs json ' + bru.getVar('p1Revenue'));
+  if (f[8] !== bru.getVar('p1Cost')) throw new Error('cost: csv ' + f[8] + ' vs json ' + bru.getVar('p1Cost'));
+  if (f[9] !== bru.getVar('p1Profit')) throw new Error('profit: csv ' + f[9] + ' vs json ' + bru.getVar('p1Profit'));
+  if (f[10] !== bru.getVar('p1Margin')) throw new Error('margin: csv ' + f[10] + ' vs json ' + bru.getVar('p1Margin'));
+
+  // The fixed-fee row is present with its 50000 revenue.
+  const row2 = lines.find(l => l.startsWith('Reports Brand Sprint,'));
+  if (!row2) throw new Error('the fixed-fee project row is missing');
+  const f2 = row2.split(',');
+  if (f2[4] !== '50000') throw new Error('p2 contract: ' + f2[4]);
+  if (f2[5] !== bru.getVar('p2Revenue')) throw new Error('p2 revenue mismatch');
+
+  // The row-count header rides along for completeness checks.
+  const xrc = res.headers['x-row-count'] || res.headers['X-Row-Count'];
+  if (String(xrc) !== '2') throw new Error('X-Row-Count must be 2, got ' + xrc);
+}
+
+docs {
+  §37/§41 — the server CSV of the SAME report function: text/csv with an
+  attachment disposition, the exact header contract, and every T&M row
+  value byte-identical to the JSON payload captured in step 35.
+}

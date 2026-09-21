@@ -1,0 +1,35 @@
+meta {
+  name: Reconciliation E2E 8 - Draft and Line Invoice B
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "clientId": "{{recClientId}}",
+    "issueDate": "{{recIssueDate}}",
+    "notes": "Reconciliation journey — invoice B"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.invoice.status: eq DRAFT
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('recInvBId', raw.invoice.id);
+  if (!raw.invoice.id) throw new Error('Create must return the invoice id');
+}
+
+docs {
+  The second invoice: 50000, to be PARTIALLY paid (20000 in, 30000 open).
+}

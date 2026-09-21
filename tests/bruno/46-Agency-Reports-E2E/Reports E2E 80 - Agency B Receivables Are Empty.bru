@@ -1,0 +1,22 @@
+meta {
+  name: Reports E2E 80 - Agency B Receivables Are Empty
+  type: http
+  seq: 80
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/receivables
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (raw.report.rows.length !== 0) throw new Error('rows must be empty, got ' + raw.report.rows.length);
+  if (raw.report.summary.openInvoiceCount !== 0) throw new Error('open invoices: ' + raw.report.summary.openInvoiceCount);
+}

@@ -1,0 +1,28 @@
+meta {
+  name: Profitability E2E 50 - Dev 403 Project Profitability
+  type: http
+  seq: 50
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/profitability
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 403
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (raw.error !== 'You do not have permission to perform this action') {
+    throw new Error('403 must carry the permission error, got ' + JSON.stringify(raw));
+  }
+}
+
+docs {
+  §114 — the project drill-down exposes labor cost by member (§78); the
+  same admin-only gate as the portfolio route. Membership in the project
+  does NOT grant cost visibility.
+}

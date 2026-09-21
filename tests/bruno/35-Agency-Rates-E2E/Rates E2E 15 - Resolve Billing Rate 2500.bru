@@ -1,0 +1,28 @@
+meta {
+  name: Rates E2E 15 - Resolve Billing Rate 2500
+  type: http
+  seq: 15
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/rates/resolve?clientId={{clientId}}&projectId={{projectId}}&role=Senior%20Developer&date=2026-06-15
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.billing.status: eq RESOLVED
+  res.body.billing.amount: eq 2500
+  res.body.billing.currency: eq INR
+  res.body.billing.source: eq CLIENT_RATE_CARD
+  res.body.billing.unit: eq HOUR
+}
+
+docs {
+  §136 RELEASE GATE (billing half): resolveBillingRate for "Senior
+  Developer" on Acme's Website Redesign at 2026-06-15 must return ₹2,500/hr
+  from the CLIENT card (§67 tier 2 — the client card overrides the org
+  default). 8 hours = the ₹20,000 planned revenue.
+}

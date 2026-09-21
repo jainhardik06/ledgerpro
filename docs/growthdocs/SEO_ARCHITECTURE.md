@@ -250,10 +250,9 @@ At 5,000+ pages, Google allocates a fixed crawl budget per day. Strategy:
 
 - **Priority crawl**: `/docs/`, `/comparisons/`, `/use-cases/` (highest conversion value)
 - **Last crawl**: `/resources/` (supplemental)
-- **Never crawl**: `/super-admin/` (blocked by `noindex` + `nofollow`)
+- **Never crawl**: `/super-admin/`, `/dashboard/`, `/admin/`, `/api/auth/`, `/api/internal/` — excluded via the main app's `robots.ts` `Disallow` rules (the app surface requires authentication, so no indexable content renders to crawlers)
 
 Implement `<meta name="robots" content="index, follow">` on all discovery pages.
-Use `<meta name="robots" content="noindex, nofollow">` on all super-admin pages.
 
 ---
 

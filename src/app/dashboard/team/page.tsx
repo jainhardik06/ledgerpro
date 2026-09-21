@@ -1,22 +1,31 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, Users, Shield, Plus, MoreHorizontal, AlertCircle } from 'lucide-react';
+import { RefreshCw, Users, Shield, Plus, MoreHorizontal, AlertCircle, Tags } from 'lucide-react';
 import { useDashboardContext } from '@/components/dashboard/DashboardProvider';
 import { Drawer } from '@/components/ui/Drawer';
+import { Req, Opt } from '@/components/ui/Req';
+import { UserCostRateDrawer } from '@/components/agency/rates/UserCostRateDrawer';
+import { tenantHasCapability } from '@/lib/agency/types/vertical';
+import { confirmModal } from '@/components/ui/Dialog';
 
 export default function TeamPage() {
-  const { user } = useDashboardContext();
+  const { user, tenant } = useDashboardContext();
   const [loading, setLoading] = useState(true);
   const [team, setTeam] = useState<any[]>([]);
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<any | null>(null);
-  
+
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+
+  // Module 6 §88 — the user-side cost-rate surface (Team Member → Cost
+  // Rate). Admin-only (§104) and only meaningful for agency workspaces.
+  const isAgency = tenantHasCapability(tenant, 'AGENCY_DASHBOARD');
+  const [costRateMember, setCostRateMember] = useState<{ id: string; username: string } | null>(null);
 
   useEffect(() => {
     if (user?.role !== 'TENANT_ADMIN') {
@@ -68,14 +77,23 @@ export default function TeamPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!newUsername.trim()) {
+      setError('Username is required.');
+      return;
+    }
+    if (!selectedMember && !newPassword) {
+      setError('Temporary password is required for new members.');
+      return;
+    }
+
     setSaving(true);
     setError('');
     try {
       const url = selectedMember ? `/api/tenant/users/${selectedMember.id}` : '/api/tenant/users';
       const method = selectedMember ? 'PUT' : 'POST';
       const body = newPassword
-        ? { username: newUsername, password: newPassword }
-        : { username: newUsername };
+        ? { username: newUsername.trim(), password: newPassword }
+        : { username: newUsername.trim() };
 
       const res = await fetch(url, {
         method,
@@ -101,7 +119,13 @@ export default function TeamPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to remove this team member? This action is irreversible.')) return;
+    const ok = await confirmModal({
+      title: 'Remove Team Member',
+      message: 'Are you sure you want to remove this team member? This action is irreversible.',
+      confirmText: 'Remove Member',
+      variant: 'danger',
+    });
+    if (!ok) return;
     setError('');
     try {
       const res = await fetch(`/api/tenant/users/${id}`, {
@@ -121,7 +145,7 @@ export default function TeamPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-56px)] animate-in fade-in duration-500">
+    <div className="flex flex-col h-[calc(100vh-56px)] w-full animate-in fade-in duration-500">
       <div className="p-4 sm:p-6 shrink-0 border-b border-white/[0.05] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-semibold tracking-tight text-white mb-1">Team Workspace</h1>
@@ -152,7 +176,7 @@ export default function TeamPage() {
                      </div>
                      <div className="min-w-0">
                        <div className="text-[13px] font-medium text-white mb-0.5 group-hover:text-emerald-400 transition-colors truncate">{member.username}</div>
-                       <div className="text-[11px] font-mono text-neutral-500 truncate">{member.id}</div>
+                       <div className="text-[11px] text-neutral-500 truncate">{member.createdAt ? `Joined ${new Date(member.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}` : (member.role === 'TENANT_ADMIN' ? 'Administrator' : 'Team Member')}</div>
                        <div className="sm:hidden mt-1 flex items-center gap-1.5 min-w-0">
                          {member.role === 'TENANT_ADMIN' && <Shield className="w-3.5 h-3.5 text-indigo-400 shrink-0" />}
                          <span className={`text-[10px] font-medium truncate ${member.role === 'TENANT_ADMIN' ? 'text-indigo-300' : 'text-neutral-400'}`}>
@@ -176,6 +200,15 @@ export default function TeamPage() {
                    </span>
                  </td>
                  <td className="px-4 sm:px-6 py-4 text-right align-middle shrink-0">
+                   {isAgency && user?.role === 'TENANT_ADMIN' && (
+                     <button
+                       onClick={(e) => { e.stopPropagation(); setCostRateMember({ id: member.id, username: member.username }); }}
+                       title="Cost rate (Module 6 §88)"
+                       className="p-1.5 mr-1 hover:bg-white/[0.1] rounded text-neutral-400 hover:text-white transition-colors"
+                     >
+                       <Tags className="w-4 h-4" />
+                     </button>
+                   )}
                    <button onClick={(e) => { e.stopPropagation(); openEdit(member); }} className="p-1.5 hover:bg-white/[0.1] rounded text-neutral-400 hover:text-white transition-colors opacity-100 sm:opacity-0 group-hover:opacity-100">
                      <MoreHorizontal className="w-4 h-4" />
                    </button>
@@ -198,27 +231,47 @@ export default function TeamPage() {
               )}
 
               <div>
-                <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">Username</label>
+                <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">
+                  Username <Req satisfied={Boolean(newUsername.trim())} />
+                </label>
                 <input 
                   type="text" 
                   value={newUsername} 
-                  onChange={e=>setNewUsername(e.target.value)} 
+                  onChange={e => {
+                    setNewUsername(e.target.value);
+                    if (error) setError('');
+                  }} 
                   required 
-                  className="w-full h-9 bg-transparent border-b border-white/[0.1] text-[14px] text-white focus:border-emerald-500 outline-none" 
+                  className={`w-full h-9 bg-transparent border-b text-[14px] text-white outline-none transition-colors ${
+                    error && !newUsername.trim()
+                      ? 'border-rose-500/80 focus:border-rose-500'
+                      : 'border-white/[0.1] focus:border-emerald-500'
+                  }`}
                   placeholder="johndoe" 
                 />
               </div>
 
               <div>
                 <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">
-                  {selectedMember ? "New Password (leave blank to keep current)" : "Temporary Password"}
+                  {selectedMember ? (
+                    <>New Password <span className="text-neutral-500 text-[10px] font-normal normal-case tracking-normal ml-1">(leave blank to keep current)</span></>
+                  ) : (
+                    <>Temporary Password <Req satisfied={Boolean(newPassword)} /></>
+                  )}
                 </label>
                 <input 
                   type="password" 
                   value={newPassword} 
-                  onChange={e=>setNewPassword(e.target.value)} 
+                  onChange={e => {
+                    setNewPassword(e.target.value);
+                    if (error) setError('');
+                  }} 
                   required={!selectedMember}
-                  className="w-full h-9 bg-transparent border-b border-white/[0.1] text-[14px] text-white focus:border-emerald-500 outline-none" 
+                  className={`w-full h-9 bg-transparent border-b text-[14px] text-white outline-none transition-colors ${
+                    error && !selectedMember && !newPassword
+                      ? 'border-rose-500/80 focus:border-rose-500'
+                      : 'border-white/[0.1] focus:border-emerald-500'
+                  }`}
                 />
               </div>
 
@@ -247,6 +300,15 @@ export default function TeamPage() {
             </div>
         </form>
       </Drawer>
+
+      {/* Module 6 §88 — the member-side cost-rate drawer. */}
+      {costRateMember && (
+        <UserCostRateDrawer
+          isOpen={!!costRateMember}
+          onClose={() => setCostRateMember(null)}
+          user={costRateMember}
+        />
+      )}
     </div>
   );
 }

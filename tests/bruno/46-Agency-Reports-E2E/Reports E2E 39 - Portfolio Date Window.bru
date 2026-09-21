@@ -1,0 +1,25 @@
+meta {
+  name: Reports E2E 39 - Portfolio Date Window
+  type: http
+  seq: 39
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/portfolio?from={{repToday}}&to={{repToday}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const rep = raw.report;
+  // Both projects start today — the window (§80) selects PROJECTS by
+  // start date; it never re-slices the money inside them.
+  if (rep.rows.length !== 2) throw new Error('rows: ' + rep.rows.length);
+  if (rep.summary.projectCount !== 2) throw new Error('summary count: ' + rep.summary.projectCount);
+}

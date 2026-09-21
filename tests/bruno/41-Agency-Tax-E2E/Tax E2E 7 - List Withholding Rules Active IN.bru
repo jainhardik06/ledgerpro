@@ -1,0 +1,22 @@
+meta {
+  name: Tax E2E 7 - List Withholding Rules Active IN
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/withholding-rules?active=true&jurisdiction=IN
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.rules[0].ruleCode: eq IT Act 2025 — TDS on services
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (raw.rules.length !== 1) throw new Error('Expected exactly the one configured rule');
+}

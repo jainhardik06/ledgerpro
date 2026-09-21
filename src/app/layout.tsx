@@ -5,6 +5,7 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 import { PostHogProvider } from "@/components/analytics/posthog-provider";
 import ClientInitialization from "@/components/ClientInitialization";
 import { PwaProvider } from "@/components/pwa-provider";
+import { DialogContainer } from "@/components/ui/Dialog";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,9 +32,13 @@ export const metadata: Metadata = {
     },
   },
   appleWebApp: {
-    title: "LedgerPro",
+    title: "Money OS",
     statusBarStyle: "black-translucent",
     capable: true,
+  },
+  icons: {
+    // iOS home-screen install ignores the manifest and reads this instead.
+    apple: "/icons/apple-touch-icon.png",
   },
 };
 
@@ -54,7 +59,10 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <PwaProvider>
           <ClientInitialization />
-          <PostHogProvider>{children}</PostHogProvider>
+          <PostHogProvider>
+            {children}
+            <DialogContainer />
+          </PostHogProvider>
           <GoogleAnalytics gaId="G-JZ0LD0YTJE" />
         </PwaProvider>
       </body>

@@ -1,0 +1,24 @@
+meta {
+  name: Profitability E2E 8 - Add Billing Entry Developer 2500
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/rate-cards/{{billingCardId}}/entries
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Developer",
+    "amount": 2500,
+    "effectiveFrom": "2026-01-01"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.entry.amount: eq 2500
+}

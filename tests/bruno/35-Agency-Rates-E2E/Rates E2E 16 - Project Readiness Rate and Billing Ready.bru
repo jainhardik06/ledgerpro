@@ -1,0 +1,46 @@
+meta {
+  name: Rates E2E 16 - Project Readiness Rate and Billing Ready
+  type: http
+  seq: 16
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.readiness.rateReady: eq true
+  res.body.readiness.billingReady: eq true
+  res.body.readiness.configuredCostRates.configured: eq 1
+  res.body.readiness.configuredCostRates.total: eq 1
+  res.body.readiness.configuredBillingRates.configured: eq 1
+  res.body.readiness.configuredBillingRates.total: eq 1
+  res.body.readiness.readyForTracking: eq false
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const checks = (raw.readiness && raw.readiness.checks) || [];
+  if (checks.length !== 10) {
+    throw new Error('Expected the 10 §109/§126 readiness checks, got ' + checks.length);
+  }
+  const notReady = checks.filter(c => !c.ready).map(c => c.key);
+  // The project is still DRAFT here — §126 says only the economics are
+  // proven so far; the structural dimension (projectActive) honestly fails
+  // until step 34 activates it.
+  if (notReady.join(',') !== 'projectActive') {
+    throw new Error('Expected only projectActive unready on the DRAFT project, got: ' + notReady.join(', '));
+  }
+}
+
+docs {
+  §108–§110/§125: the fully wired project reports RATE_READY and
+  BILLING_READY with 1/1 coverage on both sides through the REAL resolution
+  engine. §126: readyForTracking stays false while the project is DRAFT —
+  economics alone don't make a project trackable; step 34 completes the
+  §119 journey by activating it.
+}

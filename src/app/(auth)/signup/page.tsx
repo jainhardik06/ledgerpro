@@ -8,6 +8,18 @@ import { Input } from '@/components/ui/Input';
 
 type SignupStep = 'credentials' | 'organization' | 'usecase' | 'success';
 
+/**
+ * The onboarding picker is a friendlier front for `Tenant.appMode` (PRD §86
+ * verticals). Freelancer and Business both run the Standard workspace; only
+ * Agency and Student Club change terminology downstream.
+ */
+const USE_CASE_TO_APP_MODE: Record<string, 'Standard' | 'Student_Club' | 'Agency'> = {
+  freelancer: 'Standard',
+  business: 'Standard',
+  agency: 'Agency',
+  club: 'Student_Club',
+};
+
 export default function SignupPage() {
   const [step, setStep] = useState<SignupStep>('credentials');
   const [loading, setLoading] = useState(false);
@@ -44,14 +56,19 @@ export default function SignupPage() {
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenantName, username: email, password })
+        body: JSON.stringify({
+          tenantName,
+          username: email,
+          password,
+          appMode: USE_CASE_TO_APP_MODE[useCase] || 'Standard',
+        })
       });
       const data = await res.json();
       
       if (res.ok && data.success) {
         setStep('success');
         setTimeout(() => {
-          window.location.href = '/dashboard';
+          window.location.href = data.redirectTo || '/dashboard';
         }, 2000);
       } else {
         setError(data.error || 'Failed to create workspace');

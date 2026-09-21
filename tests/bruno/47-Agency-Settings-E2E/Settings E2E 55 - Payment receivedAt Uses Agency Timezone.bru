@@ -1,0 +1,47 @@
+meta {
+  name: Settings E2E 55 - Payment receivedAt Uses Agency Timezone
+  type: http
+  seq: 55
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payments
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "invoiceId": "{{stPrefixInvId}}",
+    "amount": 500,
+    "method": "BANK_TRANSFER"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.payment.status: eq PENDING
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const probeToday = bru.getVar('stProbeToday');
+  const kolkataToday = bru.getVar('stKolkataToday');
+  if (raw.payment.receivedAt !== probeToday) {
+    throw new Error('receivedAt: expected ' + probeToday + ' (agency timezone today), got ' + raw.payment.receivedAt);
+  }
+  if (probeToday === kolkataToday) {
+    throw new Error('probe setup bug: the probe zone must be on a different date than the server default');
+  }
+}
+
+docs {
+  §44 engine consumption in a SECOND engine — the payment domain's
+  receivedAt default (validator §88: "defaults to today in the domain")
+  anchors to the AGENCY timezone (request 54's probe zone), not the server
+  locale: the date is the probe zone's today and, by construction of
+  request 54, differs from the server-default (Asia/Kolkata) today. The
+  payment lands PENDING (§101) — nothing moves until confirmation, so this
+  probe touches no money.
+}

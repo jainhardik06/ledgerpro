@@ -1,0 +1,31 @@
+meta {
+  name: Settings E2E 35 - Webhook Bad Signature 401
+  type: http
+  seq: 35
+}
+
+post {
+  url: {{BASE_URL}}/api/webhooks/razorpay
+  body: text
+  auth: none
+}
+
+body:text {
+  {"event":"payment_link.paid","payload":{"payment_link":{"entity":{"id":"plink_set_liar"}},"payment":{"entity":{"id":"pay_set_liar","amount":999999999}}}}
+}
+
+headers {
+  Content-Type: application/json
+  x-razorpay-signature: deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef
+}
+
+assert {
+  res.status: eq 401
+  res.body.received: eq false
+  res.body.outcome: eq SIGNATURE_INVALID
+}
+
+docs {
+  §97 — a signature matching NEITHER the env secret NOR any tenant-stored
+  secret is a 401; fail closed.
+}

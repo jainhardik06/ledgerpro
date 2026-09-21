@@ -1,0 +1,43 @@
+meta {
+  name: Rates E2E 7 - Create Acme Billing Card
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/rate-cards
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Acme Billing 2026",
+    "type": "BILLING",
+    "scope": "CLIENT",
+    "clientId": "{{clientId}}",
+    "currency": "INR"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.card.type: eq BILLING
+  res.body.card.scope: eq CLIENT
+  res.body.card.clientId: eq {{clientId}}
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('billingCardId', raw.card.id);
+  if (!raw.card.id) {
+    throw new Error('Create must return the billing card id for the entry step');
+  }
+}
+
+docs {
+  §56 — the BILLING truth: client-facing pricing, scoped to Acme (§91: a
+  CLIENT card requires its same-tenant client). This card overrides the
+  org default for Acme wherever it defines a role (§67).
+}

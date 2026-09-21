@@ -1,0 +1,24 @@
+meta {
+  name: Profitability E2E 47 - Agency B Portfolio Is Empty
+  type: http
+  seq: 47
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/profitability
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const pf = raw.portfolio;
+  if (pf.projects.length !== 0) throw new Error('Agency B must see no projects');
+  if (pf.byClient.length !== 0) throw new Error('Agency B must see no clients');
+  if (pf.summary.projectCount !== 0) throw new Error('Agency B summary must be 0');
+}

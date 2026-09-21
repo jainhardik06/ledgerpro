@@ -1,0 +1,49 @@
+meta {
+  name: Clients E2E 4 - Create Client
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/clients
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Acme Studio E2E",
+    "email": "ops@acme-e2e.test",
+    "phone": "+91 90000 00000",
+    "primaryContact": { "name": "Priya Sharma", "role": "Finance Manager" },
+    "billingProfile": { "email": "accounts@acme-e2e.test", "city": "Mumbai", "country": "India", "currency": "INR" },
+    "taxProfile": { "country": "IN", "registrationType": "GSTIN", "registrationNumber": "27AAAAA0000A1Z5" },
+    "commercialDefaults": { "billingModel": "TIME_AND_MATERIALS", "paymentTerms": "NET_15", "currency": "INR" }
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.client.name: eq Acme Studio E2E
+  res.body.client.status: eq ACTIVE
+  res.body.client.commercialDefaults.billingModel: eq TIME_AND_MATERIALS
+  res.body.client.taxProfile.registrationType: eq GSTIN
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('clientId', raw.client.id);
+  if (!raw.client.id) {
+    throw new Error('Create must return the client id for later lifecycle steps');
+  }
+  // §17 — createdAt/updatedAt exist; the doc carries no raw Mongo _id.
+  if (raw.client._id !== undefined) {
+    throw new Error('Raw Mongo _id must not leak into the API response');
+  }
+}
+
+docs {
+  Module 2.8 create: full profile shape (§16) — billing, tax, commercial
+  defaults, primary contact — persisted and returned normalized.
+}

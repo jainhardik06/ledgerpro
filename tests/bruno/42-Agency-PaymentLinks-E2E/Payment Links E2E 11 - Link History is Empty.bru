@@ -1,0 +1,27 @@
+meta {
+  name: Payment Links E2E 11 - Link History is Empty
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/invoices/{{plInvAId}}/payment-links
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (!Array.isArray(raw.paymentLinks)) throw new Error('§55: must return the paymentLinks array');
+  if (raw.paymentLinks.length !== 0) throw new Error('§54: the 503 create must not have stored a link');
+}
+
+docs {
+  §34/§55 — the invoice's link history. Empty here because the fail-closed
+  503 stored nothing — the gateway accepting is a precondition for the row.
+}

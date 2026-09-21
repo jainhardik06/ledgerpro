@@ -1,0 +1,39 @@
+meta {
+  name: Tax E2E 1 - Signup
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "E2E Tax Agency",
+    "username": "{{taxAdminUsername}}",
+    "password": "{{taxAdminPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('taxAdminUsername', 'e2e_tax_admin_' + suffix);
+  bru.setVar('taxAdminPassword', 'E2eTaxAdmin#2026');
+}
+
+docs {
+  Fresh agency for the Module 11 journey: billing profile (Maharashtra
+  GSTIN) → tax profile → withholding rule (effective-dated configuration,
+  never a hard-coded section) → Karnataka client (GSTIN) → invoice with SAC
+  classification + IGST via the stored place of supply → finalize INV-000001
+  in its fiscal year with the frozen compliance snapshot and e-invoice
+  PENDING → payment carrying withholding → the exempt second invoice.
+}

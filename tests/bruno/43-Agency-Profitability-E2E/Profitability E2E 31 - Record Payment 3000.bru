@@ -1,0 +1,34 @@
+meta {
+  name: Profitability E2E 31 - Record Payment 3000
+  type: http
+  seq: 31
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payments
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "invoiceId": "{{invId}}",
+    "amount": 3000,
+    "method": "UPI",
+    "accountId": "{{accountId}}",
+    "reference": "UPI-PROF-3K"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.payment.status: eq PENDING
+  res.body.payment.amount.amount: eq 3000
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('paymentId', raw.payment.id);
+  if (!raw.payment.id) throw new Error('Record must return the payment id');
+}

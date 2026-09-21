@@ -1,0 +1,15 @@
+meta {
+  name: Alerts E2E 39 - Invalid Status Is 400
+  type: http
+  seq: 39
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/alerts?status=OPNE
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}

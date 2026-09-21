@@ -1,0 +1,44 @@
+meta {
+  name: Expenses E2E 11 - Dev Creates Pass-Through 4500
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/expenses
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "projectId": "{{projectId}}",
+    "vendorName": "CloudHost Ltd",
+    "description": "Staging server pass-through",
+    "amount": 4500,
+    "expenseType": "PASS_THROUGH",
+    "billable": true,
+    "expenseDate": "{{expDate}}"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.expense.status: eq DRAFT
+  res.body.expense.expenseType: eq PASS_THROUGH
+  res.body.expense.clientChargeAmount.amount: eq 4500
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const e = raw.expense;
+  bru.setVar('expSecondId', e.id);
+  if (!e.id) throw new Error('Create must return the expense id');
+  if (e.amount !== undefined) throw new Error('§99 redaction violated: amount leaked to a USER');
+}
+
+docs {
+  §38 — PASS_THROUGH: recharged at face value (no markup, so charge =
+  cost). This one is deliberately never approved — it ends the journey
+  reworked to 5000 and parked in DRAFT, proving drafts never touch §4/§7.
+}

@@ -1,0 +1,25 @@
+meta {
+  name: Settings E2E 26 - PATCH Payment Invalid Enable 400
+  type: http
+  seq: 26
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/settings/payment
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "razorpayEnabled": "yes"
+  }
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  §48 — the integration switch is a boolean or nothing.
+}

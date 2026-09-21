@@ -1,0 +1,23 @@
+meta {
+  name: Agency E2E 7 - Standard Tenant Cannot Invoke Agency Dashboard
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/dashboard
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 403
+  res.body.code: eq NOT_AGENCY_TENANT
+  res.body.redirectTo: eq /dashboard
+}
+
+docs {
+  Security leg of the Module 1.26 matrix: a Standard tenant's session is
+  declined by the Agency vertical gate with the APPLICATION response
+  (code + redirectTo) — never a bare auth failure.
+}

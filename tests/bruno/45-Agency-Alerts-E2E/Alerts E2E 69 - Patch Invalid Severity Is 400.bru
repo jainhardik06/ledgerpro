@@ -1,0 +1,23 @@
+meta {
+  name: Alerts E2E 69 - Patch Invalid Severity Is 400
+  type: http
+  seq: 69
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/alert-rules/{{dueSoonRuleId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "configuration": {
+      "severity": "CATASTROPHIC"
+    }
+  }
+}
+
+assert {
+  res.status: eq 400
+}

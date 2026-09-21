@@ -1,0 +1,36 @@
+meta {
+  name: Receivables E2E 31 - Summary Endpoint No Rows
+  type: http
+  seq: 31
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/receivables/summary
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const s = raw.summary;
+  const eq = (actual, expected, what) => {
+    if (actual !== expected) throw new Error(what + ': expected ' + expected + ', got ' + JSON.stringify(actual));
+  };
+  // §87 — the position WITHOUT the §96 rows.
+  if (s.invoices !== undefined) throw new Error('§87: summary must not carry invoice rows');
+  if (s.byProject !== undefined) throw new Error('§87: summary must not carry byProject');
+  eq(s.outstanding, 135000, 'outstanding');
+  eq(s.dueSoon, 45000, 'due soon');
+  eq(s.overdueAmount, 90000, 'overdue');
+  eq(s.overdueCount, 3, 'overdue count');
+  eq(s.openInvoiceCount, 5, 'open count');
+  eq(s.dueSoonDays, 7, '§90 default window');
+  eq(s.byAgingBucket['90+'], 30000, '90+ bucket');
+  eq(s.byClient.length, 2, 'byClient length');
+  eq(s.byClient[0].outstanding, 90000, 'client A outstanding');
+}

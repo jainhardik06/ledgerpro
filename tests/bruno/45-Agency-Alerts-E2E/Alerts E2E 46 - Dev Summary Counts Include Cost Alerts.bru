@@ -1,0 +1,28 @@
+meta {
+  name: Alerts E2E 46 - Dev Summary Counts Include Cost Alerts
+  type: http
+  seq: 46
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/alerts/summary
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.counts.open: eq 9
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  // §114 — counts include the cost-bearing alerts (a count leaks no cost)…
+  if (raw.counts.open !== 9) throw new Error('Dev counts must include cost alerts, got ' + raw.counts.open);
+  // …but the top rows are filtered for the USER session.
+  const costTop = raw.top.filter(a =>
+    a.ruleType === 'PROJECT_OVER_BUDGET' || a.ruleType === 'PROJECT_MARGIN_BELOW_TARGET');
+  if (costTop.length > 0) throw new Error('§114 violated: a USER received cost-bearing top rows');
+  if (raw.top.length !== 5) throw new Error('Dev top must be 5 (2 CRITICAL + 3 WARNING), got ' + raw.top.length);
+}

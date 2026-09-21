@@ -1,0 +1,21 @@
+meta {
+  name: Clients E2E 15 - Restore Client
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/clients/{{clientId}}/restore
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.client.status: eq INACTIVE
+}
+
+docs {
+  §14 — restore returns the client to INACTIVE (the state it was archived
+  from), never straight to ACTIVE. Un-archiving is not re-activation.
+}

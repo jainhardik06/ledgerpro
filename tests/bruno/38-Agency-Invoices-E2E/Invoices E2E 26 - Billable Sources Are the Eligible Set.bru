@@ -1,0 +1,28 @@
+meta {
+  name: Invoices E2E 26 - Billable Sources Are the Eligible Set
+  type: http
+  seq: 26
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/invoices/billable-sources?projectId={{projectId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  // §70 — the wizard's Source Selector sees EXACTLY the billable set:
+  // both approved time entries, the approved expense, the completed
+  // milestone; nothing else, nothing hidden.
+  if (raw.time.length !== 2) throw new Error('expected 2 billable time rows, got ' + raw.time.length);
+  if (raw.expenses.length !== 1) throw new Error('expected 1 billable expense, got ' + raw.expenses.length);
+  if (raw.milestones.length !== 1) throw new Error('expected 1 billable milestone, got ' + raw.milestones.length);
+  if (raw.unvaluableMilestones !== 0) throw new Error('§97: expected 0 unvaluable milestones');
+  if (!raw.milestones[0].projectName) throw new Error('§20: milestone row must carry the project name');
+}

@@ -1,0 +1,22 @@
+meta {
+  name: Regression 7 - Student Club Declined by Agency Gate
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/dashboard
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 403
+  res.body.code: eq "NOT_AGENCY_TENANT"
+  res.body.redirectTo: eq "/dashboard"
+}
+
+docs {
+  The Student Club vertical is separate from Agency — its tenants get the
+  same clean application response, never an auth failure.
+}

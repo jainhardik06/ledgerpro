@@ -1,0 +1,28 @@
+meta {
+  name: Invoices E2E 40 - Entry 1 Locked INVOICED
+  type: http
+  seq: 40
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/time/{{entry1Id}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.timeEntry.billingStatus: eq INVOICED
+  res.body.timeEntry.invoiceId: eq {{invAId}}
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  // §61 — the reservation trail is superseded by the invoiceId link.
+  if (raw.timeEntry.reservedInvoiceId != null) throw new Error('§61: reservation trail must be cleared at INVOICED');
+}
+
+docs {
+  The §148 gate's lock: the approved work is INVOICED and points at the
+  invoice that billed it. It can never be selected by another draft.
+}

@@ -1,0 +1,30 @@
+meta {
+  name: Payment Links E2E 10 - Create Link Fails Closed 503
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{plInvAId}}/payment-link
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "amount": 40000,
+    "description": "September retainer — part 1"
+  }
+}
+
+assert {
+  res.status: eq 503
+}
+
+docs {
+  §54/§111 — the local E2E environment deliberately carries NO Razorpay API
+  pair (only the test-only webhook secret), so a VALID request fails CLOSED:
+  503, and no link row is stored (§33 — the gateway must accept before the
+  store records). The full happy loop with a mocked gateway is proven in
+  vitest (agency-payment-link-loop.test.ts, §57).
+}

@@ -1,0 +1,33 @@
+meta {
+  name: Settings E2E 52 - Add Line to Prefix Invoice
+  type: http
+  seq: 52
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{stPrefixInvId}}/lines
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "type": "FIXED_FEE",
+    "description": "Retainer — settings consumption probe",
+    "quantity": 1,
+    "unitPrice": 5000,
+    "amount": 0
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.line.type: eq FIXED_FEE
+  res.body.invoice.subtotal.amount: eq 5000
+}
+
+docs {
+  §83 prerequisite — an invoice with no lines is never finalized (and no
+  number is consumed), so the draft needs one line before the prefix probe.
+}

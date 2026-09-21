@@ -1,0 +1,43 @@
+meta {
+  name: Rates E2E 6 - Add Cost Entry Senior Developer 900
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/rate-cards/{{costCardId}}/entries
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Senior Developer",
+    "amount": 900,
+    "effectiveFrom": "2026-01-01"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.entry.name: eq Senior Developer
+  res.body.entry.amount: eq 900
+  res.body.entry.unit: eq HOUR
+  res.body.entry.billable: eq false
+  res.body.entry.billingType: eq HOURLY
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('costEntryId', raw.entry.id);
+  if (!raw.entry.id) {
+    throw new Error('Create must return the entry id for the assignment step');
+  }
+}
+
+docs {
+  §87/§73 — the cost line "Senior Developer → ₹900/hr". No unit/billingType
+  sent: the domain FORCES HOUR / not billable / HOURLY on COST cards, and the
+  response proves it. The first version starts 2026-01-01 (§131).
+}

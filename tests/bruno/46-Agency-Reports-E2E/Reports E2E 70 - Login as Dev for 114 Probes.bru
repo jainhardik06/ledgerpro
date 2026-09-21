@@ -1,0 +1,29 @@
+meta {
+  name: Reports E2E 70 - Login as Dev for 114 Probes
+  type: http
+  seq: 70
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{repDevUsername}}",
+    "password": "E2eRepDev#2026"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+docs {
+  §114 probes — the USER session: cost/margin reports (portfolio,
+  project profitability) must be 403; the operational/cash reports (time,
+  unbilled, receivables) must be 200.
+}

@@ -1,0 +1,22 @@
+meta {
+  name: Expenses E2E 40 - Agency B Cannot Approve Agency A Expense
+  type: http
+  seq: 40
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/expenses/{{expMainId}}/approve
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 404
+  res.body.error: eq Expense not found
+}
+
+docs {
+  Cross-tenant APPROVE is the same 404 as the read — Agency B admin is
+  not an approver for a row that does not exist in their tenant, and the
+  response never reveals that it exists elsewhere.
+}

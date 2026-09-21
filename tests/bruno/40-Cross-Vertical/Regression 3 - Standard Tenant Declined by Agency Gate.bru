@@ -1,0 +1,22 @@
+meta {
+  name: Regression 3 - Standard Tenant Declined by Agency Gate
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/dashboard
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 403
+  res.body.code: eq "NOT_AGENCY_TENANT"
+  res.body.redirectTo: eq "/dashboard"
+}
+
+docs {
+  The Standard tenant is cleanly excluded from the Agency vertical —
+  application response with a redirect home, never a crash or auth error.
+}

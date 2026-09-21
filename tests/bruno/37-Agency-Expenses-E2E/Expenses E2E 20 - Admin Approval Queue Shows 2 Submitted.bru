@@ -1,0 +1,27 @@
+meta {
+  name: Expenses E2E 20 - Admin Approval Queue Shows 2 Submitted
+  type: http
+  seq: 20
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/expenses/approvals
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const submitted = raw.expenses.filter(e => e.status === 'SUBMITTED');
+  if (submitted.length !== 2) throw new Error('expected 2 SUBMITTED in queue, got ' + submitted.length);
+  // Both are the dev; the admin own was already approved by the PM.
+  const devUserId = bru.getVar('devUserId');
+  if (!submitted.every(e => e.createdBy === devUserId)) throw new Error('queue must contain only the dev expenses');
+  // Admin sees the cost side in the queue (§99 redaction is for non-admins).
+  if (submitted.some(e => e.amount === undefined)) throw new Error('admin queue must show the cost side');
+}

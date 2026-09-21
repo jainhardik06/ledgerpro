@@ -1,0 +1,35 @@
+meta {
+  name: Time E2E 30 - Dev Edits Rejected Entry
+  type: http
+  seq: 31
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/time/{{rejectedEntryId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "durationMinutes": 45,
+    "notes": "Corrected duration after review"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timeEntry.approvalStatus: eq DRAFT
+  res.body.timeEntry.durationMinutes: eq 45
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  // §20 — the rejection reason is cleared on the return to DRAFT.
+  if (raw.timeEntry.rejectionReason !== undefined) throw new Error('Rejection reason must clear on edit (§20)');
+}
+
+docs {
+  §20/§28 — editing a REJECTED entry returns it to the editable DRAFT state
+  with the reason cleared, ready for resubmission.
+}

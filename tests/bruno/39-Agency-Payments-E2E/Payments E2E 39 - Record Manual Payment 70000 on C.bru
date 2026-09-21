@@ -1,0 +1,32 @@
+meta {
+  name: Payments E2E 39 - Record Manual Payment 70000 on C
+  type: http
+  seq: 39
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payments
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "invoiceId": "{{invCId}}",
+    "amount": 70000,
+    "method": "BANK_TRANSFER",
+    "accountId": "{{accountId}}"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.payment.status: eq PENDING
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('payC1Id', raw.payment.id);
+  if (!raw.payment.id) throw new Error('Record must return the payment id');
+}

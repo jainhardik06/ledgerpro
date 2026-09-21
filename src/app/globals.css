@@ -67,3 +67,47 @@ html {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.1) #000000;
 }
+
+/* Visible keyboard focus (Agency Module 1.24 accessibility contract):
+   every interactive element shows a clear ring on keyboard focus. */
+:focus-visible {
+  outline: 2px solid #e5e5e5;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Print formatting for clean, professional PDF exports across all browsers */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm 10mm;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Hide app chrome and interactive controls during print */
+  aside,
+  nav,
+  header,
+  [data-sidebar],
+  .no-print,
+  button,
+  .print-hidden,
+  #command-palette,
+  [role="dialog"] > div:first-child:not([role="document"]) {
+    display: none !important;
+  }
+
+  /* Force background colors and exact border rendering in Chromium, WebKit & Firefox */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+

@@ -1,0 +1,21 @@
+meta {
+  name: Profitability E2E 46 - Agency B Cannot Read Agency A Project
+  type: http
+  seq: 46
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/profitability
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 404
+}
+
+docs {
+  §80 tenant scoping — Agency A's project does not exist in Agency B's
+  world: a 404, never a cross-tenant leak. (B's session is the one the
+  cookie jar carries since the signup.)
+}

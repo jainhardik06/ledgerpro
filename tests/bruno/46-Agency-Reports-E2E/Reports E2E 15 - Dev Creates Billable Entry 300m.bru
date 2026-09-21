@@ -1,0 +1,41 @@
+meta {
+  name: Reports E2E 15 - Dev Creates Billable Entry 300m
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/time
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "projectId": "{{projectId}}",
+    "date": "{{repToday}}",
+    "durationMinutes": 300,
+    "billable": true,
+    "notes": "Portal API scaffolding"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.timeEntry.approvalStatus: eq DRAFT
+  res.body.timeEntry.billingStatus: eq UNBILLED
+  res.body.timeEntry.costRateSnapshot.amount: eq 900
+  res.body.timeEntry.billingRateSnapshot.amount: eq 2500
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('entry1Id', raw.timeEntry.id);
+  if (!raw.timeEntry.id) throw new Error('Create must return the entry id');
+}
+
+docs {
+  Entry 1 — the REVENUE hours: 5h × 2500 = 12500 billable value, 5h ×
+  900 = 4500 internal cost, frozen at creation (§6).
+}

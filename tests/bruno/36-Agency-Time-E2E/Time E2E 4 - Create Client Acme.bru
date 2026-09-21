@@ -1,0 +1,32 @@
+meta {
+  name: Time E2E 4 - Create Client Acme
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/clients
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Acme Industries",
+    "email": "ap@acme-e2e.test",
+    "billingProfile": { "city": "Pune", "country": "India", "currency": "INR" },
+    "commercialDefaults": { "billingModel": "TIME_AND_MATERIALS", "paymentTerms": "NET_30", "currency": "INR" }
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.client.status: eq ACTIVE
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('clientId', raw.client.id);
+  if (!raw.client.id) throw new Error('Create must return the client id');
+}

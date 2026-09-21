@@ -1,0 +1,46 @@
+meta {
+  name: Tax E2E 13 - Set Taxation IGST 18 Place of Supply Karnataka
+  type: http
+  seq: 13
+}
+
+put {
+  url: {{BASE_URL}}/api/agency/invoices/{{invAId}}/taxation
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "taxes": [
+      {
+        "type": "IGST",
+        "name": "IGST",
+        "code": "IGST",
+        "rate": 18,
+        "metadata": { "rulesVersion": "gst-rules-2026.1" }
+      }
+    ],
+    "placeOfSupply": { "country": "IN", "stateOrRegion": "Karnataka", "code": "29" },
+    "reverseCharge": { "applicable": false }
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.invoice.subtotal.amount: eq 100000
+  res.body.invoice.taxLines[0].type: eq IGST
+  res.body.invoice.taxLines[0].rate: eq 18
+  res.body.invoice.taxTotal.amount: eq 18000
+  res.body.invoice.total.amount: eq 118000
+  res.body.invoice.placeOfSupply.stateOrRegion: eq Karnataka
+  res.body.invoice.reverseCharge.applicable: eq false
+}
+
+docs {
+  §22 — the worked example through the engine: 100000 taxable × 18% IGST =
+  18000, total 118000. The caller sends ONLY {type, name, code, rate} — every
+  amount is computed. The place of supply is stored as the CONFIRMED
+  configuration (§15); the rules-version metadata stamps §25 provenance.
+}

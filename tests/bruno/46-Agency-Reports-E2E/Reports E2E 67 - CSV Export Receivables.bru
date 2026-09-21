@@ -1,0 +1,34 @@
+meta {
+  name: Reports E2E 67 - CSV Export Receivables
+  type: http
+  seq: 67
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/receivables/export.csv
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+script:post-response {
+  const csv = typeof res.body === 'string' ? res.body : String(res.body);
+  const lines = csv.replace(/\r\n$/, '').split('\r\n');
+  if (lines.length !== 3) throw new Error('header + 2 rows expected, got ' + lines.length);
+
+  const HEADER = 'Client,Invoice,Project,Currency,Invoice Total,Paid,Outstanding,Due Date,Aging,Status';
+  if (lines[0] !== HEADER) throw new Error('header: ' + lines[0]);
+
+  // §97 order carries into the CSV: the overdue invoice leads.
+  const f = lines[1].split(',');
+  if (f[0] !== 'Repsoft Industries') throw new Error('client: ' + f[0]);
+  if (f[1] !== 'INV-000002') throw new Error('row 0 must be the overdue invoice, got ' + f[1]);
+  if (f[4] !== '150000') throw new Error('total: ' + f[4]);
+  if (f[5] !== '50000') throw new Error('paid: ' + f[5]);
+  if (f[6] !== '100000') throw new Error('outstanding: ' + f[6]);
+  if (f[8] !== '1-30') throw new Error('aging bucket: ' + f[8]);
+  if (f[9] !== 'OVERDUE') throw new Error('status: ' + f[9]);
+}

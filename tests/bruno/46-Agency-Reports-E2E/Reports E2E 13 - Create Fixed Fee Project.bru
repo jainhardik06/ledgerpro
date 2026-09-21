@@ -1,0 +1,43 @@
+meta {
+  name: Reports E2E 13 - Create Fixed Fee Project
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "clientId": "{{clientId}}",
+    "name": "Reports Brand Sprint",
+    "code": "E2E-REP-BRAND",
+    "billingModel": "FIXED_FEE",
+    "currency": "INR",
+    "startDate": "{{repToday}}",
+    "contractValue": 50000
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.project.billingModel: eq FIXED_FEE
+  res.body.project.contractValue: eq 50000
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('project2Id', raw.project.id);
+  if (!raw.project.id) throw new Error('Create must return the project id');
+}
+
+docs {
+  The §29 weighting anchor: contract 50000, zero delivery → profit 50000,
+  margin 100%. Left PLANNED so the status filter has two different values
+  in the portfolio. With the T&M project at 44%, the portfolio's WEIGHTED
+  margin is Σprofit/Σrevenue = 55500/62500 = 88.8% — a naive average of
+  the two percentages would say 72%, which is exactly the §29 trap.
+}

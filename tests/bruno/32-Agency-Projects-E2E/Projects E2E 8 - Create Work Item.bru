@@ -1,0 +1,38 @@
+meta {
+  name: Projects E2E 8 - Create Work Item
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/work-items
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Sitemap and information architecture",
+    "estimatedMinutes": 720,
+    "assignedTo": "{{userId}}"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.workItem.name: eq Sitemap and information architecture
+  res.body.workItem.estimatedMinutes: eq 720
+  res.body.workItem.status: eq NOT_STARTED
+}
+
+script:post-response {
+  bru.setVar("workItemId", res.body.workItem.id);
+}
+
+docs {
+  Module 4 §9/§22: estimates are MINUTES internally (720 = 12h in the UI);
+  default status NOT_STARTED; new items append to the manual sort order.
+  §61: financial context for future time tracking, NOT task management (§63)
+  — no delete exists anywhere.
+}

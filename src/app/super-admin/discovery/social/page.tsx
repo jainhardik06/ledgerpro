@@ -2,6 +2,7 @@ import React from 'react';
 import { connectGrowthDb } from '@/lib/db';
 import { addSocialProfile, deleteSocialProfile } from '@/app/actions/social';
 import { Trash2, Plus, ExternalLink, CheckCircle2 } from 'lucide-react';
+import { Select } from '@/components/ui/Select';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,7 +15,7 @@ export default async function SocialMetadataCRUD() {
   }
 
   return (
-    <div className="p-6 sm:p-8 max-w-[1024px] mx-auto font-sans">
+    <div className="p-4 sm:p-6 lg:p-8 w-full font-sans">
       <div className="mb-10">
         <h1 className="text-[32px] font-semibold text-[#ededed] tracking-tight leading-tight">Social Metadata</h1>
         <p className="text-[14px] text-[#a1a1aa] mt-2 leading-relaxed">Manage Money OS official social platforms tracked in the Growth DB.</p>
@@ -29,14 +30,14 @@ export default async function SocialMetadataCRUD() {
             <form action={addSocialProfile} className="space-y-4">
               <div>
                 <label className="block text-[11px] uppercase tracking-wider font-medium text-[#525252] mb-1">Platform</label>
-                <select name="platform" required className="w-full h-9 px-3 text-[13px] rounded-md border border-[#262626] bg-[#000000] text-[#ededed] focus:ring-1 focus:ring-[#ededed] focus:outline-none">
+                <Select name="platform" required className="w-full h-9 px-3 text-[13px] rounded-md border border-[#262626] bg-[#000000] text-[#ededed] focus:ring-1 focus:ring-[#ededed] focus:outline-none">
                   <option value="LinkedIn">LinkedIn</option>
                   <option value="X">X (Twitter)</option>
                   <option value="GitHub">GitHub</option>
                   <option value="YouTube">YouTube</option>
                   <option value="ProductHunt">Product Hunt</option>
                   <option value="Other">Other</option>
-                </select>
+                </Select>
               </div>
               <div>
                 <label className="block text-[11px] uppercase tracking-wider font-medium text-[#525252] mb-1">Profile URL</label>

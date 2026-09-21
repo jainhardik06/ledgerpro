@@ -1,0 +1,34 @@
+meta {
+  name: Alerts E2E 59 - Record Payment 150000 on Invoice B
+  type: http
+  seq: 59
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payments
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "invoiceId": "{{invBId}}",
+    "amount": 150000,
+    "method": "BANK_TRANSFER",
+    "accountId": "{{accountId}}",
+    "reference": "NEFT-ALR-150K"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.payment.status: eq PENDING
+  res.body.payment.amount.amount: eq 150000
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('paymentId', raw.payment.id);
+  if (!raw.payment.id) throw new Error('Record must return the payment id');
+}

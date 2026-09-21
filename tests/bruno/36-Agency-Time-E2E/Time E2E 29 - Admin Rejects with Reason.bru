@@ -1,0 +1,28 @@
+meta {
+  name: Time E2E 28 - Admin Rejects with Reason
+  type: http
+  seq: 29
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/time/{{rejectedEntryId}}/reject
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "reason": "Wrong day — please re-log against Thursday"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timeEntry.approvalStatus: eq REJECTED
+  res.body.timeEntry.rejectionReason: eq Wrong day — please re-log against Thursday
+}
+
+docs {
+  §20 — rejection demands a REASON; the author sees it and can edit +
+  resubmit.
+}

@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized or missing tenant' }, { status: 401 });
     }
 
-    const { type, description, amount, date, category, accountId, clientId, notes } = await req.json();
+    const { type, description, amount, date, category, accountId, clientId, projectId, notes } = await req.json();
 
     if (type !== 'Credit' && type !== 'Debit') {
       return NextResponse.json({ error: 'Type must be either Credit or Debit' }, { status: 400 });
@@ -55,6 +55,11 @@ export async function POST(req: NextRequest) {
     if (cleanCategory instanceof NextResponse) return cleanCategory;
     const cleanClientId = validateString(clientId, 'Client', { max: 100, required: false });
     if (cleanClientId instanceof NextResponse) return cleanClientId;
+    // Module 3 (§90) — optional project reference; never mandatory, and no
+    // existence/integrity enforcement at the core boundary (agency users
+    // classify; the field simply rides along for later reporting).
+    const cleanProjectId = validateString(projectId, 'Project', { max: 100, required: false });
+    if (cleanProjectId instanceof NextResponse) return cleanProjectId;
     const cleanNotes = validateString(notes, 'Notes', { max: 2000, required: false });
     if (cleanNotes instanceof NextResponse) return cleanNotes;
 
@@ -69,6 +74,7 @@ export async function POST(req: NextRequest) {
       date: cleanDate,
       category: cleanCategory,
       clientId: cleanClientId || undefined,
+      projectId: cleanProjectId || undefined,
       notes: cleanNotes,
     });
 

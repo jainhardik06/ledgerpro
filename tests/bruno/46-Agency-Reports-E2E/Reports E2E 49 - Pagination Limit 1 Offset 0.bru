@@ -1,0 +1,29 @@
+meta {
+  name: Reports E2E 49 - Pagination Limit 1 Offset 0
+  type: http
+  seq: 49
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/portfolio?limit=1&offset=0
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const rep = raw.report;
+  // §39 — the page narrows…
+  if (rep.rows.length !== 1) throw new Error('page rows: ' + rep.rows.length);
+  if (rep.pagination.limit !== 1) throw new Error('limit: ' + rep.pagination.limit);
+  if (rep.pagination.offset !== 0) throw new Error('offset: ' + rep.pagination.offset);
+  if (rep.pagination.total !== 2) throw new Error('total must stay the FULL count: ' + rep.pagination.total);
+  // …but the summary is over ALL filtered rows — 55500 profit on every
+  // page, never the page's slice.
+  if (Math.abs(rep.summary.profit - 55500) > 0.001) throw new Error('summary profit must be full-set: ' + rep.summary.profit);
+}

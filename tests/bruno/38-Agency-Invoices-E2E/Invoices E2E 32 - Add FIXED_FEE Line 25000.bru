@@ -1,0 +1,36 @@
+meta {
+  name: Invoices E2E 32 - Add FIXED_FEE Line 25000
+  type: http
+  seq: 32
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{invAId}}/lines
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "type": "FIXED_FEE",
+    "description": "Project setup and onboarding",
+    "quantity": 1,
+    "unitPrice": 25000,
+    "amount": 0
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.line.type: eq FIXED_FEE
+  res.body.line.quantity: eq 1
+  res.body.line.amount.amount: eq 25000
+  res.body.invoice.subtotal.amount: eq 192000
+}
+
+docs {
+  §59/§71/§72 — the fixed-fee line is priced by quantity × unitPrice
+  (1 × 25000); the placeholder amount 0 is legal only because the pricing
+  pair is present. Subtotal: 167000 + 25000 = 192000.
+}

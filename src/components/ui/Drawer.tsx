@@ -38,7 +38,7 @@ export function Drawer({ isOpen, onClose, title, children }: DrawerProps) {
       />
       
       {/* Drawer Panel */}
-      <div className="relative w-full max-w-lg h-full bg-[#0a0a0a] border-l border-white/[0.05] shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
+      <div role="dialog" aria-modal="true" aria-label={title} className="relative w-full max-w-lg h-full bg-[#0a0a0a] border-l border-white/[0.05] shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
         
         {/* Header */}
         <div className="h-14 border-b border-white/[0.05] flex items-center justify-between px-6 shrink-0">

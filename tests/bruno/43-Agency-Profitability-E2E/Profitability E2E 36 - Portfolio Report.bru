@@ -1,0 +1,61 @@
+meta {
+  name: Profitability E2E 36 - Portfolio Report
+  type: http
+  seq: 36
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/profitability
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const pf = raw.portfolio;
+  const near = (a, b, what) => {
+    if (a === null || a === undefined || Math.abs(a - b) > 0.001) {
+      throw new Error(what + ': expected ' + b + ', got ' + a);
+    }
+  };
+
+  // §81 — problems-first: the AT_RISK portal outranks the HEALTHY brand
+  // sprint regardless of creation order.
+  if (pf.projects.length !== 2) throw new Error('project rows: ' + pf.projects.length);
+  if (pf.projects[0].projectId !== bru.getVar('projectId')) throw new Error('row 0 must be the AT_RISK project, got ' + pf.projects[0].projectId);
+  if (pf.projects[0].health !== 'AT_RISK') throw new Error('row 0 health: ' + pf.projects[0].health);
+  if (pf.projects[1].health !== 'HEALTHY') throw new Error('row 1 health: ' + pf.projects[1].health);
+
+  // §81 — the client rollup: one client, both projects.
+  if (pf.byClient.length !== 1) throw new Error('client rows: ' + pf.byClient.length);
+  const c = pf.byClient[0];
+  if (c.projectCount !== 2) throw new Error('client project count: ' + c.projectCount);
+  near(c.applicableRevenue.amount, 85000, 'client revenue');
+  near(c.deliveryCost.amount, 3700, 'client cost');
+  near(c.grossProfit.amount, 81300, 'client profit');
+  near(c.marginPercent, 95.647, 'client margin');
+
+  // §81 — portfolio totals: 85000 revenue, 3700 cost, 81300 profit.
+  const s = pf.summary;
+  if (s.projectCount !== 2) throw new Error('summary count: ' + s.projectCount);
+  if (s.mixedCurrencies !== false) throw new Error('single-currency portfolio');
+  if (s.contractValue !== null) throw new Error('contractValue total must be NULL — project 1 has none (never a partial Σ)');
+  near(s.applicableRevenue.amount, 85000, 'summary revenue');
+  near(s.deliveryCost.amount, 3700, 'summary cost');
+  near(s.grossProfit.amount, 81300, 'summary profit');
+  near(s.marginPercent, 95.647, 'summary margin');
+  near(s.billedAmount.amount, 6100, 'summary billed');
+  near(s.collectedAmount.amount, 3000, 'summary collected');
+  near(s.unbilledAmount.amount, 80000, 'summary unbilled');
+}
+
+docs {
+  §81 — the portfolio report: per-project rows problems-first, the client
+  rollup, and totals — including the deliberate NULL contract value (one
+  project never negotiated one; a Σ that silently ignored it would lie).
+}

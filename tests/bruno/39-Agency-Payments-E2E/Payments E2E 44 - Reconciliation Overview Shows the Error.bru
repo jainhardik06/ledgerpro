@@ -1,0 +1,47 @@
+meta {
+  name: Payments E2E 44 - Reconciliation Overview Shows the Error
+  type: http
+  seq: 44
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/payments/reconciliation
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const ov = raw.reconciliation;
+  const payGW1Id = bru.getVar('payGW1Id');
+  const payGW2Id = bru.getVar('payGW2Id');
+  const payGW3Id = bru.getVar('payGW3Id');
+
+  if (ov.counts.total !== 3) throw new Error('Expected 3 gateway payments, got ' + ov.counts.total);
+  if (ov.counts.byReconciliationStatus.RECONCILED !== 2) throw new Error('Expected 2 RECONCILED, got ' + ov.counts.byReconciliationStatus.RECONCILED);
+  if (ov.counts.byReconciliationStatus.ERROR !== 1) throw new Error('Expected 1 ERROR, got ' + ov.counts.byReconciliationStatus.ERROR);
+  if (ov.counts.byReconciliationStatus.PENDING !== 0) throw new Error('Expected 0 PENDING, got ' + ov.counts.byReconciliationStatus.PENDING);
+
+  const byId = {};
+  for (const row of ov.gatewayPayments) byId[row.paymentId] = row;
+  if (byId[payGW1Id].reconciliationStatus !== 'RECONCILED') throw new Error('GW1 must be RECONCILED');
+  if (byId[payGW2Id].reconciliationStatus !== 'RECONCILED') throw new Error('GW2 must be RECONCILED');
+  if (byId[payGW3Id].reconciliationStatus !== 'ERROR') throw new Error('GW3 must be ERROR');
+  if (byId[payGW3Id].status !== 'PENDING') throw new Error('GW3 stays PENDING');
+
+  // §128 — every touched invoice is consistent (the engine's expected due
+  // equals the stored due); §129 — no confirmed payment lacks a transaction.
+  if (ov.inconsistentInvoices !== 0) throw new Error('§128: expected 0 inconsistent invoices, got ' + ov.inconsistentInvoices);
+  if (ov.confirmedWithoutTransaction.length !== 0) throw new Error('§129: confirmed payments missing transactions');
+}
+
+docs {
+  10F — the reconciliation surface: §115 states per gateway payment,
+  §128 consistency diagnostics, §129 missing-transaction flags. The
+  ERROR'd GW3 is exactly what this view exists to surface.
+}

@@ -1,0 +1,20 @@
+meta {
+  name: Profitability E2E 28 - Finalize INV-000001
+  type: http
+  seq: 28
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{invId}}/finalize
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.invoice.status: eq SENT
+  res.body.invoice.invoiceNumber: eq INV-000001
+  res.body.invoice.total.amount: eq 6100
+  res.body.invoice.amountDue.amount: eq 6100
+}

@@ -56,7 +56,7 @@ A poorly-executed launch — wrong timing, wrong asset quality, insufficient upv
 - No brand colors except Money OS's own palette
 
 **Landing page update**
-- Add "Featured on Product Hunt" badge placeholder to `moneyos.app`
+- Add "Featured on Product Hunt" badge placeholder to `moneyos.webasthetic.in`
 - Ensure the homepage loads in <3 seconds on mobile
 - Test sign-up flow — it must work flawlessly on launch day
 

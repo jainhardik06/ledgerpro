@@ -1,0 +1,21 @@
+meta {
+  name: Invoices E2E 59 - Send Voided Draft B is 409
+  type: http
+  seq: 59
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{invBId}}/send
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 409
+}
+
+docs {
+  §79/§81 — a VOID invoice is retired and can never be sent. (The DRAFT
+  leg — "finalize before sending", §74 — is pinned by the unit suite;
+  no live draft remains in this journey by this point.)
+}

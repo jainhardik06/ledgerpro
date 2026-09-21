@@ -1,0 +1,21 @@
+meta {
+  name: Time E2E 36 - Agency B Cannot Read A Entry
+  type: http
+  seq: 37
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/time/{{timeEntryId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 404
+}
+
+docs {
+  §113/§120 — B's probe for A's entry id is the IDENTICAL 404 as a missing
+  id: never an existence leak, never data. Tenant isolation holds on the
+  time domain.
+}

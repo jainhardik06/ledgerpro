@@ -1,0 +1,23 @@
+meta {
+  name: Expenses E2E 23 - Admin Rejects Pass-Through with Reason
+  type: http
+  seq: 23
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/expenses/{{expSecondId}}/reject
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "reason": "Attach the actual hosting invoice before resubmitting"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.expense.status: eq REJECTED
+  res.body.expense.rejectionReason: eq Attach the actual hosting invoice before resubmitting
+}

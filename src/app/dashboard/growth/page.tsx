@@ -58,7 +58,7 @@ export default async function GrowthDashboard() {
   ];
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 w-full">
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Growth & Financials</h1>
         <p className="text-muted-foreground mt-2 text-sm sm:text-base">

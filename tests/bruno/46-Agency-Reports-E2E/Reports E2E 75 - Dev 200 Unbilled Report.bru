@@ -1,0 +1,27 @@
+meta {
+  name: Reports E2E 75 - Dev 200 Unbilled Report
+  type: http
+  seq: 75
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/unbilled
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (raw.report.rows.length !== 2) throw new Error('rows: ' + raw.report.rows.length);
+}
+
+docs {
+  Unbilled amounts are REVENUE-side (what the client owes us) — the
+  operational class, visible to a USER like the Module 15 unbilled
+  alerts; no cost figure rides on this report.
+}

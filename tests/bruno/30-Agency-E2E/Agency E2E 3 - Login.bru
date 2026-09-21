@@ -1,0 +1,34 @@
+meta {
+  name: Agency E2E 3 - Login
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{agencyUsername}}",
+    "password": "{{e2ePassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  // An agency tenant's login points at the Agency Command Center.
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('loginRedirect', (raw && raw.redirectTo) || '');
+}
+
+docs {
+  The explicit E2E Login step: fresh session AFTER the mode switch, so the
+  login response itself reflects the Agency vertical.
+}

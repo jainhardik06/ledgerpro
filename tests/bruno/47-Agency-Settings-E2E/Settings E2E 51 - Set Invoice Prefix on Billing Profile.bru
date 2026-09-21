@@ -1,0 +1,38 @@
+meta {
+  name: Settings E2E 51 - Set Invoice Prefix on Billing Profile
+  type: http
+  seq: 51
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/billing-profile
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "invoicePrefix": "RSD-"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  // The number format is prefix + 6-digit sequence (§74) — the default
+  // 'INV-' carries its own dash, so a custom prefix includes one too.
+  if (raw.billingProfile.invoicePrefix !== 'RSD-') {
+    throw new Error('invoicePrefix: expected RSD-, got ' + raw.billingProfile.invoicePrefix);
+  }
+}
+
+docs {
+  §45 — the invoice-number prefix lives on the Module 11 billingProfile
+  (single source of truth; the settings UI Billing section writes through
+  here). Merge-patched alone: legalName (request 16) survives. The server
+  still owns allocateInvoiceNumber — only the prefix is configurable.
+}

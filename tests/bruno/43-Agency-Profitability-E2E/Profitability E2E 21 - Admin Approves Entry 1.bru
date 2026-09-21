@@ -1,0 +1,23 @@
+meta {
+  name: Profitability E2E 21 - Admin Approves Entry 1
+  type: http
+  seq: 21
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/time/{{entry1Id}}/approve
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.timeEntry.approvalStatus: eq APPROVED
+  res.body.timeEntry.calculatedCost.amount: eq 1800
+  res.body.timeEntry.calculatedBillableAmount.amount: eq 5000
+}
+
+docs {
+  §23 — the calculation moment for the revenue hour-pair: 2h × 900 = 1800
+  cost, 2h × 2500 = 5000 value.
+}

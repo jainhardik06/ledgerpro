@@ -1,0 +1,26 @@
+meta {
+  name: Settings E2E 42 - User PATCH Payment 403
+  type: http
+  seq: 42
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/settings/payment
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "razorpayEnabled": false
+  }
+}
+
+assert {
+  res.status: eq 403
+}
+
+docs {
+  §55 — the payment section is the most sensitive write of all: same 403
+  for USER.
+}

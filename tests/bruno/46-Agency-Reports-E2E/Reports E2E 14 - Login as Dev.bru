@@ -1,0 +1,23 @@
+meta {
+  name: Reports E2E 14 - Login as Dev
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{repDevUsername}}",
+    "password": "E2eRepDev#2026"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}

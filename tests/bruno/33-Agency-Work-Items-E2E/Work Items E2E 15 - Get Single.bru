@@ -1,0 +1,29 @@
+meta {
+  name: Work Items E2E 15 - Get Single
+  type: http
+  seq: 15
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/work-items/{{workItemId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.workItem.name: eq Design system tokens
+  res.body.workItem.estimatedMinutes: eq 90
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (!raw.userLabels || !raw.userLabels[raw.workItem.assignedTo]) {
+    throw new Error('Single-read must label the assignee (§20)');
+  }
+}
+
+docs {
+  §16 — single work item read, tenant-scoped.
+}

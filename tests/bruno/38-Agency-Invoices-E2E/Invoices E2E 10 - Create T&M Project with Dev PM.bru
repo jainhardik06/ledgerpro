@@ -1,0 +1,44 @@
+meta {
+  name: Invoices E2E 10 - Create T&M Project with Dev PM
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "clientId": "{{clientId}}",
+    "name": "Acme Portal Build",
+    "code": "E2E-INV-PORTAL",
+    "billingModel": "TIME_AND_MATERIALS",
+    "currency": "INR",
+    "revenueBudget": 7500,
+    "budgetCost": 2700,
+    "targetMargin": 64,
+    "plannedHours": 3,
+    "projectManagerId": "{{devUserId}}"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.project.billingModel: eq TIME_AND_MATERIALS
+  res.body.project.projectManagerId: eq {{devUserId}}
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('projectId', raw.project.id);
+  if (!raw.project.id) throw new Error('Create must return the project id');
+}
+
+docs {
+  One engagement carries the whole journey: 3h T&M (5000 + 2500 billed),
+  one 12000 billable expense, one 150000 completed milestone, and a 25000
+  fixed-fee line — every §59 line type on a single invoice.
+}

@@ -1,0 +1,29 @@
+meta {
+  name: Receivables E2E 24 - Confirm Payment INV-000005 Partially Paid
+  type: http
+  seq: 24
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payments/{{payPartialId}}/confirm
+  body: json
+  auth: none
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.payment.status: eq CONFIRMED
+  res.body.invoice.status: eq PARTIALLY_PAID
+  res.body.invoice.amountPaid.amount: eq 70000
+  res.body.invoice.amountDue.amount: eq 30000
+}
+
+docs {
+  §105/§106 — the partial payment: the invoice stays open with a REMAINING
+  balance of 30000; A/R must show due 30000, never the 100000 total (§92).
+}

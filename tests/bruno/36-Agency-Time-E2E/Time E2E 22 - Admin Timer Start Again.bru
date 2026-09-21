@@ -1,0 +1,22 @@
+meta {
+  name: Time E2E 22 - Admin Timer Start Again
+  type: http
+  seq: 22
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/timer/start
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "projectId": "{{projectId}}"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.timerSession.status: eq RUNNING
+}

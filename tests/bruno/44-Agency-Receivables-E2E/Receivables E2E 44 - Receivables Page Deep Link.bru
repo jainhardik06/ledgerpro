@@ -1,0 +1,20 @@
+meta {
+  name: Receivables E2E 44 - Receivables Page Deep Link
+  type: http
+  seq: 44
+}
+
+get {
+  url: {{BASE_URL}}/dashboard/agency/receivables
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  §100 — the deep-link target the dashboard card and the nav item point at:
+  /dashboard/agency/receivables must render (200), the A/R operating view.
+}

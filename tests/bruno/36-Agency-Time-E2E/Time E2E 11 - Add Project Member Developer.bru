@@ -1,0 +1,30 @@
+meta {
+  name: Time E2E 11 - Add Project Member Developer
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/members
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "userId": "{{devUserId}}",
+    "role": "Developer",
+    "allocationPercent": 100
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.member.role: eq Developer
+}
+
+docs {
+  §89 — billing prices a SERVICE: the dev's project role "Developer" is the
+  label the billing engine matches against the Acme card's entry. Without
+  membership there is no role, and billing stays honestly unconfigured.
+}

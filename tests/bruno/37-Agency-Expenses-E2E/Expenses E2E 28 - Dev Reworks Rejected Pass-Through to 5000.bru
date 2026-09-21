@@ -1,0 +1,31 @@
+meta {
+  name: Expenses E2E 28 - Dev Reworks Rejected Pass-Through to 5000
+  type: http
+  seq: 28
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/expenses/{{expSecondId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "receiptReference": "INV-2026-0912",
+    "amount": 5000,
+    "currency": "INR"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.expense.status: eq DRAFT
+  res.body.expense.clientChargeAmount.amount: eq 5000
+}
+
+docs {
+  The rejected pass-through is reworked to 5000 with its receipt attached,
+  then deliberately LEFT in DRAFT — the §48 eligibility and §119 dashboard
+  asserts later prove a draft contributes nothing anywhere.
+}

@@ -1,0 +1,36 @@
+meta {
+  name: Tax E2E 19 - Add MANUAL Line 50000 SAC 998314 to B
+  type: http
+  seq: 19
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{invBId}}/lines
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "type": "MANUAL",
+    "description": "IT consulting services — export deliverable",
+    "quantity": 1,
+    "unitPrice": 50000,
+    "amount": 0,
+    "classification": { "type": "SAC", "code": "998314" }
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.line.amount.amount: eq 50000
+  res.body.line.classification.code: eq "998314"
+  res.body.invoice.subtotal.amount: eq 50000
+  res.body.invoice.total.amount: eq 50000
+}
+
+docs {
+  The classification is still carried (§14) — exemption changes the TAX
+  outcome, not the classification.
+}

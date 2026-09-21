@@ -1,0 +1,27 @@
+meta {
+  name: Alerts E2E 33 - Evaluate Is Idempotent
+  type: http
+  seq: 33
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/alerts/evaluate
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.result.created: eq 0
+  res.body.result.updated: eq 9
+  res.body.result.reopened: eq 0
+  res.body.result.autoResolved: eq 0
+  res.body.result.totalActive: eq 9
+}
+
+docs {
+  §6 fingerprints — the second pass creates NOTHING: every condition maps
+  to the existing OPEN record and refreshes it. Calling evaluate twice is
+  always safe (§25 acceptance).
+}

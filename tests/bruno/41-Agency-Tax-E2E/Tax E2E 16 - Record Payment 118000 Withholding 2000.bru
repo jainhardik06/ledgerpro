@@ -1,0 +1,53 @@
+meta {
+  name: Tax E2E 16 - Record Payment 118000 Withholding 2000
+  type: http
+  seq: 16
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payments
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "invoiceId": "{{invAId}}",
+    "amount": 118000,
+    "method": "BANK_TRANSFER",
+    "accountId": "{{accountId}}",
+    "reference": "NEFT-TAX-4400",
+    "withholdingAmount": 2000,
+    "withholdingAdjustment": {
+      "type": "TDS",
+      "code": "IT Act 2025 — TDS on services",
+      "rate": 2,
+      "jurisdiction": "IN"
+    }
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.payment.status: eq PENDING
+  res.body.payment.amount.amount: eq 118000
+  res.body.payment.withholdingAmount.amount: eq 2000
+  res.body.payment.withholdingAdjustment.type: eq TDS
+  res.body.payment.withholdingAdjustment.code: eq IT Act 2025 — TDS on services
+  res.body.payment.withholdingAdjustment.amount.amount: eq 2000
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('payAId', raw.payment.id);
+  if (!raw.payment.id) throw new Error('Record must return the payment id');
+}
+
+docs {
+  §20/§21 — the WithholdingAdjustment lives at the PAYMENT layer, never on
+  the invoice: the client pays the full 118000 but withholds 2000 (2%,
+  configured in file 6 — NOT a hard-coded legacy section). The adjustment
+  carries its own amount, welded to withholdingAmount by the domain. The
+  invoice's total is untouched and will still read 118000 after confirmation.
+}

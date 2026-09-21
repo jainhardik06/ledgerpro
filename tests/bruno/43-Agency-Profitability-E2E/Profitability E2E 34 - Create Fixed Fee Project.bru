@@ -1,0 +1,41 @@
+meta {
+  name: Profitability E2E 34 - Create Fixed Fee Project
+  type: http
+  seq: 34
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "clientId": "{{clientId}}",
+    "name": "Fixed Brand Sprint",
+    "code": "E2E-PROF-BRAND",
+    "billingModel": "FIXED_FEE",
+    "currency": "INR",
+    "startDate": "{{startDate}}",
+    "contractValue": 80000
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.project.billingModel: eq FIXED_FEE
+  res.body.project.contractValue: eq 80000
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('project2Id', raw.project.id);
+  if (!raw.project.id) throw new Error('Create must return the project id');
+}
+
+docs {
+  The §61/§62 fixed-fee counterpart: contract 80000, no delivery yet. Its
+  presence also makes the portfolio's contractValue total NULL — project 1
+  never negotiated one, and a Σ that ignores that would lie.
+}

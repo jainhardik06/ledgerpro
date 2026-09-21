@@ -1,0 +1,31 @@
+meta {
+  name: Time E2E 25 - Dev Creates Second Entry
+  type: http
+  seq: 26
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/time
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "projectId": "{{projectId}}",
+    "date": "{{entryDate}}",
+    "durationMinutes": 30,
+    "billable": true,
+    "notes": "Needs review — may be wrong day"
+  }
+}
+
+assert {
+  res.status: eq 201
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('rejectedEntryId', raw.timeEntry.id);
+  if (!raw.timeEntry.id) throw new Error('Create must return the entry id');
+}

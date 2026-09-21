@@ -27,6 +27,9 @@ jobs:
       - name: Run Linter
         run: npm run lint
 
+      - name: Run Unit & Integration Tests (Vitest)
+        run: npm run test:unit
+
       - name: Run Build
         run: npm run build
         env:
@@ -46,6 +49,9 @@ jobs:
           npm run test:api
         env:
           NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+          # Module 10 webhook E2E — test-only value matching the Bruno env
+          # (tests/bruno/environments/local.bru). Never a real credential.
+          RAZORPAY_WEBHOOK_SECRET: "whsec_local_e2e_test_only"
 
   security-gate:
     name: Security & Secrets

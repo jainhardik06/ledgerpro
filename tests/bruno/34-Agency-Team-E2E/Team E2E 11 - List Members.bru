@@ -1,0 +1,35 @@
+meta {
+  name: Team E2E 11 - List Members
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/members
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const members = raw.members || [];
+  if (members.length !== 1) {
+    throw new Error('Expected exactly 1 active member, got ' + members.length);
+  }
+  if (members[0].role !== 'Designer' || members[0].allocationPercent !== 80) {
+    throw new Error('Member role/allocation must round-trip');
+  }
+  if (!raw.userLabels || !raw.userLabels[members[0].userId]) {
+    throw new Error('Display usernames must be resolved for the team view (§42)');
+  }
+}
+
+docs {
+  §47 GET — the §42 team view: ACTIVE memberships only, with display
+  usernames (never raw user docs).
+}

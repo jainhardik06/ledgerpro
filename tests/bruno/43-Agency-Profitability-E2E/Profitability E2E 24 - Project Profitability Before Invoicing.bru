@@ -1,0 +1,93 @@
+meta {
+  name: Profitability E2E 24 - Project Profitability Before Invoicing
+  type: http
+  seq: 24
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/profitability
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.project.billingModel: eq TIME_AND_MATERIALS
+  res.body.project.currency: eq INR
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const p = raw.profitability;
+  const dd = raw.drillDown;
+  const near = (a, b, what) => {
+    if (a === null || a === undefined || Math.abs(a - b) > 0.001) {
+      throw new Error(what + ': expected ' + b + ', got ' + a);
+    }
+  };
+
+  // §62 — T&M revenue = approved BILLABLE time value only (entry 2's hour
+  // never enters revenue).
+  if (p.revenueModel !== 'TIME_MATERIALS') throw new Error('revenue model: ' + p.revenueModel);
+  near(p.applicableRevenue.amount, 5000, 'applicable revenue');
+
+  // §63 — labor (2700 = 1800 + 900, the non-billable hour included) +
+  // expenses (1000, the agency's COST not the 1100 charge).
+  near(p.laborCost.amount, 2700, 'labor cost');
+  near(p.expenseCost.amount, 1000, 'expense cost');
+  near(p.deliveryCost.amount, 3700, 'delivery cost');
+
+  // §64/§65 — 5000 − 3700 = 1300 → 26%.
+  near(p.grossProfit.amount, 1300, 'gross profit');
+  near(p.marginPercent, 26, 'margin percent');
+
+  // §66 — nothing billed or collected yet; §67 — everything eligible waits.
+  near(p.billedAmount.amount, 0, 'billed');
+  near(p.collectedAmount.amount, 0, 'collected');
+  near(p.outstandingAmount.amount, 0, 'outstanding');
+  near(p.unbilledAmount.amount, 6100, 'unbilled (5000 time + 1100 expense charge)');
+
+  // §74 — three separate burns: 3h/10h, 3700/5000, 5000/20000.
+  near(p.actualHours, 3, 'actual hours');
+  if (p.plannedHours !== 10) throw new Error('planned hours: ' + p.plannedHours);
+  near(p.burn.hours, 0.3, 'hours burn');
+  near(p.burn.cost, 0.74, 'cost burn');
+  near(p.burn.revenue, 0.25, 'revenue burn');
+  near(p.budgetBurnPercent, 0.74, 'headline burn = max(hours, cost)');
+  if (p.remainingHours !== 7) throw new Error('remaining hours: ' + p.remainingHours);
+
+  // §75/§77 — burns are fine (< 75%) but margin 26% sits past the 10pp
+  // approaching band under the 40% target → AT_RISK + a CRITICAL alert that
+  // explains itself with the numbers.
+  if (p.health !== 'AT_RISK') throw new Error('health: expected AT_RISK, got ' + p.health);
+  if (!p.marginAlert) throw new Error('the margin alert must be present');
+  if (p.marginAlert.severity !== 'CRITICAL') throw new Error('alert severity: ' + p.marginAlert.severity);
+  if (p.marginAlert.targetMarginPercent !== 40) throw new Error('alert target: ' + p.marginAlert.targetMarginPercent);
+  if (!p.marginAlert.reason.includes('26.0%')) throw new Error('alert must quote the current margin');
+  if (!p.marginAlert.reason.includes('40.0%')) throw new Error('alert must quote the target margin');
+  if (p.hoursWarning !== null) throw new Error('no hours warning under 80% burn');
+
+  // §127/§79 — a single-currency journey: no mismatches, no notes.
+  if (p.currencyMismatches !== 0) throw new Error('currency mismatches: ' + p.currencyMismatches);
+
+  // §78 — the drill-down: one labor line (3h × 900 = 2700 across 2 entries,
+  // frozen snapshot rate) and one vendor line.
+  if (dd.labor.length !== 1) throw new Error('drill labor lines: ' + dd.labor.length);
+  near(dd.labor[0].cost.amount, 2700, 'drill labor cost');
+  near(dd.labor[0].hours, 3, 'drill labor hours');
+  if (dd.labor[0].entryCount !== 2) throw new Error('drill entry count: ' + dd.labor[0].entryCount);
+  if (dd.labor[0].rate.amount !== 900) throw new Error('drill rate must be the frozen 900');
+  if (!dd.labor[0].userName) throw new Error('drill must label the member, never a raw id');
+  if (dd.expenses.length !== 1) throw new Error('drill expense lines: ' + dd.expenses.length);
+  if (dd.expenses[0].vendorName !== 'StockAI') throw new Error('drill vendor: ' + dd.expenses[0].vendorName);
+  near(dd.expenses[0].cost.amount, 1000, 'drill expense cost');
+}
+
+docs {
+  THE §68 assertion — the whole snapshot before any billing exists: five
+  dimensions (contract null on a T&M project without one, revenue 5000,
+  cost 3700, billed 0, collected 0), profit 1300 / 26% margin, the three
+  §74 burns, the §75 AT_RISK verdict driven purely by margin, the §77
+  CRITICAL alert with its deterministic reason, and the §78 drill-down.
+}

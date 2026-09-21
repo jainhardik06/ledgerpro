@@ -1,0 +1,31 @@
+meta {
+  name: Profitability E2E 48 - Login as Dev for 114 Privacy Probes
+  type: http
+  seq: 48
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{profDevUsername}}",
+    "password": "E2eProfDev#2026"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+docs {
+  §114 — profitability.read is admin/finance only (labor cost = salary
+  economics, §63, the same privacy class as agency.rates.cost.read). The
+  dev USER — who IS a project member with approved, cost-carrying time —
+  must get 403 on both profitability routes and the honest pending state
+  on the Command Center, never the cost ledger.
+}

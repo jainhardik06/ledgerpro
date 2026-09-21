@@ -1,0 +1,33 @@
+meta {
+  name: Reconciliation E2E 12 - Confirm Payment 1 Partially Paid
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payments/{{recPay1Id}}/confirm
+  body: json
+  auth: none
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.payment.status: eq CONFIRMED
+  res.body.invoice.status: eq PARTIALLY_PAID
+  res.body.invoice.amountPaid.amount: eq 60000
+  res.body.invoice.amountDue.amount: eq 40000
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (!raw.transactionId) throw new Error('§129: confirm must return the core transaction id');
+}
+
+docs {
+  §101 — the first money move: A → PARTIALLY_PAID, 40000 still due.
+}

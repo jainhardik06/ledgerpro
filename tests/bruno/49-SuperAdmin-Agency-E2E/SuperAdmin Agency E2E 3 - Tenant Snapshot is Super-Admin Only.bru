@@ -1,0 +1,22 @@
+meta {
+  name: SuperAdmin Agency E2E 3 - Tenant Snapshot is Super-Admin Only
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{BASE_URL}}/api/super-admin/tenants/000000000000000000000000/agency
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 401
+}
+
+docs {
+  The per-tenant privileged snapshot (the tenant's full agency KPIs,
+  cost/profitability included) is SUPER_ADMIN only. The gate must reject
+  BEFORE any resource lookup — a tenant session never learns whether the id
+  even exists.
+}

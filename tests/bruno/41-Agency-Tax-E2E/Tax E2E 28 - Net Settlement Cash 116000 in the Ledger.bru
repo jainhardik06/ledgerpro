@@ -1,0 +1,46 @@
+meta {
+  name: Tax E2E 28 - Net Settlement Cash 116000 in the Ledger
+  type: http
+  seq: 28
+}
+
+get {
+  url: {{BASE_URL}}/api/transactions?limit=100
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const txs = raw.transactions;
+  const invAId = bru.getVar('invAId');
+  const payAId = bru.getVar('payAId');
+  const accountId = bru.getVar('accountId');
+
+  // §18/§20/§22 — the withholding payment's cash entry is the NET settlement:
+  // 118000 invoiced − 2000 withheld = 116000 that actually lands in the bank.
+  const forPayment = txs.filter(t => t.paymentId === payAId);
+  if (forPayment.length !== 1) throw new Error('Expected exactly 1 transaction for payment ' + payAId + ', found ' + forPayment.length);
+  const tx = forPayment[0];
+  if (tx.type !== 'Credit') throw new Error('Expected a Credit, got ' + tx.type);
+  if (tx.amount !== 116000) throw new Error('§18/§22: net settlement cash must be 116000 (118000 − 2000 withheld), got ' + tx.amount);
+  if (tx.invoiceId !== invAId) throw new Error('Transaction must carry the invoice lineage');
+  if (tx.accountId !== accountId) throw new Error('The Credit must enter the tracked account');
+  if (tx.category !== 'Payment') throw new Error('Expected category Payment, got ' + tx.category);
+
+  // Only the confirmed payment writes to the ledger — invoices B (exempt,
+  // unpaid) and C (finalized, unpaid) contributed nothing.
+  if (txs.length !== 1) throw new Error('Expected exactly 1 transaction in the ledger, found ' + txs.length);
+}
+
+docs {
+  §18/§21/§22 — the E2E gate for the withheld-cash arithmetic: the invoice
+  reads 118000 forever (file 17), while the bank ledger shows the NET 116000
+  — withholding adjusts the CASH, never the invoice. The transaction carries
+  the full lineage (invoiceId + paymentId + accountId).
+}

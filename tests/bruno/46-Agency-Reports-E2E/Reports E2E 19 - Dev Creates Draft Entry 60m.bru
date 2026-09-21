@@ -1,0 +1,41 @@
+meta {
+  name: Reports E2E 19 - Dev Creates Draft Entry 60m
+  type: http
+  seq: 19
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/time
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "projectId": "{{projectId}}",
+    "date": "{{repToday}}",
+    "durationMinutes": 60,
+    "billable": true,
+    "notes": "Unfinished spike — stays DRAFT"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.timeEntry.approvalStatus: eq DRAFT
+  res.body.timeEntry.billingStatus: eq UNBILLED
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('entry3Id', raw.timeEntry.id);
+  if (!raw.timeEntry.id) throw new Error('Create must return the entry id');
+}
+
+docs {
+  Entry 3 — the §33 probe, deliberately NEVER submitted or approved.
+  FINANCIAL views (time report basis=FINANCIAL, unbilled work, portfolio
+  revenue) must never see this hour; OPERATIONAL views (basis=
+  OPERATIONAL) must. Its absence/presence is asserted in both.
+}

@@ -1,0 +1,29 @@
+meta {
+  name: Rates E2E 36 - Dashboard Rate Readiness Signals 124
+  type: http
+  seq: 36
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/dashboard?period=THIS_MONTH
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.data.activity.snapshot.projectsReadyForTracking: eq 1
+  res.body.data.activity.snapshot.projectsDeliverableTotal: eq 1
+  res.body.data.activity.snapshot.projectsMissingRates: eq 0
+  res.body.data.activity.snapshot.usersTotal: eq 2
+  res.body.data.activity.snapshot.usersWithoutCostRate: eq 1
+}
+
+docs {
+  §123/§124 — the Agency Readiness signals on the dashboard snapshot: the
+  one deliverable project is READY_FOR_TRACKING, none missing rate config,
+  and exactly one of the two tenant users (the read-only invitee from step
+  21) carries no cost rate. Counts only — no cost amounts reach the
+  dashboard contract (§99).
+}

@@ -1,0 +1,16 @@
+meta {
+  name: Alerts E2E 19 - Dev Submits Entry
+  type: http
+  seq: 19
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/time/{{entryId}}/submit
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.timeEntry.approvalStatus: eq SUBMITTED
+}

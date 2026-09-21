@@ -1,0 +1,26 @@
+meta {
+  name: Work Items E2E 25 - Mark Done
+  type: http
+  seq: 25
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/work-items/{{secondWorkItemId}}?action=status
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "status": "DONE"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.workItem.status: eq DONE
+}
+
+docs {
+  §11 — IN_PROGRESS → DONE completes the forward progression.
+}

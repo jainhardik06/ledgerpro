@@ -38,12 +38,10 @@ This document outlines the standard taxonomy for business and product events tra
 
 | Event Name | Description | Properties | Trigger Location |
 |------------|-------------|------------|------------------|
-| `REPORT_VIEWED` | User views a financial report. | `reportType`, `dateRange` | `src/app/dashboard/reports/page.tsx` |
-| `REPORT_EXPORTED` | User exports report data (e.g. CSV, PDF). | `reportType`, `format` | Export Button Handlers |
+| `REPORT_VIEWED` | User views a financial report. | `tab`, `dateRange`, `compareEnabled` | `src/app/dashboard/reports/page.tsx` |
+| `REPORT_EXPORTED` | User exports report data (CSV or print-ready PDF). | `format` (`CSV`/`PDF`), `tab`, `rowCount` (CSV) | `src/app/dashboard/reports/page.tsx` export handlers |
 | `COMMAND_PALETTE_OPENED` | User invokes command palette. | `trigger` (e.g. 'shortcut', 'click') | `src/components/ui/CommandPalette.tsx` |
 | `COMMAND_EXECUTED` | User executed a command. | `commandId`, `commandName` | `src/components/ui/CommandPalette.tsx` |
-| `DOCUMENTATION_VIEWED` | User views a documentation page. | `docPath`, `title` | `src/app/docs` or Docs layout |
-| `SUPPORT_SEARCH` | User searches the support center. | `searchQuery`, `resultsCount` | Support Search Component |
 
 ## 6. User Properties (Identification)
 When a user is authenticated, they should be identified with:

@@ -1,0 +1,50 @@
+meta {
+  name: Reconciliation E2E 17 - Invoice Store Truth
+  type: http
+  seq: 17
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/invoices
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const invoices = raw.invoices;
+  if (!Array.isArray(invoices) || invoices.length !== 2) {
+    throw new Error('Expected exactly 2 invoices, got ' + (invoices && invoices.length));
+  }
+  const byNumber = {};
+  for (const inv of invoices) byNumber[inv.invoiceNumber] = inv;
+  const a = byNumber['INV-000001'], b = byNumber['INV-000002'];
+  if (!a || !b) throw new Error('Both finalized invoices must be listed');
+
+  // The store truth every other view must reproduce.
+  if (a.status !== 'PAID') throw new Error('A status: ' + a.status);
+  if (a.total.amount !== 100000) throw new Error('A total: ' + a.total.amount);
+  if (a.amountPaid.amount !== 100000) throw new Error('A paid: ' + a.amountPaid.amount);
+  if (a.amountDue.amount !== 0) throw new Error('A due: ' + a.amountDue.amount);
+  if (b.status !== 'PARTIALLY_PAID') throw new Error('B status: ' + b.status);
+  if (b.total.amount !== 50000) throw new Error('B total: ' + b.total.amount);
+  if (b.amountPaid.amount !== 20000) throw new Error('B paid: ' + b.amountPaid.amount);
+  if (b.amountDue.amount !== 30000) throw new Error('B due: ' + b.amountDue.amount);
+
+  // The invariant per invoice: paid + due = total.
+  for (const inv of invoices) {
+    if (inv.amountPaid.amount + inv.amountDue.amount !== inv.total.amount) {
+      throw new Error('§104 invariant broken on ' + inv.invoiceNumber);
+    }
+  }
+}
+
+docs {
+  The invoice store is the source of truth: A PAID (100000/0), B
+  PARTIALLY_PAID (20000/30000), and per-invoice paid + due = total.
+}

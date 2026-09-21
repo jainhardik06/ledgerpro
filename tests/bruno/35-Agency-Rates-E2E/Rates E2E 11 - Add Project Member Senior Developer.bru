@@ -1,0 +1,30 @@
+meta {
+  name: Rates E2E 11 - Add Project Member Senior Developer
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/members
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "userId": "{{userId}}",
+    "role": "Senior Developer",
+    "allocationPercent": 100
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.member.role: eq Senior Developer
+}
+
+docs {
+  The admin joins the project as "Senior Developer" — the role label the
+  billing engine will price (§89: the client buys a role, not a person).
+}

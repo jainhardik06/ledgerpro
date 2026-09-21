@@ -1,0 +1,51 @@
+meta {
+  name: Expenses E2E 35 - Dashboard 119 Expense Money Live
+  type: http
+  seq: 35
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/dashboard?period=THIS_MONTH
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const d = raw.data;
+  // §4 — delivery cost = Σ amount over APPROVED: 2000 internal + 10000 main.
+  // Both the time and expense stores resolved (time is honest zeros), so
+  // the money side is LIVE.
+  if (d.profitability.deliveryCost.sourceReady !== true) throw new Error('deliveryCost must be live once both money stores resolve');
+  if (d.profitability.deliveryCost.value !== 12000) throw new Error('deliveryCost must be 12000, got ' + d.profitability.deliveryCost.value);
+  // §7 — unbilled revenue = Σ clientChargeAmount over the eligible set.
+  if (d.financial.unbilledRevenue.sourceReady !== true) throw new Error('unbilledRevenue must be live once both money stores resolve');
+  if (d.financial.unbilledRevenue.value !== 12000) throw new Error('unbilledRevenue must be 12000, got ' + d.financial.unbilledRevenue.value);
+  // The unbilled breakdown carries the expense line as its own source.
+  if (d.financial.unbilled.unbilledExpenses !== 12000) throw new Error('unbilled.unbilledExpenses must be 12000, got ' + d.financial.unbilled.unbilledExpenses);
+  if (d.financial.unbilled.totalUnbilled !== 12000) throw new Error('totalUnbilled must be 12000, got ' + d.financial.unbilled.totalUnbilled);
+  if (d.financial.unbilled.unbilledTime !== 0) throw new Error('unbilledTime must be 0 (no time entries), got ' + d.financial.unbilled.unbilledTime);
+  // §118 (Module 13, landed) — profit is LIVE from the ONE engine. This is
+  // a T&M project with NO approved billable time, so §62 applicable revenue
+  // is 0 and §64 profit = 0 − 12000 = −12000 — an honest negative, never a
+  // fabricated zero. §82: revenue 0 → margin has no baseline (live null,
+  // rendered "—", never a fake 0%).
+  if (d.profitability.grossProfit.sourceReady !== true) throw new Error('grossProfit must be live from the engine (§118), got ' + JSON.stringify(d.profitability));
+  if (d.profitability.grossProfit.value !== -12000) throw new Error('grossProfit must be -12000 (0 revenue − 12000 cost), got ' + d.profitability.grossProfit.value);
+  if (d.profitability.grossMargin.sourceReady !== true || d.profitability.grossMargin.value !== null) {
+    throw new Error('grossMargin must be live null (§82: revenue 0 → no baseline), got ' + JSON.stringify(d.profitability.grossMargin));
+  }
+}
+
+docs {
+  The §119 wiring, live end-to-end: the dashboard money side composes
+  time (honest zeros) with expenses (2000 internal + 10000 billable cost,
+  12000 unbilled charge) — deliveryCost and unbilledRevenue are live, the
+  unbilled breakdown shows the expense line, and §118's engine truth holds:
+  profit −12000 (T&M revenue 0 − cost 12000), margin null (§82).
+}

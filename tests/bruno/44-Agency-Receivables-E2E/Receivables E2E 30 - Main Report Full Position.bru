@@ -1,0 +1,88 @@
+meta {
+  name: Receivables E2E 30 - Main Report Full Position
+  type: http
+  seq: 30
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/receivables
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const r = raw.receivables;
+  const eq = (actual, expected, what) => {
+    if (actual !== expected) throw new Error(what + ': expected ' + expected + ', got ' + JSON.stringify(actual));
+  };
+
+  // §87 — the summary position.
+  eq(r.outstanding, 135000, 'outstanding (30k+40k+20k+15k+30k)');
+  eq(r.dueSoon, 45000, 'due soon (15k +2d, 30k +5d)');
+  eq(r.overdueAmount, 90000, 'overdue (30k+40k+20k)');
+  eq(r.overdueCount, 3, 'overdue count');
+  eq(r.openInvoiceCount, 5, 'open invoice count');
+  eq(r.currency, 'INR', 'currency');
+  eq(r.mixedCurrencies, false, 'mixed currencies');
+
+  // §88/§89 — the ladder over the REMAINING balance.
+  const expectBuckets = { CURRENT: 45000, '1-30': 20000, '31-60': 40000, '61-90': 0, '90+': 30000 };
+  for (const b of Object.keys(expectBuckets)) eq(r.byAgingBucket[b], expectBuckets[b], 'bucket ' + b);
+
+  // §97 — most-overdue-first, then outstanding amount among the current rows.
+  const order = r.invoices.map(i => i.invoiceNumber);
+  const expectOrder = ['INV-000001', 'INV-000002', 'INV-000003', 'INV-000005', 'INV-000004'];
+  if (JSON.stringify(order) !== JSON.stringify(expectOrder)) throw new Error('§97 order: expected ' + JSON.stringify(expectOrder) + ', got ' + JSON.stringify(order));
+
+  // §106 — the §93 withholding-settled invoice is PAID and GONE from A/R.
+  if (r.invoices.some(i => i.invoiceNumber === 'INV-000006')) throw new Error('§106: the paid invoice must not be a receivable');
+
+  // §96/§101/§102 — the first row: 95 days past due, top bucket, top risk band,
+  // stored SENT but displaying OVERDUE (§80/§91).
+  const first = r.invoices[0];
+  eq(first.ageDays, 95, 'first row age');
+  eq(first.agingBucket, '90+', 'first row bucket');
+  eq(first.collectionRisk, 'OVERDUE_90_PLUS', 'first row risk band');
+  eq(first.status, 'SENT', 'first row stored status');
+  eq(first.displayStatus, 'OVERDUE', 'first row display status');
+  eq(first.due.amount, 30000, 'first row due');
+  eq(first.projectName, 'Receivables Portal Build', 'first row project name');
+  eq(first.clientName, 'Receivable Systems', 'first row client name');
+
+  // §92 — the partial shows outstanding only: 100k total, 70k paid, 30k due.
+  const partial = r.invoices.find(i => i.invoiceNumber === 'INV-000005');
+  eq(partial.total.amount, 100000, 'partial total');
+  eq(partial.paid.amount, 70000, 'partial paid');
+  eq(partial.due.amount, 30000, 'partial due');
+  eq(partial.displayStatus, 'PARTIALLY_PAID', 'partial display status');
+  eq(partial.collectionRisk, null, 'partial risk (not past due)');
+
+  // §94 — by client: A carries the ladder (90k, all overdue), B current (45k).
+  eq(r.byClient.length, 2, 'byClient length');
+  eq(r.byClient[0].clientId, bru.getVar('clientIdA'), 'byClient[0] id');
+  eq(r.byClient[0].outstanding, 90000, 'client A outstanding');
+  eq(r.byClient[0].overdue, 90000, 'client A overdue');
+  eq(r.byClient[0].invoiceCount, 3, 'client A count');
+  eq(r.byClient[1].outstanding, 45000, 'client B outstanding');
+  eq(r.byClient[1].overdue, 0, 'client B overdue');
+  eq(r.byClient[1].invoiceCount, 2, 'client B count');
+  eq(r.byClient[0].clientName, 'Receivable Systems', 'client A name resolved');
+
+  // §95 — by project: the portal row (70k), then the standalone fold (65k).
+  eq(r.byProject.length, 2, 'byProject length');
+  eq(r.byProject[0].projectId, bru.getVar('projectId'), 'byProject[0] id');
+  eq(r.byProject[0].outstanding, 70000, 'project outstanding');
+  eq(r.byProject[0].overdue, 70000, 'project overdue');
+  eq(r.byProject[0].invoiceCount, 2, 'project count');
+  eq(r.byProject[0].projectName, 'Receivables Portal Build', 'project name resolved');
+  eq(r.byProject[1].projectId, null, 'standalone row is null, not dropped');
+  eq(r.byProject[1].outstanding, 65000, 'standalone outstanding (20k+15k+30k)');
+  eq(r.byProject[1].overdue, 20000, 'standalone overdue');
+  eq(r.byProject[1].invoiceCount, 3, 'standalone count');
+}

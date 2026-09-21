@@ -1,0 +1,15 @@
+meta {
+  name: Alerts E2E 42 - Invalid RuleType Is 400
+  type: http
+  seq: 42
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/alerts?ruleType=NOT_A_RULE
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}

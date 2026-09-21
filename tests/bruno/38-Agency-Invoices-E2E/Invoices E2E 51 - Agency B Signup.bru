@@ -1,0 +1,30 @@
+meta {
+  name: Invoices E2E 51 - Agency B Signup
+  type: http
+  seq: 51
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "E2E Invoices Agency B",
+    "username": "{{invBAdminUsername}}",
+    "password": "{{invBAdminPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('invBAdminUsername', 'e2e_invb_admin_' + suffix);
+  bru.setVar('invBAdminPassword', 'E2eInvBAdmin#2026');
+}

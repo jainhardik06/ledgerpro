@@ -1,0 +1,55 @@
+meta {
+  name: Projects E2E 12 - Dashboard Project Metrics Live
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/dashboard?period=THIS_MONTH
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const data = raw.data;
+
+  // Step 3.8 (§92) — the Module 3 planned metrics are LIVE:
+  const contracted = data.financial.contractedRevenue;
+  if (!contracted || contracted.sourceReady !== true) {
+    throw new Error('contractedRevenue must be sourceReady after Module 3');
+  }
+  if (contracted.value !== 500000) {
+    throw new Error('Contracted value must be the ACTIVE project\'s 500000, got: ' + contracted.value);
+  }
+
+  const snapshot = data.activity.snapshot;
+  if (!snapshot) {
+    throw new Error('Snapshot section missing from the dashboard payload');
+  }
+  if (snapshot.activeProjectsReady !== true || snapshot.activeProjects !== 1) {
+    throw new Error('Active Projects must be live and exactly 1 for this tenant, got: ' + snapshot.activeProjects);
+  }
+  if (snapshot.plannedMarginReady !== true) {
+    throw new Error('plannedMargin must be ready when an ACTIVE project carries both baselines');
+  }
+  // (500k − 300k) / 500k × 100 = 40 — the PLANNED margin, §92.
+  if (typeof snapshot.plannedMargin !== 'number' || Math.abs(snapshot.plannedMargin - 40) > 0.01) {
+    throw new Error('Planned margin must be 40%, got: ' + snapshot.plannedMargin);
+  }
+
+  if (!Array.isArray(data.projects) || data.projects.length < 1) {
+    throw new Error('Portfolio must include the ACTIVE project health row');
+  }
+}
+
+docs {
+  §103 / Step 3.8 E2E close-out: Active Projects (1), Contracted Value
+  (500000), Planned Margin (40%) all read the real project store — the
+  dashboard numbers match the project created and activated in this suite.
+}

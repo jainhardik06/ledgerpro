@@ -1,0 +1,38 @@
+meta {
+  name: Alerts E2E 25 - Draft Invoice A Due Plus 3
+  type: http
+  seq: 25
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "clientId": "{{clientId}}",
+    "issueDate": "{{alToday}}",
+    "dueDate": "{{alDuePlus3}}",
+    "notes": "Due-soon anchor — inside the default 7-day window"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.invoice.status: eq DRAFT
+  res.body.invoice.total.amount: eq 0
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('invAId', raw.invoice.id);
+  if (!raw.invoice.id) throw new Error('Create must return the invoice id');
+}
+
+docs {
+  The §15 subject: standalone (no project) on purpose — the cash rules read
+  the Module 14 open A/R rows, which include project-less invoices.
+}

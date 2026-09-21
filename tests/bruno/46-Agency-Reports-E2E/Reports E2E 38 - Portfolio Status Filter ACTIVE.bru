@@ -1,0 +1,32 @@
+meta {
+  name: Reports E2E 38 - Portfolio Status Filter ACTIVE
+  type: http
+  seq: 38
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/portfolio?status=ACTIVE
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const rep = raw.report;
+  if (rep.rows.length !== 1) throw new Error('rows: ' + rep.rows.length);
+  if (rep.rows[0].projectId !== bru.getVar('projectId')) throw new Error('must be the ACTIVE T&M project');
+  if (rep.rows[0].status !== 'ACTIVE') throw new Error('row status: ' + rep.rows[0].status);
+  // The summary is over the FILTERED set (§28) — one project, 12500.
+  if (rep.summary.projectCount !== 1) throw new Error('filtered summary count: ' + rep.summary.projectCount);
+  if (rep.pagination.total !== 1) throw new Error('filtered total: ' + rep.pagination.total);
+}
+
+docs {
+  §28 — the lifecycle status filter narrows the engine call itself; the
+  summary recomputes over what remains, never over the unfiltered world.
+}

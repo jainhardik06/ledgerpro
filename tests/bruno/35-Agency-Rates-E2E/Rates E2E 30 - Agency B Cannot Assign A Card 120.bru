@@ -1,0 +1,29 @@
+meta {
+  name: Rates E2E 30 - Agency B Cannot Assign A Card 120
+  type: http
+  seq: 30
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/rate-cards/{{costCardId}}/entries
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "B Line",
+    "amount": 1,
+    "effectiveFrom": "2026-01-01"
+  }
+}
+
+assert {
+  res.status: eq 404
+}
+
+docs {
+  §120 — the write side of isolation: B's admin cannot even add an entry to
+  A's card. The card simply does not exist for B's tenant (§113), so the
+  probe misses identically to a missing id.
+}

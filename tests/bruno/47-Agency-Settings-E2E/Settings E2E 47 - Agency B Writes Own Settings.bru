@@ -1,0 +1,29 @@
+meta {
+  name: Settings E2E 47 - Agency B Writes Own Settings
+  type: http
+  seq: 47
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/settings/general
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "defaultCurrency": "EUR"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.settings.general.defaultCurrency: eq EUR
+}
+
+docs {
+  §113 — B administers its OWN settings freely (EUR), which cannot touch
+  Agency A's stored values (B's GET in request 46 already proved the read
+  side; A's values live on A's tenant document alone).
+}

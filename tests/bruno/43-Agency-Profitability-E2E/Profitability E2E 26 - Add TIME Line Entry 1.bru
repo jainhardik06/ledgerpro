@@ -1,0 +1,25 @@
+meta {
+  name: Profitability E2E 26 - Add TIME Line Entry 1
+  type: http
+  seq: 26
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{invId}}/lines
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "type": "TIME",
+    "sourceId": "{{entry1Id}}",
+    "description": "Development — portal API scaffolding"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.line.type: eq TIME
+  res.body.invoice.subtotal.amount: eq 5000
+}

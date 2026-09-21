@@ -1,0 +1,27 @@
+meta {
+  name: Profitability E2E 49 - Dev 403 Portfolio Profitability
+  type: http
+  seq: 49
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/profitability
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 403
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (raw.error !== 'You do not have permission to perform this action') {
+    throw new Error('403 must carry the permission error, got ' + JSON.stringify(raw));
+  }
+}
+
+docs {
+  §114 — the portfolio report exposes internal cost per project/client;
+  a USER session is 403 at the gate, before any query runs.
+}

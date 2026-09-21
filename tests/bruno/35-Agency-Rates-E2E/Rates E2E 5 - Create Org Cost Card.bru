@@ -1,0 +1,44 @@
+meta {
+  name: Rates E2E 5 - Create Org Cost Card
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/rate-cards
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Agency Cost Card 2026",
+    "type": "COST",
+    "scope": "ORGANIZATION",
+    "currency": "inr"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.card.name: eq Agency Cost Card 2026
+  res.body.card.type: eq COST
+  res.body.card.scope: eq ORGANIZATION
+  res.body.card.currency: eq INR
+  res.body.card.status: eq ACTIVE
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('costCardId', raw.card.id);
+  if (!raw.card.id) {
+    throw new Error('Create must return the card id for the entry step');
+  }
+}
+
+docs {
+  §56 — the COST truth: internal labor economics, organization-wide default.
+  Currency normalized 'inr' → 'INR'. Cards start ACTIVE (§75 archive-only
+  lifecycle).
+}

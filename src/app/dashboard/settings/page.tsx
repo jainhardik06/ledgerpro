@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { RefreshCw, Tag, Briefcase, Plus, Trash2 } from 'lucide-react';
 import { useDashboardContext } from '@/components/dashboard/DashboardProvider';
+import { confirmModal } from '@/components/ui/Dialog';
 
 export default function SettingsPage() {
-  const { user, tenant, refreshContext } = useDashboardContext();
+  const { user, tenant } = useDashboardContext();
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<any[]>([]);
   const [newCat, setNewCat] = useState('');
@@ -50,7 +52,13 @@ export default function SettingsPage() {
   };
 
   const deleteCategory = async (id: string) => {
-    if (!confirm('Delete this category?')) return;
+    const ok = await confirmModal({
+      title: 'Delete Category',
+      message: 'Are you sure you want to delete this category?',
+      confirmText: 'Delete',
+      variant: 'danger',
+    });
+    if (!ok) return;
     try {
       const res = await fetch(`/api/categories/${id}`, { method: 'DELETE' });
       if (res.ok) {
@@ -60,41 +68,32 @@ export default function SettingsPage() {
     } catch(e) {}
   };
 
-  const updateAppMode = async (mode: string) => {
-    setAppMode(mode);
-    try {
-      const res = await fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ appMode: mode }) });
-      if (res.ok) {
-        refreshContext(); // Pull fresh tenant info
-      }
-    } catch (e) {}
-  };
-
   return (
-    <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500">
+    <div className="p-4 sm:p-6 lg:p-8 w-full max-w-6xl space-y-8 animate-in fade-in duration-500">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-white mb-1">Workspace Settings</h1>
         <p className="text-[13px] text-neutral-400">Manage preferences, categories, and platform terminology.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-8">
-        {/* Application Mode */}
-        <section className="space-y-4">
+        {/* Application Operating Mode (Permanent) */}
+        <section className="space-y-3">
           <div className="flex items-center gap-2 border-b border-white/[0.05] pb-2">
              <Briefcase className="w-4 h-4 text-neutral-400" />
-             <h2 className="text-[14px] font-semibold text-white tracking-tight">Application Terminology</h2>
+             <h2 className="text-[14px] font-semibold text-white tracking-tight">Organization Operating Mode</h2>
           </div>
-          <p className="text-[13px] text-neutral-400">Select the operating mode that best matches your organizational structure. This will rewrite the UI terminology globally.</p>
-          <div className="flex gap-3">
-             {['Standard', 'Student_Club', 'Agency'].map(mode => (
-               <button 
-                 key={mode} 
-                 onClick={() => updateAppMode(mode)}
-                 className={`px-4 py-2 rounded-md text-[13px] font-medium transition-colors border ${appMode === mode ? 'bg-white text-black border-white' : 'bg-transparent text-neutral-400 border-white/[0.1] hover:text-white'}`}
-               >
-                 {mode.replace('_', ' ')}
-               </button>
-             ))}
+          <p className="text-[13px] text-neutral-400">The operating mode for this workspace was established during organization creation and is permanently locked.</p>
+          <div className="flex flex-wrap items-center gap-3">
+             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg border border-white/[0.1] bg-white/[0.04] text-[13px] font-medium text-white">
+               <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+               {appMode.replace('_', ' ')}
+               <span className="text-[11px] text-neutral-500 font-mono">· Permanent</span>
+             </div>
+             {appMode === 'Agency' && (
+               <Link href="/dashboard/agency/settings" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/10 text-emerald-300 text-[12.5px] font-medium hover:bg-emerald-500/20 transition-colors">
+                 Open Agency Settings &rarr;
+               </Link>
+             )}
           </div>
         </section>
 

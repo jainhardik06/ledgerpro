@@ -1,0 +1,36 @@
+meta {
+  name: Regression 1 - Standard Signup
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "Regression Standard Tenant",
+    "username": "{{stdRegUsername}}",
+    "password": "{{regPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.redirectTo: eq "/dashboard"
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('stdRegUsername', 'reg_std_' + suffix);
+  bru.setVar('regPassword', 'RegTest#2026');
+}
+
+docs {
+  Module 1.27 — Standard vertical regression. A fresh Standard tenant must
+  get the exact pre-Agency behavior: default redirectTo /dashboard.
+}

@@ -1,0 +1,50 @@
+meta {
+  name: Tax E2E 27 - Finalize INV-000003 with Two Tax Lines
+  type: http
+  seq: 27
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{invCId}}/finalize
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.invoice.status: eq SENT
+  res.body.invoice.invoiceNumber: eq INV-000003
+  res.body.invoice.total.amount: eq 118000
+  res.body.invoice.eInvoice.status: eq PENDING
+  res.body.invoice.complianceSnapshot.recipient.name: eq Pune Industries Private Limited
+  res.body.invoice.complianceSnapshot.recipient.state: eq Maharashtra
+  res.body.invoice.complianceSnapshot.recipient.address: eq 4 FC Road
+  res.body.invoice.complianceSnapshot.recipient.city: eq Pune
+  res.body.invoice.complianceSnapshot.recipient.postalCode: eq "411005"
+  res.body.invoice.complianceSnapshot.placeOfSupply.stateOrRegion: eq Maharashtra
+  res.body.invoice.complianceSnapshot.taxLines[0].type: eq CGST
+  res.body.invoice.complianceSnapshot.taxLines[1].type: eq SGST
+  res.body.invoice.complianceSnapshot.classifications[0].classification.code: eq "998314"
+  res.body.invoice.complianceSnapshot.numbering.invoiceNumber: eq INV-000003
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const inv = raw.invoice;
+  const expectedFy = bru.getVar('expectedFy');
+  if (inv.fiscalYear !== expectedFy) {
+    throw new Error('§23: expected fiscalYear ' + expectedFy + ', got ' + inv.fiscalYear);
+  }
+  if (inv.complianceSnapshot.taxLines.length !== 2) {
+    throw new Error('§25: the snapshot must freeze BOTH the CGST and SGST lines');
+  }
+}
+
+docs {
+  §23–§27 — the intra-state finalization: INV-000003 continues the fiscal-year
+  sequence (1 = IGST invoice A, 2 = exempt invoice B, 3 = CGST+SGST invoice C).
+  The §25 snapshot freezes the recipient's BILLING address (4 FC Road, Pune —
+  the CBIC tax-invoice requirement), the place of supply, and BOTH tax
+  components. E-invoice PENDING again — GST lines + both GSTINs, no IRP call.
+}

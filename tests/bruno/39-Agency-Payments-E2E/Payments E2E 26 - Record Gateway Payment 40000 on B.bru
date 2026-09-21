@@ -1,0 +1,54 @@
+meta {
+  name: Payments E2E 26 - Record Gateway Payment 40000 on B
+  type: http
+  seq: 26
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payments
+  body: json
+  auth: none
+}
+
+script:pre-request {
+  // §96 idempotency keys on {gateway, gatewayPaymentId} in a PERSISTENT
+  // store — a fixed id would collide with every previous run of this
+  // suite. Each run mints a fresh suffix.
+  const suffix = bru.getVar('gwSuffix') || Date.now().toString(36);
+  bru.setVar('gwSuffix', suffix);
+  bru.setVar('gw1External', 'pay_e2e_gw_1_' + suffix);
+}
+
+body:json {
+  {
+    "invoiceId": "{{invBId}}",
+    "amount": 40000,
+    "method": "RAZORPAY",
+    "gatewayPaymentId": "{{gw1External}}",
+    "accountId": "{{accountId}}"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.payment.status: eq PENDING
+  res.body.payment.method: eq RAZORPAY
+  res.body.payment.gateway: eq RAZORPAY
+  res.body.payment.gatewayPaymentId: eq {{gw1External}}
+  res.body.payment.reconciliationStatus: eq PENDING
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('payGW1Id', raw.payment.id);
+  if (!raw.payment.id) throw new Error('Record must return the payment id');
+}
+
+docs {
+  10D gateway intake (§96/§101/§115) — the agency records the Razorpay
+  reference at intake: gateway RAZORPAY, a run-unique gatewayPaymentId,
+  reconciliationStatus PENDING. The webhook for this id will settle THE
+  STORED RECORD — the amount/invoice/tenant never come from the payload
+  (§113).
+}

@@ -1,0 +1,28 @@
+meta {
+  name: Reconciliation E2E 14 - Confirm Payment 2 Fully Paid
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payments/{{recPay2Id}}/confirm
+  body: json
+  auth: none
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.payment.status: eq CONFIRMED
+  res.body.invoice.status: eq PAID
+  res.body.invoice.amountPaid.amount: eq 100000
+  res.body.invoice.amountDue.amount: eq 0
+}
+
+docs {
+  Invoice A fully settled: PAID, 100000 in, 0 due.
+}

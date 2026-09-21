@@ -1,0 +1,48 @@
+meta {
+  name: Reports E2E 42 - Time Report Operational
+  type: http
+  seq: 42
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/time?basis=OPERATIONAL
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const rep = raw.report;
+  const near = (a, b, what) => {
+    if (a === null || a === undefined || Math.abs(a - b) > 0.001) {
+      throw new Error(what + ': expected ' + b + ', got ' + a);
+    }
+  };
+
+  if (rep.basis !== 'OPERATIONAL') throw new Error('basis: ' + rep.basis);
+  if (rep.rows.length !== 1) throw new Error('rows: ' + rep.rows.length);
+  const r = rep.rows[0];
+
+  // §33 — OPERATIONAL counts ALL recorded time: the draft hour joins
+  // (360 of 460 minutes → 78.26%), shown SEPARATELY, never mixed into a
+  // financial view.
+  near(r.billableHours, 6, 'billable hours');
+  near(r.totalHours, 7.6666667, 'total hours');
+  near(r.utilizationPercent, 78.2608696, 'utilization');
+  near(rep.summary.utilizationPercent, 78.2608696, 'summary utilization');
+
+  // Freeze for the CSV comparison (§41).
+  bru.setVar('timeOpUtil', String(r.utilizationPercent));
+  bru.setVar('timeOpBillable', String(r.billableHours));
+}
+
+docs {
+  §33 — the explicit operational basis: all recorded time, drafts
+  included. The 3.26pp utilization gap against the financial view is the
+  entire point of keeping the two bases separate.
+}

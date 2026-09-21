@@ -1,0 +1,15 @@
+meta {
+  name: Profitability E2E 42 - Portfolio From After To is 400
+  type: http
+  seq: 42
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/profitability?from=2030-01-02&to=2030-01-01
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}

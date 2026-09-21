@@ -1,0 +1,39 @@
+meta {
+  name: Agency E2E 4 - Agency Command Center Dashboard Loads
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/dashboard?period=THIS_MONTH
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.data.period.timezone: isDefined
+  res.body.data.financial: isDefined
+  res.body.data.delivery: isDefined
+  res.body.data.profitability: isDefined
+  res.body.data.receivables: isDefined
+  res.body.data.projects: isDefined
+  res.body.data.alerts: isDefined
+  res.body.data.trends: isDefined
+}
+
+script:post-response {
+  // Module 1.25 — the Server-Timing phases ride on every response.
+  const headers = typeof res.headers === 'function' ? res.headers() : res.headers;
+  const timing = (headers['server-timing'] || headers['Server-Timing'] || '');
+  if (!/auth;dur=\d+/.test(timing)) {
+    throw new Error('Expected Server-Timing header with auth phase, got: ' + timing);
+  }
+}
+
+docs {
+  The Agency Command Center data load (Module 1.17 grouped contract). A
+  brand-new agency tenant gets the honest zero-value payload — every section
+  present, no fabricated numbers (Module 1.21/1.22).
+}

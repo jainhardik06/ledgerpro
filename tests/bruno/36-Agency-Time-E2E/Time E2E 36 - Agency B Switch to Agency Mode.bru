@@ -1,0 +1,27 @@
+meta {
+  name: Time E2E 35 - Agency B Switch to Agency Mode
+  type: http
+  seq: 36
+}
+
+post {
+  url: {{BASE_URL}}/api/settings
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "appMode": "Agency"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+docs {
+  The signup session cookie (B's TENANT_ADMIN) switches B to the Agency
+  vertical — the same path a real tenant takes.
+}

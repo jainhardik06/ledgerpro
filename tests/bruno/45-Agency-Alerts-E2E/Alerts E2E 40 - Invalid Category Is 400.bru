@@ -1,0 +1,20 @@
+meta {
+  name: Alerts E2E 40 - Invalid Category Is 400
+  type: http
+  seq: 40
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/alerts?category=CASHFLOW
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  Fail-closed filters (§23): a typo'd value is a 400, never a silently
+  unfiltered list that looks successful.
+}

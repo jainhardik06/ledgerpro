@@ -1,0 +1,22 @@
+meta {
+  name: Rates E2E 24 - User Blocked from Cost Detail and Assignments
+  type: http
+  seq: 24
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/rate-cards/{{costCardId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 403
+}
+
+docs {
+  §99/§104 — the cost card DETAIL is where rates actually live; a USER gets
+  403. The assignments probe (same permission) and the manage gate are
+  covered by the integration suite's §98/§104 matrix; this E2E proves the
+  live server enforces the privacy boundary end to end.
+}

@@ -1,0 +1,28 @@
+meta {
+  name: Invoices E2E 56 - Login Back as Admin for Send
+  type: http
+  seq: 56
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{invAdminUsername}}",
+    "password": "{{invAdminPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+docs {
+  §81 send probes — the Agency B login (53) replaced the session cookie;
+  log back in as Agency A's admin before exercising the send action.
+}

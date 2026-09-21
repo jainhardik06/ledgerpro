@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Mail, Clock, ShieldAlert, ArrowLeft, ArrowRight, MessageSquare, CheckCircle2, Paperclip, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 
 export default function ContactSupportClient() {
   const [loading, setLoading] = useState(false);
@@ -130,7 +131,7 @@ export default function ContactSupportClient() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[11px] font-semibold text-neutral-400 uppercase tracking-wider mb-2">Category</label>
-                  <select 
+                  <Select 
                     value={formData.category}
                     onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
                     className="flex h-9 w-full rounded-md border border-white/[0.08] bg-[#0a0a0a] px-3 py-1 text-[13px] text-white transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/[0.2] outline-none"
@@ -141,11 +142,11 @@ export default function ContactSupportClient() {
                     <option>Feature Requests</option>
                     <option>Bug Report</option>
                     <option>Other</option>
-                  </select>
+                  </Select>
                 </div>
                 <div>
                   <label className="block text-[11px] font-semibold text-neutral-400 uppercase tracking-wider mb-2">Priority</label>
-                  <select 
+                  <Select 
                     value={formData.priority}
                     onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value }))}
                     className="flex h-9 w-full rounded-md border border-white/[0.08] bg-[#0a0a0a] px-3 py-1 text-[13px] text-white transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/[0.2] outline-none"
@@ -154,7 +155,7 @@ export default function ContactSupportClient() {
                     <option>Medium</option>
                     <option>High</option>
                     <option>Urgent</option>
-                  </select>
+                  </Select>
                 </div>
               </div>
 

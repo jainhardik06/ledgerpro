@@ -1,0 +1,21 @@
+meta {
+  name: Reports E2E 76 - Dev 200 Receivables Report
+  type: http
+  seq: 76
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/receivables
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (raw.report.rows.length !== 2) throw new Error('rows: ' + raw.report.rows.length);
+}

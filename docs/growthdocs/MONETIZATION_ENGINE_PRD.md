@@ -133,7 +133,7 @@ At 20,000 monthly blog readers (Month 6-9):
 
 1. Join each affiliate program (direct or via Impact/ShareASale/PartnerStack)
 2. Store all affiliate links in `affiliate_links` MongoDB collection with `link_code`, `partner_name`, `commission_type`, `commission_amount`
-3. Use consistent URL format: `https://moneyos.app/go/[partner-slug]`
+3. Use consistent URL format: `https://discovermoneyos.webasthetic.in/go/[partner-slug]`
 4. Implement redirect in `src/app/go/[slug]/route.ts` that:
    - Logs click to `affiliate_clicks` collection
    - Redirects to stored affiliate URL

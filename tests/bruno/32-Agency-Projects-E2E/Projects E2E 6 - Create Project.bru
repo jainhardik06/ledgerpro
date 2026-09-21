@@ -1,0 +1,63 @@
+meta {
+  name: Projects E2E 6 - Create Project
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "clientId": "{{clientId}}",
+    "name": "Northwind Brand Website",
+    "code": "E2E-NW-WEB",
+    "billingModel": "MILESTONE",
+    "currency": "inr",
+    "contractValue": 500000,
+    "revenueBudget": 500000,
+    "budgetCost": 300000,
+    "targetMargin": 40,
+    "plannedHours": 400,
+    "projectManagerId": "{{userId}}"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.project.name: eq Northwind Brand Website
+  res.body.project.status: eq DRAFT
+  res.body.project.currency: eq INR
+  res.body.project.contractValue: eq 500000
+  res.body.project.projectManagerId: eq {{userId}}
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('projectId', raw.project.id);
+  if (!raw.project.id) {
+    throw new Error('Create must return the project id for later lifecycle steps');
+  }
+  // §17 spirit — the doc carries no raw Mongo _id.
+  if (raw.project._id !== undefined) {
+    throw new Error('Raw Mongo _id must not leak into the API response');
+  }
+  // §74 — creation lands in DRAFT; §73 — with contractValue set and a
+  // consistent 40% margin, no advisory warnings should fire.
+  if (raw.warnings && raw.warnings.length > 0) {
+    throw new Error('Expected no warnings for a fully-budgeted project, got: ' + raw.warnings.join('; '));
+  }
+}
+
+docs {
+  Module 3 create (§37/§73/§74): the §37 commercial core, currency
+  normalized 'inr' → 'INR', planned economics (revenue 500k / cost 300k /
+  target 40%) consistent → no warnings, plus the §105 Manager step —
+  projectManagerId assigned at wizard time. MILESTONE billing so the §75
+  hard gate (≥1 milestone before activation) is exercised end-to-end at
+  step 9/10. Status DRAFT — lifecycle actions own activation (§41).
+}

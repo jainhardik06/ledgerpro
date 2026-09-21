@@ -1,0 +1,25 @@
+meta {
+  name: Profitability E2E 38 - Portfolio Status No Match
+  type: http
+  seq: 38
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/profitability?status=ACTIVE
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (raw.portfolio.projects.length !== 0) throw new Error('no ACTIVE projects exist');
+  if (raw.portfolio.summary.projectCount !== 0) throw new Error('summary count must be 0');
+  if (raw.portfolio.summary.applicableRevenue === null || raw.portfolio.summary.applicableRevenue.amount !== 0) {
+    throw new Error('an empty single-currency portfolio totals a real zero');
+  }
+}

@@ -1,0 +1,21 @@
+meta {
+  name: Rates E2E 28 - Agency B Cannot See A Cards 120
+  type: http
+  seq: 28
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/rate-cards/{{costCardId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 404
+}
+
+docs {
+  §120/§113 — A's cost card does not exist for B: identical 404, never an
+  existence leak. B's admin has cost.read — the isolation is the TENANT
+  boundary, not the role.
+}

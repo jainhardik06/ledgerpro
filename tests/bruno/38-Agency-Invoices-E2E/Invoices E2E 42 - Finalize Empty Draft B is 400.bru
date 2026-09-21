@@ -1,0 +1,20 @@
+meta {
+  name: Invoices E2E 42 - Finalize Empty Draft B is 400
+  type: http
+  seq: 42
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{invBId}}/finalize
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  §83 step 1 — an invoice with no lines is never finalized (and no number
+  is consumed for it).
+}

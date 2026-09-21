@@ -1,0 +1,28 @@
+meta {
+  name: Alerts E2E 67 - Patch Unknown Key Is 400
+  type: http
+  seq: 67
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/alert-rules/{{dueSoonRuleId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "configuration": {
+      "nonsense": 1
+    }
+  }
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  §24 — the configuration whitelist is [days, amount, percentage, severity];
+  an unknown key is rejected, never silently ignored.
+}

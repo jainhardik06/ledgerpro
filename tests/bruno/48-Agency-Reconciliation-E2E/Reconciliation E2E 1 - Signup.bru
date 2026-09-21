@@ -1,0 +1,45 @@
+meta {
+  name: Reconciliation E2E 1 - Signup
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "E2E Reconciliation Agency",
+    "username": "{{recAdminUsername}}",
+    "password": "{{recAdminPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('recAdminUsername', 'e2e_rec_admin_' + suffix);
+  bru.setVar('recAdminPassword', 'E2eRecAdmin#2026');
+  bru.setVar('recRunToken', suffix);
+  // Fresh tenant = unconfigured = §17.2 defaults (Asia/Kolkata), so the IST
+  // date is the correct business-date anchor for this journey.
+  const ist = new Date(Date.now() + 5.5 * 60 * 60 * 1000);
+  bru.setVar('recIssueDate', ist.toISOString().slice(0, 10));
+}
+
+docs {
+  Phase 1 finale (F3) — the RELEASE RECONCILIATION suite: one fresh tenant,
+  the full money journey (2 invoices → 3 confirmed payments → 1 fully paid,
+  1 partially paid), then every read surface — invoice store, core ledger,
+  payment reconciliation overview, receivables engine, dashboard aggregate,
+  reports — must agree on the SAME numbers. Each module's own suite pins its
+  local behavior; THIS suite pins that no view ever disagrees with the
+  financial truth the engines wrote.
+}

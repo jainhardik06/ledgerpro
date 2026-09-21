@@ -1,0 +1,15 @@
+meta {
+  name: Receivables E2E 40 - From After To Is 400
+  type: http
+  seq: 40
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/receivables?from={{rcvToday}}&to={{dueMinus10}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}

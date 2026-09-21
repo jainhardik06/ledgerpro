@@ -19,8 +19,8 @@ The blog is NOT a growth hack vehicle. Every post must provide genuine value as 
 - **Content**: `src/content/blog/*.mdx` with Zod schema
 - **Layout**: `BlogLayout.astro` — distinct from `DocLayout.astro`
 - **Routing**: `src/pages/blog/[...slug].astro` with `getStaticPaths()`
-- **Index**: `src/pages/blog/index.astro` with pagination (12 posts/page)
-- **Categories**: Tag-based filtering via URL params
+- **Index**: `src/pages/blog/[...page].astro` — the paginated catch-all that serves the index and `/blog/<n>` pages
+- **Categories**: Tag-based filtering at `src/pages/blog/category/`
 
 ### Blog Collection Schema
 

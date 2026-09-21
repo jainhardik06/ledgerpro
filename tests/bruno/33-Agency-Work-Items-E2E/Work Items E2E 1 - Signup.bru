@@ -1,0 +1,38 @@
+meta {
+  name: Work Items E2E 1 - Signup
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "E2E Work Items Agency",
+    "username": "{{workUsername}}",
+    "password": "{{workPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  // Unique credentials per run so the suite is repeatable against a
+  // persistent database.
+  const suffix = Date.now().toString(36);
+  bru.setVar('workUsername', 'e2e_work_' + suffix);
+  bru.setVar('workPassword', 'E2eWork#2026');
+}
+
+docs {
+  Module 4 E2E — a fresh agency tenant for the work-item lifecycle flow:
+  Create Work Items → Filter/Search/Sort → Status Transitions → Assign /
+  Unassign → Archive → Activity (§16/§24/§25/§11/§12/§26).
+}

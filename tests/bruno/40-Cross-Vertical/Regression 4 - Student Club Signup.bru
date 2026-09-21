@@ -1,0 +1,34 @@
+meta {
+  name: Regression 4 - Student Club Signup and Mode Switch
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "Regression Student Club",
+    "username": "{{clubRegUsername}}",
+    "password": "{{regPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('clubRegUsername', 'reg_club_' + suffix);
+}
+
+docs {
+  Module 1.27 — Student Club vertical regression, leg 1: signup a fresh
+  tenant and switch it to Student_Club (the second existing vertical).
+}

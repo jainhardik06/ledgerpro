@@ -1,0 +1,31 @@
+meta {
+  name: Rates E2E 12 - Assign Cost Rate to Member
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/users/{{userId}}/cost-rates
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "rateCardId": "{{costCardId}}",
+    "rateCardEntryId": "{{costEntryId}}",
+    "effectiveFrom": "2026-01-01"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.assignment.rateCardEntryId: eq {{costEntryId}}
+}
+
+docs {
+  §88/§131 — the assignment pins USER + COST ENTRY + FROM-DATE. From this
+  moment the member's cost rate resolves deterministically on any date
+  (§94). Open-ended: valid until replaced forward (§79).
+}

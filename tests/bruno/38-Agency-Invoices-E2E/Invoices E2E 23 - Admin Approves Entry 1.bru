@@ -1,0 +1,19 @@
+meta {
+  name: Invoices E2E 23 - Admin Approves Entry 1
+  type: http
+  seq: 23
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/time/{{entry1Id}}/approve
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.timeEntry.approvalStatus: eq APPROVED
+  res.body.timeEntry.billingStatus: eq UNBILLED
+  res.body.timeEntry.calculatedCost.amount: eq 1800
+  res.body.timeEntry.calculatedBillableAmount.amount: eq 5000
+}

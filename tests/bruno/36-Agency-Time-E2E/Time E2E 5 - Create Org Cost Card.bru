@@ -1,0 +1,31 @@
+meta {
+  name: Time E2E 5 - Create Org Cost Card
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/rate-cards
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "E2E Time Cost Card",
+    "type": "COST",
+    "scope": "ORGANIZATION",
+    "currency": "INR"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.card.type: eq COST
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('costCardId', raw.card.id);
+  if (!raw.card.id) throw new Error('Create must return the card id');
+}

@@ -1,0 +1,16 @@
+meta {
+  name: Profitability E2E 19 - Dev Submits Expense
+  type: http
+  seq: 19
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/expenses/{{expenseId}}/submit
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.expense.status: eq SUBMITTED
+}

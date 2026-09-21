@@ -1,0 +1,27 @@
+meta {
+  name: Receivables E2E 36 - Filter Aging Bucket 90+
+  type: http
+  seq: 36
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/receivables?agingBucket=90%2B
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const r = raw.receivables;
+  if (r.openInvoiceCount !== 1) throw new Error('only INV-000001 is 90+ days past due');
+  if (r.outstanding !== 30000) throw new Error('90+ outstanding must be 30000, got ' + r.outstanding);
+  if (r.invoices[0].invoiceNumber !== 'INV-000001') throw new Error('the 90+ row must be INV-000001');
+  if (r.invoices[0].collectionRisk !== 'OVERDUE_90_PLUS') throw new Error('§101: 95 days must carry the 90+ band');
+  if (r.byAgingBucket['90+'] !== 30000) throw new Error('the ladder narrows with the filter');
+  if (r.byAgingBucket['31-60'] !== 0) throw new Error('no other bucket carries money under this filter');
+}

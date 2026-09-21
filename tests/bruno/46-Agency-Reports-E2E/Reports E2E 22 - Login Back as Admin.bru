@@ -1,0 +1,23 @@
+meta {
+  name: Reports E2E 22 - Login Back as Admin
+  type: http
+  seq: 22
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{repAdminUsername}}",
+    "password": "{{repAdminPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}

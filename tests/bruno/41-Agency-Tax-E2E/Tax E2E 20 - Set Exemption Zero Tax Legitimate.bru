@@ -1,0 +1,39 @@
+meta {
+  name: Tax E2E 20 - Set Exemption Zero Tax Legitimate
+  type: http
+  seq: 20
+}
+
+put {
+  url: {{BASE_URL}}/api/agency/invoices/{{invBId}}/taxation
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "exemption": { "reason": "Export of service — zero-rated" }
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.invoice.subtotal.amount: eq 50000
+  res.body.invoice.taxTotal.amount: eq 0
+  res.body.invoice.total.amount: eq 50000
+  res.body.invoice.exemption.reason: eq Export of service — zero-rated
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (raw.invoice.taxLines.length !== 0) {
+    throw new Error('§16: an exempt invoice must carry NO tax lines, not zero-amount ones');
+  }
+}
+
+docs {
+  §16 — EXEMPT is a first-class, REASONED outcome: declaring the exemption
+  CLEARS the tax lines and produces tax ₹0 with the reason stored. The total
+  is the taxable value — a legitimate invoice, not a degraded one.
+}

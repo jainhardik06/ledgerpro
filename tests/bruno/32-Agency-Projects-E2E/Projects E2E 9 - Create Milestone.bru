@@ -1,0 +1,46 @@
+meta {
+  name: Projects E2E 9 - Create Milestone
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/milestones
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Discovery and strategy sign-off",
+    "sequence": 1,
+    "amount": 150000,
+    "dueDate": "2026-10-15"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.milestone.name: eq Discovery and strategy sign-off
+  res.body.milestone.status: eq PLANNED
+  res.body.milestone.amount: eq 150000
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  // §46 — a milestone defines exactly ONE commercial definition (amount XOR
+  // percentage); this one is amount-based, so percentage must be absent.
+  if (raw.milestone.percentage !== undefined) {
+    throw new Error('Amount milestone must not carry a percentage (§46 XOR rule)');
+  }
+  bru.setVar('milestoneId', raw.milestone.id);
+}
+
+docs {
+  Milestone (§45/§46): amount-based, sequence 1, PLANNED status. The
+  §105 flow's billing configuration step for milestone-invoiced work —
+  and the §125 end-to-end requirement that milestone creation be
+  exercised before activation. Percentage-sum rules (>100 reject,
+  ≠100-at-activation warning) are covered by the integration suite.
+}

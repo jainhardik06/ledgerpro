@@ -1,0 +1,24 @@
+meta {
+  name: Team E2E 3 - Login
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{teamUsername}}",
+    "password": "{{teamPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.redirectTo: eq /dashboard/agency
+}

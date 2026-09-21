@@ -1,0 +1,27 @@
+meta {
+  name: Clients E2E 12 - Full Archive Restore Cycle
+  type: http
+  seq: 12
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/clients/{{clientId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "status": "INACTIVE"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.client.status: eq INACTIVE
+}
+
+docs {
+  Legal hop 1: ACTIVE → INACTIVE (§14). Archive follows in the next step —
+  the E2E proves the full ACTIVE → INACTIVE → ARCHIVED → INACTIVE cycle.
+}

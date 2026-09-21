@@ -1,0 +1,17 @@
+meta {
+  name: Reports E2E 10 - Activate Project 1
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/activate
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.project.status: eq ACTIVE
+}

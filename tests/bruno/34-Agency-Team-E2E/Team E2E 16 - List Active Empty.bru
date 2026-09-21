@@ -1,0 +1,27 @@
+meta {
+  name: Team E2E 16 - List Active Empty
+  type: http
+  seq: 16
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/members
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if ((raw.members || []).length !== 0) {
+    throw new Error('Removed membership must not appear in the default team view');
+  }
+}
+
+docs {
+  The §42 team view after removal: zero active members.
+}

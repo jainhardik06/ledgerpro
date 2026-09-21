@@ -1,0 +1,36 @@
+meta {
+  name: Payments E2E 10 - Confirm Payment A1 Partial
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payments/{{payA1Id}}/confirm
+  body: json
+  auth: none
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.payment.status: eq CONFIRMED
+  res.body.invoice.status: eq PARTIALLY_PAID
+  res.body.invoice.amountPaid.amount: eq 40000
+  res.body.invoice.amountDue.amount: eq 60000
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('txnA1Id', raw.transactionId);
+  if (!raw.transactionId) throw new Error('§129: confirm must return the core transaction id');
+  if (!raw.payment.transactionId) throw new Error('§129: the payment must link its transaction');
+}
+
+docs {
+  §94/§101/§114 — THE money move: one Credit transaction, invoice recomputed
+  through the §104 engine → PARTIALLY_PAID with 60000 still due.
+}

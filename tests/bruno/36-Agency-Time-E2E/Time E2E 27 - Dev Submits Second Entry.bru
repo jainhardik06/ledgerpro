@@ -1,0 +1,16 @@
+meta {
+  name: Time E2E 26 - Dev Submits Second Entry
+  type: http
+  seq: 27
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/time/{{rejectedEntryId}}/submit
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.timeEntry.approvalStatus: eq SUBMITTED
+}

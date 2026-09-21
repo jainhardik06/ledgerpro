@@ -1,0 +1,21 @@
+meta {
+  name: Time E2E 23 - Admin Timer Discard
+  type: http
+  seq: 23
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/timer/discard
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.timerSession.status: eq DISCARDED
+}
+
+docs {
+  §9 — DISCARDED is the model's honest third state: abandoned tracking,
+  no entry, no deletion of history.
+}

@@ -1,0 +1,83 @@
+meta {
+  name: Time E2E 39 - Dashboard Time Economics Live 117
+  type: http
+  seq: 39
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/dashboard?period=THIS_MONTH
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const data = raw.data;
+
+  // §117 — Module 7 wires the time metrics live. The suite's final state:
+  // ONE approved entry (120m at 900/2500 → cost 1800, billable 5000,
+  // UNBILLED), one 1m DRAFT timer entry (non-billable), one 30m DRAFT
+  // (billable, rejected then edited back). Drafts/rejected carry no money.
+  const dc = data.profitability.deliveryCost;
+  if (!dc || dc.sourceReady !== true || dc.value !== 1800) {
+    throw new Error('§4 deliveryCost must be live and exactly 1800 (approved 120m at 900), got ' + JSON.stringify(dc));
+  }
+
+  const ur = data.financial.unbilledRevenue;
+  if (!ur || ur.sourceReady !== true || ur.value !== 5000) {
+    throw new Error('§7 unbilledRevenue must be live and exactly 5000 (approved billable 120m at 2500), got ' + JSON.stringify(ur));
+  }
+
+  const unbilled = data.financial.unbilled;
+  if (!unbilled || unbilled.unbilledTime !== 5000 || unbilled.totalUnbilled !== 5000) {
+    throw new Error('§7 unbilled panel: unbilledTime/totalUnbilled must be 5000, got ' + JSON.stringify(unbilled));
+  }
+
+  // §8 — hours: ALL entries count as logged (120m approved + 45m draft
+  // after the rejected entry's edit + 1m non-billable timer). Billable
+  // minutes are exactly 165 (120 + 45); the timer entry is non-billable.
+  const th = data.delivery.totalHours;
+  const bh = data.delivery.billableHours;
+  if (!th || th.sourceReady !== true || th.value < 2.75) {
+    throw new Error('§8 totalHours must be live and ≥ 2.75h, got ' + JSON.stringify(th));
+  }
+  if (!bh || bh.sourceReady !== true || bh.value !== 2.75) {
+    throw new Error('§8 billableHours must be live and exactly 2.75h, got ' + JSON.stringify(bh));
+  }
+  if (data.delivery.billablePercent.value === null) {
+    throw new Error('§8 billablePercent must be defined when hours are logged');
+  }
+
+  // §118 (Module 13, landed) — profit/margin are LIVE from the ONE engine
+  // (getPortfolioProfitability — the same service /api/agency/profitability
+  // reports, §70: Command Center and reports can never disagree). T&M
+  // applicable revenue (§62 — approved billable 120m at 2500 = 5000) minus
+  // the engine delivery cost (§63 — 120m at 900 = 1800) = 3200 profit,
+  // 64% margin. Never planned contract − actual cost.
+  const gp = data.profitability.grossProfit;
+  const gm = data.profitability.grossMargin;
+  if (gp.sourceReady !== true || gp.value !== 3200) {
+    throw new Error('§118 — grossProfit must be live 3200 (engine: 5000 − 1800), got ' + JSON.stringify(gp));
+  }
+  if (gm.sourceReady !== true || gm.value === null || Math.abs(gm.value - 64) > 0.05) {
+    throw new Error('§118 — grossMargin must be live 64 (PERCENT 0–100 scale), got ' + JSON.stringify(gm));
+  }
+
+  // §117 (Module 10) — invoicing/payments sources are now WIRED: this
+  // tenant has issued nothing and collected nothing, so both are live 0
+  // (never pending, never fabricated).
+  if (data.financial.invoicedRevenue.sourceReady !== true || data.financial.invoicedRevenue.value !== 0) throw new Error('invoicedRevenue must be live 0 now that Module 10 wires it');
+  if (data.financial.collectedRevenue.sourceReady !== true || data.financial.collectedRevenue.value !== 0) throw new Error('collectedRevenue must be live 0 now that Module 10 wires it');
+}
+
+docs {
+  §117 — the Module 7 dashboard integration, asserted live against the real
+  aggregation pipeline: §4 delivery cost, §7 unbilled time, §8 windowed
+  hours, and the §118 landed truth — profit 3200 / margin 64% straight from
+  the ONE profitability engine (§70 agreement rule).
+}

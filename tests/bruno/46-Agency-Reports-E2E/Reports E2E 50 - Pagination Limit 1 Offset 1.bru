@@ -1,0 +1,25 @@
+meta {
+  name: Reports E2E 50 - Pagination Limit 1 Offset 1
+  type: http
+  seq: 50
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/portfolio?limit=1&offset=1
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const rep = raw.report;
+  // §39 — offset 1 walks to the second row; total and summary unmoved.
+  if (rep.rows.length !== 1) throw new Error('page rows: ' + rep.rows.length);
+  if (rep.pagination.total !== 2) throw new Error('total: ' + rep.pagination.total);
+  if (Math.abs(rep.summary.profit - 55500) > 0.001) throw new Error('summary profit: ' + rep.summary.profit);
+}

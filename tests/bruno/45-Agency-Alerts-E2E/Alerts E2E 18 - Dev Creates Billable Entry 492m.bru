@@ -1,0 +1,43 @@
+meta {
+  name: Alerts E2E 18 - Dev Creates Billable Entry 492m
+  type: http
+  seq: 18
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/time
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "projectId": "{{projectId}}",
+    "date": "{{alEntryDate}}",
+    "durationMinutes": 492,
+    "billable": true,
+    "notes": "Overrun delivery — 82% of the plan in one entry"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.timeEntry.approvalStatus: eq DRAFT
+  res.body.timeEntry.billingStatus: eq UNBILLED
+  res.body.timeEntry.costRateSnapshot.amount: eq 900
+  res.body.timeEntry.billingRateSnapshot.amount: eq 1000
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('entryId', raw.timeEntry.id);
+  if (!raw.timeEntry.id) throw new Error('Create must return the entry id');
+  if (raw.timeEntry.calculatedCost !== undefined) throw new Error('No cost may be calculated before approval');
+}
+
+docs {
+  492 minutes = 8.2h exactly — 82% of the 10h plan (the 80 band fires, the
+  100 band does not), 8.2 × 900 = 7380 cost and 8.2 × 1000 = 8200 billable
+  value once approved (§23; rates frozen at creation, §6).
+}

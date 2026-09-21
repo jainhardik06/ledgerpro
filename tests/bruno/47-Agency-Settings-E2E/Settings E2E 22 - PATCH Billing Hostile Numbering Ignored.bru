@@ -1,0 +1,36 @@
+meta {
+  name: Settings E2E 22 - PATCH Billing Hostile Numbering Ignored
+  type: http
+  seq: 22
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/settings/billing
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "paymentTermsDays": 15,
+    "numberingMode": "SEQ",
+    "invoiceNumber": "INV-2026-999"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.settings.billing.numberingMode: eq FISCAL_YEAR_SEQUENCE
+}
+
+script:post-response {
+  const text = typeof res.body === 'string' ? res.body : JSON.stringify(res.body);
+  if (text.includes('INV-2026-999')) throw new Error('a client-forced invoice number must never be echoed');
+  if (text.includes('"SEQ"')) throw new Error('a client-forced numbering mode must never be stored');
+}
+
+docs {
+  §45/§74 — numbering is SERVER-CONTROLLED (allocateInvoiceNumber). A
+  hostile numberingMode/invoiceNumber in the payload is silently dropped:
+  the legitimate field lands, the numbering fields never exist as input.
+}

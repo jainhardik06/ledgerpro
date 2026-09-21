@@ -1,0 +1,29 @@
+meta {
+  name: Time E2E 25 - Login as Dev for Second Entry
+  type: http
+  seq: 25
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{timeDevUsername}}",
+    "password": "E2eTimeDev#2026"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+docs {
+  The second-entry leg runs as the DEV — the author whose work the admin
+  will reject. Without this switch the admin would author the entry and
+  §21 would (correctly) block their own rejection.
+}

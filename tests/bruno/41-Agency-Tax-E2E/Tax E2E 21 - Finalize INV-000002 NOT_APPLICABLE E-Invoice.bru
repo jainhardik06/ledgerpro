@@ -1,0 +1,42 @@
+meta {
+  name: Tax E2E 21 - Finalize INV-000002 NOT_APPLICABLE E-Invoice
+  type: http
+  seq: 21
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{invBId}}/finalize
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.invoice.status: eq SENT
+  res.body.invoice.invoiceNumber: eq INV-000002
+  res.body.invoice.total.amount: eq 50000
+  res.body.invoice.eInvoice.status: eq NOT_APPLICABLE
+  res.body.invoice.complianceSnapshot.exemption.reason: eq Export of service — zero-rated
+  res.body.invoice.complianceSnapshot.numbering.invoiceNumber: eq INV-000002
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const inv = raw.invoice;
+  if (inv.complianceSnapshot.taxLines.length !== 0) {
+    throw new Error('§25: the snapshot must freeze the exempt truth — no tax lines');
+  }
+  const expectedFy = bru.getVar('expectedFy');
+  if (inv.fiscalYear !== expectedFy) {
+    throw new Error('§23: expected fiscalYear ' + expectedFy + ', got ' + inv.fiscalYear);
+  }
+}
+
+docs {
+  §23/§26/§27 — the sequence advanced within the same fiscal year
+  (INV-000002), the snapshot froze the exemption reason, and e-invoice is
+  NOT_APPLICABLE: no GST lines means nothing to report to any IRP — which we
+  would not call regardless (§27). The Module 11 journey closes: two
+  invoices, two taxation shapes, one frozen truth each.
+}

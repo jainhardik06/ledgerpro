@@ -1,0 +1,58 @@
+meta {
+  name: Reports E2E 1 - Signup
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "E2E Reports Agency",
+    "username": "{{repAdminUsername}}",
+    "password": "{{repAdminPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('repAdminUsername', 'e2e_rep_admin_' + suffix);
+  bru.setVar('repAdminPassword', 'E2eRepAdmin#2026');
+  // Tenant timezone (Asia/Kolkata default) — every date anchor of the
+  // journey derives from today: project start dates (portfolio ?from/?to),
+  // the entry date (time report window), and the two due dates (aging).
+  const ist = new Date(Date.now() + 5.5 * 60 * 60 * 1000);
+  const day = (offset) => new Date(ist.getTime() + offset * 86400000).toISOString().slice(0, 10);
+  bru.setVar('repToday', day(0));
+  bru.setVar('repDuePlus3', day(3));
+  bru.setVar('repDueMinus10', day(-10));
+  bru.setVar('repDueMinus20', day(-20));
+  bru.setVar('repDueMinus5', day(-5));
+}
+
+docs {
+  Fresh agency for the Module 16 reports journey (§26–§41): one ACTIVE
+  T&M project carrying approved billable time (5h × 2500 = 12500 revenue),
+  approved non-billable time (100m × 900 = 1500 cost), a deliberately
+  UNAPPROVED draft hour (60m — the §33 basis probe: financial views must
+  never see it) and an approved billable expense (1000 cost / 1100
+  charge), plus one PLANNED fixed-fee project (50000 contract, zero
+  delivery). Two open invoices: 40000 due in 3 days (due-soon) and
+  150000 ten days past due with a 50000 confirmed payment (overdue,
+  partially paid, aging bucket 1-30).
+
+  Every §41 acceptance is asserted end to end: each report reconciles
+  with its source engine, the CSV matches the JSON table field by field,
+  filters apply identically to JSON and CSV, pagination obeys §39, the
+  fail-closed 400s fire, §114 cost-report privacy holds for a USER, and
+  §113 tenant isolation holds for Agency B.
+}

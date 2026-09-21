@@ -1,0 +1,39 @@
+meta {
+  name: Team E2E 1 - Signup
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "E2E Team Agency",
+    "username": "{{teamUsername}}",
+    "password": "{{teamPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  // Unique credentials per run so the suite is repeatable against a
+  // persistent database.
+  const suffix = Date.now().toString(36);
+  bru.setVar('teamUsername', 'e2e_team_' + suffix);
+  bru.setVar('teamPassword', 'E2eTeam#2026');
+  bru.setVar('teamSuffix', suffix);
+}
+
+docs {
+  Module 5 E2E — a fresh agency tenant for the project-team lifecycle flow:
+  Add Member → Duplicate 409 → Update → Soft Remove (history kept) → Re-add
+  → Activate (PM auto-add §39) → Change PM (§48) → Workspace payload.
+}

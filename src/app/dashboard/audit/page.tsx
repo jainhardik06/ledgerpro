@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { RefreshCw, Activity, Search, Shield, Info, Download, Globe } from 'lucide-react';
 import { useDashboardContext } from '@/components/dashboard/DashboardProvider';
 import { Drawer } from '@/components/ui/Drawer';
+import { SearchBar } from '@/components/ui/SearchBar';
 
 export default function AuditPage() {
   const { user } = useDashboardContext();
@@ -69,23 +70,20 @@ export default function AuditPage() {
   );
 
   return (
-    <div className="flex flex-col h-[calc(100vh-56px)] animate-in fade-in duration-500">
+    <div className="flex flex-col h-[calc(100vh-56px)] w-full animate-in fade-in duration-500">
       <div className="p-4 sm:p-6 shrink-0 border-b border-white/[0.05] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-semibold tracking-tight text-white mb-1">Audit Log</h1>
           <p className="text-[12px] sm:text-[13px] text-neutral-400">Comprehensive chronological record of system activity.</p>
         </div>
         <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
-          <div className="relative flex-1 sm:flex-none min-w-0">
-            <Search className="w-4 h-4 text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input 
-              type="text" 
-              placeholder="Search events..." 
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="h-9 w-full sm:w-64 bg-[#0a0a0a] border border-white/[0.1] rounded-md pl-9 pr-3 text-[13px] text-white focus:border-white/[0.2] outline-none"
-            />
-          </div>
+          <SearchBar
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search events…"
+            aria-label="Search events"
+            wrapperClassName="flex-1 sm:w-64"
+          />
           <button 
             onClick={handleExportCSV}
             className="h-9 px-3 shrink-0 border border-white/[0.1] rounded-md text-[13px] font-medium text-white hover:bg-white/[0.02] flex items-center justify-center gap-2 transition-colors"

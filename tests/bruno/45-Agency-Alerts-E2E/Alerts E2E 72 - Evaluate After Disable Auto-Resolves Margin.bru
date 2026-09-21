@@ -1,0 +1,21 @@
+meta {
+  name: Alerts E2E 72 - Evaluate After Disable Auto-Resolves Margin
+  type: http
+  seq: 72
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/alerts/evaluate
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.result.created: eq 0
+  res.body.result.updated: eq 6
+  res.body.result.reopened: eq 0
+  res.body.result.autoResolved: eq 1
+  res.body.result.totalActive: eq 6
+}

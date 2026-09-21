@@ -1,0 +1,23 @@
+meta {
+  name: Team E2E 19 - Activate Project
+  type: http
+  seq: 19
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/activate
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.project.status: eq ACTIVE
+}
+
+docs {
+  FIXED_FEE with a contract value passes the §75 gate. The PM (the admin)
+  is NOT yet a member — §39 says activation must auto-add them, verified
+  next.
+}

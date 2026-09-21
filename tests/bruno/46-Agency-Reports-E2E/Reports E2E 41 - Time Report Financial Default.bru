@@ -1,0 +1,57 @@
+meta {
+  name: Reports E2E 41 - Time Report Financial Default
+  type: http
+  seq: 41
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/time
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const rep = raw.report;
+  const near = (a, b, what) => {
+    if (a === null || a === undefined || Math.abs(a - b) > 0.001) {
+      throw new Error(what + ': expected ' + b + ', got ' + a);
+    }
+  };
+
+  // §33 — no basis param means FINANCIAL, and the payload says so.
+  if (rep.basis !== 'FINANCIAL') throw new Error('basis must default to FINANCIAL, got ' + rep.basis);
+
+  if (rep.rows.length !== 1) throw new Error('rows: ' + rep.rows.length);
+  const r = rep.rows[0];
+  if (r.userId !== bru.getVar('devUserId')) throw new Error('row must be the dev');
+  if (r.userName !== bru.getVar('repDevUsername')) throw new Error('userName must resolve, got ' + r.userName);
+
+  // §32/§33 — APPROVED only: 5h billable of 6.67h total → 75%. The DRAFT
+  // hour (entry 3) must be INVISIBLE here — billable 5h, not 6h.
+  near(r.billableHours, 5, 'billable hours');
+  near(r.totalHours, 6.6666667, 'total hours');
+  near(r.nonBillableHours, 1.6666667, 'non-billable hours');
+  near(r.utilizationPercent, 75, 'utilization');
+
+  // Summary over ALL rows (§39): 300 of 400 minutes.
+  const s = rep.summary;
+  if (s.employeeCount !== 1) throw new Error('employee count: ' + s.employeeCount);
+  near(s.billableHours, 5, 'summary billable');
+  near(s.totalHours, 6.6666667, 'summary total');
+  near(s.utilizationPercent, 75, 'summary utilization');
+
+  // Freeze the utilization for the CSV comparison (§41).
+  bru.setVar('timeFinUtil', String(r.utilizationPercent));
+}
+
+docs {
+  §32/§33 — the time report on the default FINANCIAL basis: approved
+  entries only, utilization 75% (300 of 400 minutes), and the unapproved
+  draft hour provably absent.
+}

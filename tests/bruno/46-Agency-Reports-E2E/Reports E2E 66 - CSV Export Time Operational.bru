@@ -1,0 +1,31 @@
+meta {
+  name: Reports E2E 66 - CSV Export Time Operational
+  type: http
+  seq: 66
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/time/export.csv?basis=OPERATIONAL
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+script:post-response {
+  const csv = typeof res.body === 'string' ? res.body : String(res.body);
+  const lines = csv.replace(/\r\n$/, '').split('\r\n');
+  if (lines.length !== 2) throw new Error('header + 1 row expected, got ' + lines.length);
+
+  const HEADER = 'Employee,Billable Hours,Non-Billable Hours,Total Hours,Utilization %';
+  if (lines[0] !== HEADER) throw new Error('header: ' + lines[0]);
+
+  // §33/§41 — the CSV honors the basis: the operational utilization (and
+  // the draft hour inside it) matches the JSON operational payload.
+  const f = lines[1].split(',');
+  if (f[0] !== bru.getVar('repDevUsername')) throw new Error('employee: ' + f[0]);
+  if (f[1] !== bru.getVar('timeOpBillable')) throw new Error('billable: csv ' + f[1] + ' vs json ' + bru.getVar('timeOpBillable'));
+  if (f[4] !== bru.getVar('timeOpUtil')) throw new Error('utilization: csv ' + f[4] + ' vs json ' + bru.getVar('timeOpUtil'));
+}

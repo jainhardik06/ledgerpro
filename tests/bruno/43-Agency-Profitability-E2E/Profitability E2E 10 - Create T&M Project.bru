@@ -1,0 +1,55 @@
+meta {
+  name: Profitability E2E 10 - Create T&M Project
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "clientId": "{{clientId}}",
+    "name": "Profitability Portal Build",
+    "code": "E2E-PROF-PORTAL",
+    "billingModel": "TIME_AND_MATERIALS",
+    "currency": "INR",
+    "startDate": "{{startDate}}",
+    "revenueBudget": 20000,
+    "budgetCost": 5000,
+    "targetMargin": 40,
+    "plannedHours": 10,
+    "projectManagerId": "{{devUserId}}"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.project.billingModel: eq TIME_AND_MATERIALS
+  res.body.project.plannedHours: eq 10
+  res.body.project.targetMargin: eq 40
+}
+
+script:pre-request {
+  // Tenant timezone (Asia/Kolkata default) — the project's start date also
+  // drives the portfolio ?from/?to asserts later in this suite.
+  const ist = new Date(Date.now() + 5.5 * 60 * 60 * 1000);
+  bru.setVar('startDate', ist.toISOString().slice(0, 10));
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('projectId', raw.project.id);
+  if (!raw.project.id) throw new Error('Create must return the project id');
+}
+
+docs {
+  The §68 subject. Baselines chosen to make every §74 burn and §75 verdict
+  provable: plannedHours 10 (3 will be logged → 30% burn), budgetCost 5000
+  (3700 will be delivered → 74%), revenueBudget 20000 (5000 earned → 25%),
+  targetMargin 40 (the journey lands at 26% → AT_RISK with a CRITICAL
+  margin alert, §77).
+}

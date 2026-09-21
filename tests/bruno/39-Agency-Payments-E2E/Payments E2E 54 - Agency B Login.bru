@@ -1,0 +1,23 @@
+meta {
+  name: Payments E2E 54 - Agency B Login
+  type: http
+  seq: 54
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{payBAdminUsername}}",
+    "password": "{{payBAdminPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}

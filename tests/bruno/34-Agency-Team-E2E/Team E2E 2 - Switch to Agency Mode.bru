@@ -1,0 +1,27 @@
+meta {
+  name: Team E2E 2 - Switch to Agency Mode
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BASE_URL}}/api/settings
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "appMode": "Agency"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+docs {
+  TENANT_ADMIN flips the workspace to Agency mode — the project-team
+  endpoints are gated on this capability (Module 1.18 auth chain).
+}

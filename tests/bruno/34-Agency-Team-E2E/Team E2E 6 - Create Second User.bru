@@ -1,0 +1,42 @@
+meta {
+  name: Team E2E 6 - Create Second User
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{BASE_URL}}/api/tenant/users
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{devUsername}}",
+    "password": "E2eDev#2026"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.user.role: eq USER
+}
+
+script:pre-request {
+  bru.setVar('devUsername', 'e2e_team_dev_' + bru.getVar('teamSuffix'));
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('devUserId', raw.user.id);
+  if (!raw.user.id) {
+    throw new Error('Create must return the user id for the member steps');
+  }
+}
+
+docs {
+  A same-tenant USER (§38 — only organization users may join a project).
+  Keeps the Project Manager (admin) and the Project Member distinct (§31)
+  so the §39 auto-add is observable at activation.
+}

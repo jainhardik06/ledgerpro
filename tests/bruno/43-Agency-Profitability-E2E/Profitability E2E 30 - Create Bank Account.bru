@@ -1,0 +1,30 @@
+meta {
+  name: Profitability E2E 30 - Create Bank Account
+  type: http
+  seq: 30
+}
+
+post {
+  url: {{BASE_URL}}/api/accounts
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "E2E Profitability HDFC",
+    "type": "Bank",
+    "initialBalance": 0
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('accountId', raw.account.id);
+  if (!raw.account.id) throw new Error('Create must return the account id');
+}

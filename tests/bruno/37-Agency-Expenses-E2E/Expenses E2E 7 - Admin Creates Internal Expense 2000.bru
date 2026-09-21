@@ -1,0 +1,54 @@
+meta {
+  name: Expenses E2E 7 - Admin Creates Internal Expense 2000
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/expenses
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "projectId": "{{projectId}}",
+    "vendorName": "Office Supplies Co",
+    "description": "Desk supplies for the team",
+    "amount": 2000,
+    "expenseType": "INTERNAL",
+    "billable": false,
+    "expenseDate": "{{expDate}}"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.expense.status: eq DRAFT
+  res.body.expense.billingStatus: eq UNBILLED
+  res.body.expense.expenseType: eq INTERNAL
+  res.body.expense.billable: eq false
+  res.body.expense.amount.amount: eq 2000
+}
+
+script:pre-request {
+  // Tenant timezone (Asia/Kolkata default) — keeps the expense inside the
+  // tenant's "today" instead of the runner's UTC clock.
+  const ist = new Date(Date.now() + 5.5 * 60 * 60 * 1000);
+  bru.setVar('expDate', ist.toISOString().slice(0, 10));
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('expAdminId', raw.expense.id);
+  if (!raw.expense.id) throw new Error('Create must return the expense id');
+  // §39 — an internal expense never carries a client charge.
+  if (raw.expense.clientChargeAmount != null) throw new Error('INTERNAL expense must have no clientChargeAmount');
+}
+
+docs {
+  §39 — the internal cost leg: real spend, never recharged. The admin
+  authors it so the dev (as project manager) can approve someone ELSE's
+  expense — the PM approval tier, live.
+}

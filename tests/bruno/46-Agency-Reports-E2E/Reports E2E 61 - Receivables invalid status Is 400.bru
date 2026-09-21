@@ -1,0 +1,20 @@
+meta {
+  name: Reports E2E 61 - Receivables invalid status Is 400
+  type: http
+  seq: 61
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/receivables?status=DRAFT
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  The receivables report shows OPEN invoices — DRAFT is not a legal
+  operational status here, and the whitelist is enforced (§35/§28).
+}

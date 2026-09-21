@@ -1,0 +1,20 @@
+meta {
+  name: Time E2E 32 - Dev Cannot Read Admin Entry
+  type: http
+  seq: 33
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/time/{{adminEntryId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 403
+}
+
+docs {
+  §33 — time entries are owner-or-admin. The dev cannot read the admin's
+  timer entry even inside the same workspace.
+}

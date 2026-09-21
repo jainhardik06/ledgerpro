@@ -1,0 +1,28 @@
+meta {
+  name: Clients E2E 10 - Archive Lifecycle
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/clients/{{clientId}}/archive
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  // §14 — ARCHIVED is reached from INACTIVE, never straight from ACTIVE.
+  if (!raw.error || !raw.error.includes('ACTIVE')) {
+    throw new Error('Archiving an ACTIVE client must be rejected with the lifecycle error');
+  }
+}
+
+docs {
+  §14 lifecycle enforcement: ACTIVE → INACTIVE → ARCHIVED. The archive
+  endpoint refuses the illegal hop (this request deliberately fails).
+}

@@ -1,0 +1,28 @@
+meta {
+  name: Alerts E2E 71 - Disable Margin Rule
+  type: http
+  seq: 71
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/alert-rules/{{marginRuleId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "enabled": false
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.rule.enabled: eq false
+}
+
+docs {
+  §24 — disabling a rule silences it: its generator context vanishes, so
+  the next evaluation treats the open margin alert's condition as gone.
+}

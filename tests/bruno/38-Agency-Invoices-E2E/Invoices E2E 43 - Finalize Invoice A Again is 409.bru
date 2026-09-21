@@ -1,0 +1,20 @@
+meta {
+  name: Invoices E2E 43 - Finalize Invoice A Again is 409
+  type: http
+  seq: 43
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{invAId}}/finalize
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 409
+}
+
+docs {
+  §79 — finalization is a DRAFT-only transition; the SENT invoice cannot
+  be finalized (or re-numbered) again. INV-000001 exists exactly once.
+}

@@ -1,0 +1,59 @@
+meta {
+  name: Time E2E 14 - Dev Creates Billable Entry 120m
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/time
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "projectId": "{{projectId}}",
+    "date": "{{entryDate}}",
+    "durationMinutes": 120,
+    "billable": true,
+    "notes": "Portal API scaffolding"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.timeEntry.approvalStatus: eq DRAFT
+  res.body.timeEntry.billingStatus: eq UNBILLED
+  res.body.timeEntry.durationMinutes: eq 120
+  res.body.timeEntry.billable: eq true
+  res.body.timeEntry.financialStatus: eq READY
+  res.body.timeEntry.costRateSnapshot.amount: eq 900
+  res.body.timeEntry.costRateSnapshot.source: eq USER_COST_ASSIGNMENT
+  res.body.timeEntry.costRateSnapshot.unit: eq HOUR
+  res.body.timeEntry.billingRateSnapshot.amount: eq 2500
+  res.body.timeEntry.billingRateSnapshot.source: eq CLIENT_RATE_CARD
+}
+
+script:pre-request {
+  // Tenant timezone (Asia/Kolkata default) — a UTC date can land in the
+  // previous month near month-end and fall outside the dashboard window.
+  const ist = new Date(Date.now() + 5.5 * 60 * 60 * 1000);
+  bru.setVar('entryDate', ist.toISOString().slice(0, 10));
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('timeEntryId', raw.timeEntry.id);
+  if (!raw.timeEntry.id) throw new Error('Create must return the entry id');
+  // §6 — rates frozen; §23 — nothing calculated before approval.
+  if (raw.timeEntry.calculatedCost !== undefined) throw new Error('No cost may be calculated before approval');
+  if (raw.timeEntry.calculatedBillableAmount !== undefined) throw new Error('No billable amount may be calculated before approval');
+}
+
+docs {
+  §6/§17/§23 — the financially-honest creation: both rate sides resolve
+  (cost 900 via the dev's assignment, billing 2500 via the Acme card for
+  the "Developer" role) and FREEZE onto the entry. financialStatus READY,
+  yet no calculated amounts exist — those belong to approval.
+}

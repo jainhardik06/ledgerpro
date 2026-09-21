@@ -1,0 +1,16 @@
+meta {
+  name: Expenses E2E 17 - Dev Submits Pass-Through Expense
+  type: http
+  seq: 17
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/expenses/{{expSecondId}}/submit
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.expense.status: eq SUBMITTED
+}

@@ -1,0 +1,59 @@
+meta {
+  name: Payments E2E 48 - Final Ledger Truth
+  type: http
+  seq: 48
+}
+
+get {
+  url: {{BASE_URL}}/api/transactions?limit=100
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const txs = raw.transactions;
+  const invAId = bru.getVar('invAId');
+  const invBId = bru.getVar('invBId');
+  const invCId = bru.getVar('invCId');
+
+  // A: 2 Credits. B: payB1 Credit + reverse Debit + gw1 Credit + gw2 Credit.
+  // C: manual Credit + reverse Debit + gw3 Credit. Total 9.
+  if (txs.length !== 9) throw new Error('Expected exactly 9 transactions, found ' + txs.length);
+
+  const netFor = (invId) => txs
+    .filter(t => t.invoiceId === invId)
+    .reduce((sum, t) => sum + (t.type === 'Credit' ? t.amount : -t.amount), 0);
+  const netA = netFor(invAId), netB = netFor(invBId), netC = netFor(invCId);
+  if (netA !== 100000) throw new Error('Invoice A net cash must be 100000, got ' + netA);
+  if (netB !== 100000) throw new Error('Invoice B net cash must be 100000, got ' + netB);
+  if (netC !== 40000) throw new Error('Invoice C net cash must be 40000, got ' + netC);
+
+  // §129 — no payment ever produced two transactions of the same kind: a
+  // reversal's compensating Debit legitimately shares the paymentId with
+  // its Credit (§114); two Credits (or two Debits) for one payment is the
+  // real duplicate.
+  const seen = {};
+  for (const t of txs) {
+    if (!t.paymentId) continue;
+    const key = t.paymentId + ':' + t.type;
+    if (seen[key]) throw new Error('§129: payment ' + t.paymentId + ' produced more than one ' + t.type);
+    seen[key] = true;
+  }
+
+  // §156 posture — the account cash is the net of everything, never negative.
+  const net = txs.reduce((sum, t) => sum + (t.type === 'Credit' ? t.amount : -t.amount), 0);
+  if (net !== 240000) throw new Error('Expected total account cash 240000, got ' + net);
+  for (const t of txs) if (t.amount < 0) throw new Error('Negative transaction amount');
+}
+
+docs {
+  The closing audit of the whole journey: per-invoice cash (A 100000,
+  B 100000 net of the reversal, C 40000 net of the reversal), exactly one
+  transaction per confirmed payment, no negatives anywhere.
+}

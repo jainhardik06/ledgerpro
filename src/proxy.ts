@@ -71,7 +71,7 @@ export function proxy(request: NextRequest, event: NextFetchEvent) {
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https://www.googletagmanager.com https://upload.wikimedia.org",
     "font-src 'self' data:",
-    "connect-src 'self' https://us.i.posthog.com https://us-assets.i.posthog.com https://www.google-analytics.com",
+    "connect-src 'self' https://www.googletagmanager.com https://us.i.posthog.com https://us-assets.i.posthog.com https://www.google-analytics.com",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",

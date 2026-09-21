@@ -1,0 +1,38 @@
+meta {
+  name: SuperAdmin Agency E2E 1 - Signup
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "E2E SuperAdmin Gate Agency",
+    "username": "{{sagAdminUsername}}",
+    "password": "{{sagAdminPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('sagAdminUsername', 'e2e_sag_admin_' + suffix);
+  bru.setVar('sagAdminPassword', 'E2eSagAdmin#2026');
+}
+
+docs {
+  Post-Phase-1 super-admin surface — the privilege-gate suite. A fresh
+  TENANT_ADMIN session must NEVER reach the platform-scope agency analytics
+  (cross-tenant reads) nor the per-tenant privileged snapshot. The positive
+  paths (SUPER_ADMIN 200s) are pinned by tests/integration/super-admin-agency
+  -api.test.ts with mocked sessions — this suite pins the REAL server's gate.
+}

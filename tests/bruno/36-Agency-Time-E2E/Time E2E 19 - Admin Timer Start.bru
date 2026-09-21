@@ -1,0 +1,32 @@
+meta {
+  name: Time E2E 19 - Admin Timer Start
+  type: http
+  seq: 19
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/timer/start
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "projectId": "{{projectId}}"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.timerSession.status: eq RUNNING
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (!raw.timerSession.startedAt) throw new Error('The durable session must carry a server timestamp');
+}
+
+docs {
+  §9/§10 — the timer is durable SERVER state. startedAt is the truth; the
+  client merely displays (§12).
+}

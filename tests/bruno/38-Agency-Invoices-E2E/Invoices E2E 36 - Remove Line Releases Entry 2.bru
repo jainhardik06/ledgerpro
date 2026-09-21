@@ -1,0 +1,23 @@
+meta {
+  name: Invoices E2E 36 - Remove Line Releases Entry 2
+  type: http
+  seq: 36
+}
+
+delete {
+  url: {{BASE_URL}}/api/agency/invoices/{{invBId}}/lines/{{lineBId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.invoice.subtotal.amount: eq 0
+}
+
+docs {
+  §66 — removing the line RELEASES the reservation: the draft no longer
+  holds entry 2, and its money drops back to zero. Verified on the source
+  row next.
+}

@@ -1,0 +1,28 @@
+meta {
+  name: Work Items E2E 16 - Start Work
+  type: http
+  seq: 16
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/work-items/{{workItemId}}?action=status
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "status": "IN_PROGRESS"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.workItem.status: eq IN_PROGRESS
+}
+
+docs {
+  §11 — the legal forward step NOT_STARTED → IN_PROGRESS via the dedicated
+  status action.
+}

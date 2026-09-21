@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { alertModal } from '@/components/ui/Dialog';
 
 export function usePwaInstall() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -33,7 +34,10 @@ export function usePwaInstall() {
   const promptInstall = async () => {
     if (!deferredPrompt) {
       // Fallback for browsers that don't support beforeinstallprompt (e.g. iOS Safari)
-      alert("To install LedgerPro, tap the Share icon and select 'Add to Home Screen'.");
+      await alertModal("To install Money OS, tap the Share icon and select 'Add to Home Screen'.", {
+        title: 'Install App',
+        variant: 'info',
+      });
       return;
     }
     

@@ -1,0 +1,26 @@
+meta {
+  name: Alerts E2E 23 - Admin Approves Entry
+  type: http
+  seq: 23
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/time/{{entryId}}/approve
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.timeEntry.approvalStatus: eq APPROVED
+  res.body.timeEntry.billingStatus: eq UNBILLED
+  res.body.timeEntry.calculatedCost.amount: eq 7380
+  res.body.timeEntry.calculatedBillableAmount.amount: eq 8200
+}
+
+docs {
+  §23 — the calculation moment: 8.2h × 900 = 7380 cost, 8.2h × 1000 = 8200
+  billable value (multiplyMoney rounds to minor units, so 8.2 is exact
+  money even though it is not an exact binary float). The admin approves —
+  §21 forbids self-approval by the author.
+}

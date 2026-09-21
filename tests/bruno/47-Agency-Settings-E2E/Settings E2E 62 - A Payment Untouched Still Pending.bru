@@ -1,0 +1,23 @@
+meta {
+  name: Settings E2E 62 - A Payment Untouched Still Pending
+  type: http
+  seq: 62
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/payments/{{stXpayId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.payment.status: eq PENDING
+}
+
+docs {
+  The forged B-signed delivery wrote NOTHING — the gateway payment is still
+  PENDING (§51 binding: rejected before any state change; audited as
+  WEBHOOK_TENANT_MISMATCH on A's tenant).
+}

@@ -1,0 +1,23 @@
+meta {
+  name: Alerts E2E 16 - Complete Project 2
+  type: http
+  seq: 16
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects/{{project2Id}}/complete
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.project.status: eq COMPLETED
+}
+
+docs {
+  §41/§75 — status changes ride the dedicated lifecycle actions, never the
+  PATCH payload. COMPLETED is the one state where the completed-unbilled
+  rule (and ONLY that rule — §9: no stacking) may speak.
+}

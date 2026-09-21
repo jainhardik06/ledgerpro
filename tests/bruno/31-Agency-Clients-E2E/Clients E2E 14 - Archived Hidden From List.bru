@@ -1,0 +1,29 @@
+meta {
+  name: Clients E2E 14 - Archived Hidden From Default List
+  type: http
+  seq: 14
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/clients
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const archivedId = bru.getVar('clientId');
+  if ((raw.clients || []).some(c => c.id === archivedId)) {
+    throw new Error('§20 — ARCHIVED clients must be hidden from the default list');
+  }
+  // …but resolvable via the explicit filter.
+}
+
+docs {
+  §20 — default views hide ARCHIVED; the client stays resolvable via the
+  status filter or its direct id (the next steps prove that).
+}

@@ -1,0 +1,17 @@
+meta {
+  name: Alerts E2E 79 - Agency B List Is Empty
+  type: http
+  seq: 79
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/alerts
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.count: eq 0
+}

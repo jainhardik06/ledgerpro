@@ -1,0 +1,17 @@
+meta {
+  name: Reports E2E 24 - Admin Approves Entry 2
+  type: http
+  seq: 24
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/time/{{entry2Id}}/approve
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.timeEntry.approvalStatus: eq APPROVED
+  res.body.timeEntry.calculatedCost.amount: eq 1500
+}

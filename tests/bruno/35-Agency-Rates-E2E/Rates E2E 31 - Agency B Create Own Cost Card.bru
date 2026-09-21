@@ -1,0 +1,36 @@
+meta {
+  name: Rates E2E 31 - Agency B Create Own Cost Card
+  type: http
+  seq: 31
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/rate-cards
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "B Internal Cost",
+    "type": "COST",
+    "scope": "ORGANIZATION",
+    "currency": "INR"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.card.type: eq COST
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (raw.card && raw.card.id) bru.setVar('bCardId', raw.card.id);
+}
+
+docs {
+  B gets its own card so the reverse direction of §120 can be probed: A
+  must not see B's data either. Isolation is bidirectional.
+}

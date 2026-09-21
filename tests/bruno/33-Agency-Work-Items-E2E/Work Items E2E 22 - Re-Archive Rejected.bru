@@ -1,0 +1,19 @@
+meta {
+  name: Work Items E2E 22 - Re-Archive Rejected
+  type: http
+  seq: 22
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/work-items/{{workItemId}}/archive
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  §11 — ARCHIVED is terminal; re-archiving is a 400.
+}

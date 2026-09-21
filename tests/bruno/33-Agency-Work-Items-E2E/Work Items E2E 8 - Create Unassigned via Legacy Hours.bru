@@ -1,0 +1,41 @@
+meta {
+  name: Work Items E2E 8 - Create Unassigned via Legacy Hours
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/work-items
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Homepage hero illustration",
+    "estimatedHours": 2
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.workItem.estimatedMinutes: eq 120
+  res.body.workItem.sortOrder: eq 1
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('secondWorkItemId', raw.workItem.id);
+  // §9 — legacy decimal hours convert losslessly and are never stored
+  if (raw.workItem.estimatedHours !== undefined) {
+    throw new Error('estimatedHours must never be stored (§9)');
+  }
+}
+
+docs {
+  §9 at the wire level: a legacy estimatedHours: 2 input arrives as exactly
+  120 estimatedMinutes — deterministic conversion, no decimal-hours
+  ambiguity. Unassigned (§24 filter target), and the second item appends
+  after the first (sortOrder 1, §25).
+}

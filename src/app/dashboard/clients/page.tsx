@@ -3,7 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { RefreshCw, Users, Plus, Edit2, Trash2, Mail, ExternalLink } from 'lucide-react';
 import { Drawer } from '@/components/ui/Drawer';
+import { Req, Opt } from '@/components/ui/Req';
 import { useDashboardContext } from '@/components/dashboard/DashboardProvider';
+import { confirmModal } from '@/components/ui/Dialog';
 
 export default function ClientsPage() {
   const { tenant } = useDashboardContext();
@@ -17,6 +19,7 @@ export default function ClientsPage() {
   const [cName, setCName] = useState('');
   const [cEmail, setCEmail] = useState('');
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const appMode = tenant?.appMode || 'Standard';
   const clientTerm = appMode === 'Student_Club' ? 'Sponsor' : 'Client';
@@ -44,20 +47,40 @@ export default function ClientsPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!cName.trim()) {
+      setFormError(`${clientTerm} name is required.`);
+      return;
+    }
+
+    setFormError(null);
     setSaving(true);
     try {
       const url = selectedClient ? `/api/clients/${selectedClient.id}` : '/api/clients';
       const method = selectedClient ? 'PUT' : 'POST';
       const res = await fetch(url, {
         method, headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: cName, email: cEmail })
+        body: JSON.stringify({ name: cName.trim(), email: cEmail.trim() })
       });
-      if (res.ok) { setIsDrawerOpen(false); fetchData(); }
-    } catch (e) {} finally { setSaving(false); }
+      if (res.ok) {
+        setIsDrawerOpen(false);
+        fetchData();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setFormError(data.error || `Failed to save ${clientTerm.toLowerCase()}.`);
+      }
+    } catch (e) {
+      setFormError('Network error while saving.');
+    } finally { setSaving(false); }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm(`Delete this ${clientTerm.toLowerCase()}?`)) return;
+    const ok = await confirmModal({
+      title: `Delete ${clientTerm}`,
+      message: `Are you sure you want to delete this ${clientTerm.toLowerCase()}?`,
+      confirmText: 'Delete',
+      variant: 'danger',
+    });
+    if (!ok) return;
     try {
       const res = await fetch(`/api/clients/${id}`, { method: 'DELETE' });
       if (res.ok) { setIsDrawerOpen(false); fetchData(); }
@@ -66,13 +89,17 @@ export default function ClientsPage() {
 
   function openNew() {
     setSelectedClient(null);
-    setCName(''); setCEmail('');
+    setCName('');
+    setCEmail('');
+    setFormError(null);
     setIsDrawerOpen(true);
   }
 
   const openEdit = (cli: any) => {
     setSelectedClient(cli);
-    setCName(cli.name); setCEmail(cli.email || '');
+    setCName(cli.name);
+    setCEmail(cli.email || '');
+    setFormError(null);
     setIsDrawerOpen(true);
   };
 
@@ -81,7 +108,7 @@ export default function ClientsPage() {
   const formatCurrency = (val: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8 animate-in fade-in duration-500 w-full overflow-hidden">
+    <div className="p-4 sm:p-6 lg:p-8 w-full space-y-6 sm:space-y-8 animate-in fade-in duration-500 overflow-hidden">
       
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -93,7 +120,7 @@ export default function ClientsPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {clients.map(cli => {
           const revenue = transactions.filter(t => t.clientId === cli.id && t.type === 'Credit').reduce((s, t) => s + t.amount, 0);
 
@@ -129,14 +156,49 @@ export default function ClientsPage() {
       <Drawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} title={selectedClient ? `Edit ${clientTerm}` : `Add ${clientTerm}`}>
         <form onSubmit={handleSave} className="space-y-6 flex flex-col h-full">
            <div className="space-y-5 flex-1">
+             {formError && (
+               <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[12.5px]">
+                 {formError}
+               </div>
+             )}
+
              <div>
-               <label htmlFor="cli-name" className="block text-[12px] font-medium text-neutral-400 mb-1.5">Legal Name / Entity</label>
-               <input id="cli-name" type="text" value={cName} onChange={e=>setCName(e.target.value)} required className="w-full h-9 bg-transparent border-b border-white/[0.1] text-[14px] text-white focus:border-emerald-500 outline-none" placeholder="e.g. Acme Corp" />
+               <label htmlFor="cli-name" className="block text-[12px] font-medium text-neutral-400 mb-1.5">
+                 Legal Name / Entity <Req satisfied={Boolean(cName.trim())} />
+               </label>
+               <input
+                 id="cli-name"
+                 type="text"
+                 value={cName}
+                 onChange={e => {
+                   setCName(e.target.value);
+                   if (formError) setFormError(null);
+                 }}
+                 required
+                 className={`w-full h-9 bg-transparent border-b text-[14px] text-white outline-none transition-colors ${
+                   formError && !cName.trim()
+                     ? 'border-rose-500/80 focus:border-rose-500'
+                     : 'border-white/[0.1] focus:border-emerald-500'
+                 }`}
+                 placeholder="e.g. Acme Corp"
+               />
              </div>
 
              <div>
-               <label htmlFor="cli-email" className="block text-[12px] font-medium text-neutral-400 mb-1.5">Primary Email</label>
-               <input id="cli-email" type="email" value={cEmail} onChange={e=>setCEmail(e.target.value)} className="w-full h-9 bg-white/[0.02] border border-white/[0.05] rounded-md px-3 text-[13px] text-white focus:border-white/[0.2] outline-none" placeholder="billing@acmecorp.com" />
+               <label htmlFor="cli-email" className="block text-[12px] font-medium text-neutral-400 mb-1.5">
+                 Primary Email <Opt />
+               </label>
+               <input
+                 id="cli-email"
+                 type="email"
+                 value={cEmail}
+                 onChange={e => {
+                   setCEmail(e.target.value);
+                   if (formError) setFormError(null);
+                 }}
+                 className="w-full h-9 bg-white/[0.02] border border-white/[0.05] rounded-md px-3 text-[13px] text-white focus:border-white/[0.2] outline-none"
+                 placeholder="billing@acmecorp.com"
+               />
              </div>
            </div>
 

@@ -1,0 +1,27 @@
+meta {
+  name: Invoices E2E 39 - Finalize Draft A INV-000001
+  type: http
+  seq: 39
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{invAId}}/finalize
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.invoice.status: eq SENT
+  res.body.invoice.invoiceNumber: eq INV-000001
+  res.body.invoice.total.amount: eq 224200
+  res.body.invoice.amountDue.amount: eq 224200
+}
+
+docs {
+  §83/§74/§79 — THE critical operation, end to end: validate → verify
+  reservations → allocate INV-000001 (first invoice of a fresh tenant, so
+  the sequence proves the central authority) → SENT + final engine money in
+  one write → sources stamped INVOICED (asserted next) → audit.
+}

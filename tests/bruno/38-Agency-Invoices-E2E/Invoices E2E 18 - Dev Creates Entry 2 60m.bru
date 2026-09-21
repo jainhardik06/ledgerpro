@@ -1,0 +1,40 @@
+meta {
+  name: Invoices E2E 18 - Dev Creates Entry 2 60m
+  type: http
+  seq: 18
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/time
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "projectId": "{{projectId}}",
+    "date": "{{entryDate}}",
+    "durationMinutes": 60,
+    "billable": true,
+    "notes": "Portal polish and fixes"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.timeEntry.approvalStatus: eq DRAFT
+  res.body.timeEntry.billingStatus: eq UNBILLED
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('entry2Id', raw.timeEntry.id);
+  if (!raw.timeEntry.id) throw new Error('Create must return the entry id');
+}
+
+docs {
+  Entry 2 is the PARTIAL-BILLING proof: approved, billable, and deliberately
+  left OFF the invoice — after finalization it must still be selectable for
+  a future draft.
+}

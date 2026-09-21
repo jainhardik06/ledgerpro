@@ -1,0 +1,15 @@
+meta {
+  name: Alerts E2E 41 - Invalid Severity Is 400
+  type: http
+  seq: 41
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/alerts?severity=HUGE
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}

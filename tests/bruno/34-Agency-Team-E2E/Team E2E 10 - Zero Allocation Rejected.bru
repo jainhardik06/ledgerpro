@@ -1,0 +1,27 @@
+meta {
+  name: Team E2E 10 - Zero Allocation Rejected
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/members
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "userId": "{{userId}}",
+    "allocationPercent": 0
+  }
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  §35 — allocation must satisfy 0 < x <= 100. Zero is not a plan (use no
+  allocation instead).
+}

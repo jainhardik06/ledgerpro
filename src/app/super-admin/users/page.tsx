@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Search, UserCircle, Shield, MoreHorizontal } from 'lucide-react';
+import { SearchBar } from '@/components/ui/SearchBar';
 
 export default function UsersPage() {
   const [search, setSearch] = useState('');
@@ -54,21 +55,18 @@ export default function UsersPage() {
     <div className="flex flex-col h-[calc(100vh-56px)] animate-in fade-in duration-500">
       
       {/* Header Actions */}
-      <div className="p-6 shrink-0 border-b border-white/[0.05] flex items-center justify-between">
+      <div className="p-4 sm:p-6 shrink-0 border-b border-white/[0.05] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-semibold tracking-tight text-white mb-1">Global User Intelligence</h1>
-          <p className="text-[13px] text-neutral-400">Search and monitor all users across every organization.</p>
+          <p className="text-[12px] sm:text-[13px] text-neutral-400">Search and monitor all users across every organization.</p>
         </div>
-        <div className="relative">
-          <Search className="w-4 h-4 text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input 
-            type="text" 
-            placeholder="Search by username or ID..." 
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="h-9 w-64 bg-[#0a0a0a] border border-white/[0.1] rounded-md pl-9 pr-3 text-[13px] text-white focus:border-white/[0.2] outline-none"
-          />
-        </div>
+        <SearchBar
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Search by username or ID…"
+          aria-label="Search users"
+          wrapperClassName="w-full sm:w-64 shrink-0"
+        />
       </div>
 
       {/* Edge-to-edge Data Table */}
@@ -78,7 +76,7 @@ export default function UsersPage() {
             <tr>
               <th className="px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest w-1/3">User Identity</th>
               <th className="px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest">Role</th>
-              <th className="px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest">Tenant ID</th>
+              <th className="px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest">Organization</th>
               <th className="px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest">Status</th>
               <th className="px-6 py-3 text-[11px] font-medium text-neutral-500 uppercase tracking-widest text-right">Actions</th>
             </tr>
@@ -102,7 +100,7 @@ export default function UsersPage() {
                        </div>
                        <div>
                          <div className="text-[13px] font-medium text-white mb-0.5">{user.username}</div>
-                         <div className="text-[11px] font-mono text-neutral-500">{user.id}</div>
+                         <div className="text-[11px] text-neutral-500">{user.createdAt ? `Joined ${new Date(user.createdAt).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}` : 'User'}</div>
                        </div>
                      </div>
                    </td>
@@ -115,7 +113,7 @@ export default function UsersPage() {
                      </div>
                    </td>
                    <td className="px-6 py-4">
-                     <span className="text-[12px] font-mono text-neutral-400">{user.tenantId}</span>
+                     <span className="text-[12px] font-medium text-neutral-300">{user.tenantName || 'Workspace'}</span>
                    </td>
                    <td className="px-6 py-4">
                      <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold font-mono tracking-widest uppercase ${

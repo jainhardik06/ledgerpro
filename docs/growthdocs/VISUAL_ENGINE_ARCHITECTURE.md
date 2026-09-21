@@ -34,46 +34,26 @@ money-os-discovery/
 
 ## 2. Astro Integration
 
-### 2.1 OG Image in Base Layout
+### 2.1 Build-Time OG Image Factory (as implemented)
 
-Every page's `<head>` receives the correct OG image via a utility function:
+Every page's OG image is **pre-rendered at build time** by an Astro endpoint:
 
-```typescript
-// src/utils/og.ts
-export function getOgImageUrl(contentType: string, slug: string): string {
-  const base = import.meta.env.SITE;
-  return `${base}/og/${contentType}/${slug}.png`;
-}
-```
+- `src/pages/og/[...slug].png.ts` enumerates every published content entry
+  (docs, blog, comparisons, resources) plus the site default, and prerenders
+  a unique 1200×630 PNG to `/og/<section>/<slug>.png`.
+- `src/lib/og.ts` (`renderOgImage`) composes each image (satori-based,
+  TypeScript — not the Python pipeline sketched in §4, which was superseded
+  by this approach).
+- Because the outputs are static files, social/AI previews cost nothing to
+  serve and scale to any traffic level.
 
-Used in layout components:
-```astro
----
-// src/layouts/BlogLayout.astro
-import { getOgImageUrl } from '../utils/og';
-const { slug, title, description, category } = Astro.props.frontmatter;
-const ogImage = getOgImageUrl('blog', slug);
----
-<head>
-  <meta property="og:image" content={ogImage} />
-  <meta name="twitter:image" content={ogImage} />
-</head>
-```
+Pages reference their image via `ogImage` props into `Layout.astro` —
+there is no runtime generation and no `getOgImageUrl` helper.
 
 ### 2.2 OG Image Fallback
 
-If a specific OG image doesn't exist (missed during publishing), a fallback is used:
-```
-/og/default.png  ← Generic Money OS branded image
-```
-
-```typescript
-export function getOgImageUrl(contentType: string, slug: string): string {
-  // In production, all slugs should have a pre-generated image
-  // This fallback prevents broken OG previews during drafts
-  return `${base}/og/${contentType}/${slug}.png`;
-}
-```
+The build also emits a site-default image used when a page has no
+content-specific OG image, so previews are never broken during drafts.
 
 ### 2.3 Image Dimensions in Markdown
 
@@ -127,7 +107,12 @@ Target: < 200 KB per file
 
 ---
 
-## 4. Python Automation Script (v2)
+## 4. Python Automation Script (v2 — SUPERSEDED, kept for reference)
+
+> **Status:** this Python pipeline was never built. The build-time OG factory
+> in §2.1 (TypeScript/satori, prerendered by `src/pages/og/[...slug].png.ts`)
+> delivered the same outcome with zero runtime cost, and is the implemented
+> approach. The sketch below is retained only as historical design context.
 
 When manual volume exceeds 10 articles/month, replace Canva with a Python script.
 

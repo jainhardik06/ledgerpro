@@ -1,0 +1,27 @@
+meta {
+  name: Time E2E 20 - Admin Timer Duplicate 409
+  type: http
+  seq: 20
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/timer/start
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "projectId": "{{projectId}}"
+  }
+}
+
+assert {
+  res.status: eq 409
+  res.body.code: eq TIMER_ALREADY_RUNNING
+}
+
+docs {
+  §11 — one running timer per user, refused with an explicit code so the
+  UI can route to stop-and-review.
+}

@@ -1,0 +1,23 @@
+meta {
+  name: Time E2E 29 - Login as Dev for Probes
+  type: http
+  seq: 30
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{timeDevUsername}}",
+    "password": "E2eTimeDev#2026"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}

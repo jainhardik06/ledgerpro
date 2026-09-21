@@ -1,0 +1,17 @@
+meta {
+  name: Alerts E2E 15 - Activate Project 2
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects/{{project2Id}}/activate
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.project.status: eq ACTIVE
+}

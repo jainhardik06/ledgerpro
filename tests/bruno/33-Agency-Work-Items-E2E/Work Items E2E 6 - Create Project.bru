@@ -1,0 +1,41 @@
+meta {
+  name: Work Items E2E 6 - Create Project
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "clientId": "{{clientId}}",
+    "name": "Globex Brand Refresh",
+    "billingModel": "FIXED_FEE",
+    "currency": "INR",
+    "contractValue": 300000,
+    "projectManagerId": "{{userId}}"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.project.status: eq DRAFT
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('projectId', raw.project.id);
+  if (!raw.project.id) {
+    throw new Error('Create must return the project id for the work-item steps');
+  }
+}
+
+docs {
+  The project that owns every work item in this suite (§14 — a work item
+  never detaches from its project).
+}

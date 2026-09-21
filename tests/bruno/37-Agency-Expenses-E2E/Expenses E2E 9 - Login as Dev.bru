@@ -1,0 +1,23 @@
+meta {
+  name: Expenses E2E 9 - Login as Dev
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{expDevUsername}}",
+    "password": "E2eExpDev#2026"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}

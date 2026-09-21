@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useDashboardContext } from '@/components/dashboard/DashboardProvider';
 import { ArrowUpRight, ArrowDownRight, RefreshCw, Activity, ArrowRight } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function MoneyCommandCenter() {
   const { user, tenant } = useDashboardContext();
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
 
@@ -84,7 +86,7 @@ export default function MoneyCommandCenter() {
   const formatCurrency = (val: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8 animate-in fade-in duration-500 w-full overflow-hidden">
+    <div className="p-4 sm:p-6 lg:p-8 w-full space-y-6 sm:space-y-8 animate-in fade-in duration-500 overflow-hidden">
       
       {/* Header Greeting */}
       <div className="flex flex-col gap-1">
@@ -124,7 +126,7 @@ export default function MoneyCommandCenter() {
            <div className="text-[11px] sm:text-[12px] font-medium text-indigo-400 uppercase tracking-widest mb-3 sm:mb-4 flex items-center gap-2">
              <Activity className="w-3.5 h-3.5" /> Intelligence
            </div>
-           <div onClick={() => window.location.href='/dashboard/recurring'}>
+           <div onClick={() => router.push('/dashboard/recurring')}>
              {data.upcomingCount > 0 ? (
                <p className="text-[13px] sm:text-[14px] text-neutral-200 font-medium leading-relaxed mb-3 line-clamp-2">You have {data.upcomingCount} active recurring obligations totaling {formatCurrency(data.upcomingAmount)} per cycle.</p>
              ) : (

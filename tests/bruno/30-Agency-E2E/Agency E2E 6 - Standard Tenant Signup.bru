@@ -1,0 +1,36 @@
+meta {
+  name: Agency E2E 6 - Standard Tenant Signup
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "E2E Standard Tenant",
+    "username": "{{standardUsername}}",
+    "password": "{{e2ePassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.redirectTo: eq /dashboard
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('standardUsername', 'e2e_std_' + suffix);
+}
+
+docs {
+  Signs up a SECOND tenant (Standard by default). The new token cookie
+  REPLACES the agency session, so the probe in the next request runs as the
+  Standard tenant. New tenants default to Standard (Module 1.1).
+}

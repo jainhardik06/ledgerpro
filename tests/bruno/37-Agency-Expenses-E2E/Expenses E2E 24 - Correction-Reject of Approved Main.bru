@@ -1,0 +1,43 @@
+meta {
+  name: Expenses E2E 24 - Correction-Reject of Approved Main
+  type: http
+  seq: 24
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/expenses/{{expMainId}}/reject
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "reason": "Wrong vendor on the receipt - rework and resubmit"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.expense.status: eq REJECTED
+  res.body.expense.billingStatus: eq UNBILLED
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const e = raw.expense;
+  // §42 — the linked Transaction SURVIVES a correction-rejection.
+  const txMainId = bru.getVar('txMainId');
+  if (e.transactionId !== txMainId) {
+    throw new Error('transactionId must survive correction-rejection, expected ' + txMainId + ' got ' + e.transactionId);
+  }
+  // The billing side is withdrawn: the client charge is gone until
+  // re-approval recomputes it (§43).
+  if (e.clientChargeAmount != null) throw new Error('correction-rejection must null clientChargeAmount');
+}
+
+docs {
+  The admin correction path on an APPROVED expense: real spend history
+  stays (transactionId kept, §42 still holds on re-approval), but the
+  billing side is withdrawn — charge nulled, billingStatus reset.
+}

@@ -1,0 +1,62 @@
+meta {
+  name: Reports E2E 44 - Unbilled Work Report
+  type: http
+  seq: 44
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/unbilled
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const rep = raw.report;
+  const near = (a, b, what) => {
+    if (a === null || a === undefined || Math.abs(a - b) > 0.001) {
+      throw new Error(what + ': expected ' + b + ', got ' + a);
+    }
+  };
+
+  // §34 — two rows: the dev's unbilled APPROVED billable time (5h, 12500)
+  // and the project's unbilled APPROVED billable expense (1100 charge).
+  if (rep.rows.length !== 2) throw new Error('rows: ' + rep.rows.length);
+  const timeRow = rep.rows.find(r => r.employeeId !== null);
+  const expRow = rep.rows.find(r => r.employeeId === null);
+  if (!timeRow || !expRow) throw new Error('need one time row and one expense row');
+
+  if (timeRow.employeeId !== bru.getVar('devUserId')) throw new Error('time row must be the dev');
+  if (timeRow.projectId !== bru.getVar('projectId')) throw new Error('time row project');
+  near(timeRow.hours, 5, 'time hours');
+  near(timeRow.timeAmount, 12500, 'time amount');
+  near(timeRow.expenseAmount, 0, 'time row carries no expense');
+  near(timeRow.totalUnbilled, 12500, 'time row total');
+
+  // §34 — expenses have no employee: the row says so with a null id.
+  if (expRow.projectId !== bru.getVar('projectId')) throw new Error('expense row project');
+  near(expRow.expenseAmount, 1100, 'expense amount');
+  near(expRow.timeAmount, 0, 'expense row carries no time');
+  near(expRow.totalUnbilled, 1100, 'expense row total');
+
+  // The DRAFT hour must be absent — 5h of unbilled time, never 6 (§67).
+  const totalHours = rep.rows.reduce((acc, r) => acc + r.hours, 0);
+  near(totalHours, 5, 'total unbilled hours');
+
+  const s = rep.summary;
+  if (s.rowCount !== 2) throw new Error('summary rows: ' + s.rowCount);
+  near(s.totalUnbilledTime, 12500, 'summary unbilled time');
+  near(s.totalUnbilledExpense, 1100, 'summary unbilled expense');
+  near(s.totalUnbilled, 13600, 'summary total unbilled');
+}
+
+docs {
+  §34 — the unbilled position over the §67 subset (APPROVED + billable +
+  billingStatus ∉ {RESERVED, INVOICED}): the revenue-leakage headline
+  13600, with the unapproved draft hour provably absent.
+}

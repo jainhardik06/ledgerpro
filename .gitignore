@@ -12,6 +12,14 @@
 
 # testing
 /coverage
+tests/**/*.json
+!tests/bruno/bruno.json
+tests/*.json
+tests/**/*.log
+tests/*.log
+
+# local editor / agent configs
+.claude/
 
 # next.js
 /.next/
@@ -33,6 +41,8 @@ yarn-error.log*
 # env files — never commit real secrets.
 .env*
 **/.env*
+# The example template is documentation — it carries no values and IS committed.
+!.env.example
 secrets.md
 *.bak
 

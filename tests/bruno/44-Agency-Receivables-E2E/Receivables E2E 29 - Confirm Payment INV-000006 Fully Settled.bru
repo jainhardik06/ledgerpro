@@ -1,0 +1,23 @@
+meta {
+  name: Receivables E2E 29 - Confirm Payment INV-000006 Fully Settled
+  type: http
+  seq: 29
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payments/{{payWhId}}/confirm
+  body: json
+  auth: none
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.payment.status: eq CONFIRMED
+  res.body.invoice.status: eq PAID
+  res.body.invoice.amountDue.amount: eq 0
+}

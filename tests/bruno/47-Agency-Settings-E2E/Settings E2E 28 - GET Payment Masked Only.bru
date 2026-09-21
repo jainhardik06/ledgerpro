@@ -1,0 +1,31 @@
+meta {
+  name: Settings E2E 28 - GET Payment Masked Only
+  type: http
+  seq: 28
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/settings
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.settings.payment.razorpayEnabled: eq true
+  res.body.settings.payment.razorpayKeyId: eq rzp_test_e2e
+  res.body.settings.payment.hasKeySecret: eq true
+  res.body.settings.payment.hasWebhookSecret: eq true
+}
+
+script:post-response {
+  const text = typeof res.body === 'string' ? res.body : JSON.stringify(res.body);
+  if (text.includes('e2e_secret_value_1')) throw new Error('key secret plaintext leaked on GET');
+  if (text.includes('whsec_e2e_tenant_1')) throw new Error('webhook secret plaintext leaked on GET');
+  if (text.includes('v1:')) throw new Error('ciphertext leaked on GET');
+}
+
+docs {
+  §50 — "never send the original secret after initial save": a later GET
+  (what the UI renders) shows the booleans and the public key id only.
+}

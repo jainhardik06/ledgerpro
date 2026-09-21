@@ -1,0 +1,36 @@
+meta {
+  name: Invoices E2E 38 - Set Taxation Discount 2000 IGST 18
+  type: http
+  seq: 38
+}
+
+put {
+  url: {{BASE_URL}}/api/agency/invoices/{{invAId}}/taxation
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "discountAmount": 2000,
+    "taxes": [
+      { "name": "IGST", "code": "IGST", "rate": 18 }
+    ]
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.invoice.subtotal.amount: eq 192000
+  res.body.invoice.discount.amount: eq 2000
+  res.body.invoice.taxTotal.amount: eq 34200
+  res.body.invoice.total.amount: eq 224200
+  res.body.invoice.amountDue.amount: eq 224200
+}
+
+docs {
+  §76/§78 — the tax editor sends ONLY {name, code, rate}; every amount is
+  the engine's: 192000 − 2000 = 190000 taxable, × 18% = 34200 IGST,
+  total 224200.
+}

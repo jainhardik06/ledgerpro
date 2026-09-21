@@ -1,0 +1,21 @@
+meta {
+  name: Time E2E 16 - Dev Cannot Approve Own Time
+  type: http
+  seq: 16
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/time/{{timeEntryId}}/approve
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 403
+}
+
+docs {
+  §21 — NEVER your own time, not even as the project's manager. The dev IS
+  this project's PM, and the block still fires: authority has no role
+  exception for self-approval.
+}

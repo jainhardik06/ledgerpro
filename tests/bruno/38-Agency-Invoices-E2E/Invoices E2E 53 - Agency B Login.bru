@@ -1,0 +1,23 @@
+meta {
+  name: Invoices E2E 53 - Agency B Login
+  type: http
+  seq: 53
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{invBAdminUsername}}",
+    "password": "{{invBAdminPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}

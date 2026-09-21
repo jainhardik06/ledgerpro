@@ -1,0 +1,42 @@
+meta {
+  name: Reports E2E 9 - Create T&M Project
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "clientId": "{{clientId}}",
+    "name": "Reports Portal Build",
+    "code": "E2E-REP-PORTAL",
+    "billingModel": "TIME_AND_MATERIALS",
+    "currency": "INR",
+    "startDate": "{{repToday}}",
+    "plannedHours": 10
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.project.billingModel: eq TIME_AND_MATERIALS
+  res.body.project.plannedHours: eq 10
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('projectId', raw.project.id);
+  if (!raw.project.id) throw new Error('Create must return the project id');
+}
+
+docs {
+  The §29/§31 subject. Delivery lands at: revenue 12500 (5h × 2500),
+  labor 6000 (6.67h × 900 — the non-billable hour costs but never earns),
+  expense 1000, delivery cost 7000, profit 5500, margin 44%. plannedHours
+  10 vs 6.67 actual gives the §31 hours columns.
+}

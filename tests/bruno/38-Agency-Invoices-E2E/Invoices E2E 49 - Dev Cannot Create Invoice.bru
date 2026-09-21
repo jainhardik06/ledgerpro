@@ -1,0 +1,28 @@
+meta {
+  name: Invoices E2E 49 - Dev Cannot Create Invoice
+  type: http
+  seq: 49
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "clientId": "{{clientId}}",
+    "projectId": "{{projectId}}"
+  }
+}
+
+assert {
+  res.status: eq 403
+}
+
+docs {
+  §28/§81 — agency.invoices.write is admin/finance only. A plain USER can
+  READ the receivables list (§28 shared context) but never compose or
+  finalize one.
+}

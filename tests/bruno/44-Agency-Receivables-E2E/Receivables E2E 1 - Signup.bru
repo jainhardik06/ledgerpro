@@ -1,0 +1,39 @@
+meta {
+  name: Receivables E2E 1 - Signup
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "E2E Receivables Agency",
+    "username": "{{rcvAdminUsername}}",
+    "password": "{{rcvAdminPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('rcvAdminUsername', 'e2e_rcv_admin_' + suffix);
+  bru.setVar('rcvAdminPassword', 'E2eRcvAdmin#2026');
+}
+
+docs {
+  Fresh agency for the Module 14 receivables journey (§85–§106): six
+  finalized invoices seeded across two clients and one project — an aging
+  ladder spanning every bucket, a partial payment, and a §93
+  withholding-settled invoice that must VANISH from A/R — then the main
+  report, summary, aging, every §98 filter, the fail-closed 400s, the
+  dashboard lines, the §100 deep-link page, and Agency B isolation.
+}

@@ -1,0 +1,35 @@
+meta {
+  name: Expenses E2E 36 - Agency B Signup
+  type: http
+  seq: 36
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "E2E Expenses Agency B",
+    "username": "{{expBUsername}}",
+    "password": "E2eExpB#2026"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('expBUsername', 'e2e_exp_b_' + suffix);
+}
+
+docs {
+  Tenant isolation (§113): a SECOND agency. Its admin must never see,
+  approve, or create against Agency A expenses — and every cross-tenant
+  id must yield an IDENTICAL 404 (no existence oracle).
+}

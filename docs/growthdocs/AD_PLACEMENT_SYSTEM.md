@@ -125,7 +125,7 @@ Carbon injects its own HTML structure. Override to match design system:
 ### Setup
 
 1. Apply at `adsense.google.com`
-2. Add site: `discover.moneyos.app`
+2. Add site: `discovermoneyos.webasthetic.in`
 3. Paste verification code in `<head>` via Layout.astro
 4. Create ad units in AdSense dashboard: "Blog Sidebar", "In-Content"
 5. Add ad unit code to the designated slots

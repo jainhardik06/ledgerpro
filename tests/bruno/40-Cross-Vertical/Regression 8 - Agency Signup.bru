@@ -1,0 +1,34 @@
+meta {
+  name: Regression 8 - Agency Dashboard Available
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "Regression Agency Tenant",
+    "username": "{{agencyRegUsername}}",
+    "password": "{{regPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('agencyRegUsername', 'reg_agency_' + suffix);
+}
+
+docs {
+  Module 1.27, final leg: the Agency vertical is AVAILABLE. A fresh tenant
+  switches to Agency mode and reaches its Command Center.
+}

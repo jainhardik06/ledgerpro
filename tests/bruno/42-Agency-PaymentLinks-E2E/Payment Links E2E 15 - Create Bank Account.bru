@@ -1,0 +1,35 @@
+meta {
+  name: Payment Links E2E 15 - Create Bank Account
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{BASE_URL}}/api/accounts
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "E2E Links HDFC",
+    "type": "Bank",
+    "initialBalance": 0
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('plAccountId', raw.account.id);
+  if (!raw.account.id) throw new Error('Create must return the account id');
+}
+
+docs {
+  §93 — the manual payment that pays off invoice B needs the account its
+  Credit posts to.
+}

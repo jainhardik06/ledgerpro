@@ -1,0 +1,28 @@
+meta {
+  name: Settings E2E 56 - Restore Berlin Timezone
+  type: http
+  seq: 56
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/settings/general
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "timezone": "Europe/Berlin"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.settings.general.timezone: eq Europe/Berlin
+}
+
+docs {
+  Hygiene — restore the timezone request 5 configured, so the tenant's
+  stored state matches what the rest of the suite asserts it to be.
+}

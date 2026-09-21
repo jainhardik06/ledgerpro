@@ -1,0 +1,19 @@
+meta {
+  name: Alerts E2E 48 - Dev Evaluate Is 403
+  type: http
+  seq: 48
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/alerts/evaluate
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 403
+}
+
+docs {
+  §21 — explicit evaluation is admin-only (agency.alerts.manage).
+}

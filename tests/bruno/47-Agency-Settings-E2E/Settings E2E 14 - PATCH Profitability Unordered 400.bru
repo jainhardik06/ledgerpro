@@ -1,0 +1,27 @@
+meta {
+  name: Settings E2E 14 - PATCH Profitability Unordered 400
+  type: http
+  seq: 14
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/settings/profitability
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "hourWarningThresholds": { "first": 85, "warning": 80, "critical": 100 }
+  }
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  §46 — the bands must stay strictly ordered first < warning < critical so
+  the alert bands remain disjoint. Validation runs against the MERGED
+  whole, so even a partial patch cannot break the invariant.
+}

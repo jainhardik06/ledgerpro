@@ -1,0 +1,23 @@
+meta {
+  name: Reports E2E 74 - Dev 200 Time Report
+  type: http
+  seq: 74
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/time
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  // Hours are currency-free and carry no salary economics (§32) — a USER
+  // sees the same utilization the admin does.
+  if (raw.report.rows.length !== 1) throw new Error('rows: ' + raw.report.rows.length);
+}

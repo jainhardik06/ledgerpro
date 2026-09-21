@@ -1,0 +1,23 @@
+meta {
+  name: Invoices E2E 45 - Void Draft B
+  type: http
+  seq: 45
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{invBId}}/void
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.invoice.status: eq VOID
+}
+
+docs {
+  §79 — VOID from DRAFT: the empty draft is retired. (The SENT-void path —
+  sources un-marked INVOICED back to UNBILLED — is covered by the unit
+  suite; here the draft leg plus the §66 release it implies is what runs.)
+}

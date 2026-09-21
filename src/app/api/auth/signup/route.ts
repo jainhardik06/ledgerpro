@@ -13,10 +13,11 @@ import { generateToken } from '@/lib/auth';
 import { firstClientIp, validatePassword, validateString } from '@/lib/validation';
 import { logError } from '@/lib/logger';
 import PostHogClient from '@/lib/posthog-server';
+import { resolveVertical } from '@/lib/agency/types/vertical';
 
 export async function POST(req: NextRequest) {
   try {
-    const { tenantName, username, password } = await req.json();
+    const { tenantName, username, password, appMode } = await req.json();
 
     const cleanTenantName = validateString(tenantName, 'Organization name', { min: 2, max: 100 });
     if (cleanTenantName instanceof NextResponse) return cleanTenantName;
@@ -44,8 +45,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Create the tenant
-    const newTenant = await createTenant(cleanTenantName, attribution);
+    // Create the tenant. The onboarding vertical travels with it so the
+    // workspace the user picked is the one they land in; unknown/absent values
+    // normalize to Standard via resolveVertical (legacy clients keep working).
+    const newTenant = await createTenant(cleanTenantName, attribution, resolveVertical(appMode));
 
     // Create the tenant admin
     const passwordHash = await bcrypt.hash(cleanPassword, 12);
@@ -106,6 +109,9 @@ export async function POST(req: NextRequest) {
         role: newAdmin.role,
         tenantId: newAdmin.tenantId,
       },
+      // Module 1.1 — the vertical chosen during onboarding is persisted on the
+      // tenant, so Agency signups land on the Agency Command Center directly.
+      redirectTo: resolveVertical(newTenant.appMode) === 'Agency' ? '/dashboard/agency' : '/dashboard',
     });
   } catch (error) {
     logError('Signup error', error);

@@ -1,0 +1,36 @@
+meta {
+  name: Tax E2E 24 - Add MANUAL Line 100000 SAC 998314 to C
+  type: http
+  seq: 24
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{invCId}}/lines
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "type": "MANUAL",
+    "description": "IT consulting services — September, intra-state",
+    "quantity": 1,
+    "unitPrice": 100000,
+    "amount": 0,
+    "classification": { "type": "SAC", "code": "998314" }
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.line.amount.amount: eq 100000
+  res.body.line.classification.code: eq "998314"
+  res.body.invoice.subtotal.amount: eq 100000
+  res.body.invoice.total.amount: eq 100000
+}
+
+docs {
+  Same SAC 998314 classification as file 11 — the identical base for the
+  intra-state structure comparison.
+}

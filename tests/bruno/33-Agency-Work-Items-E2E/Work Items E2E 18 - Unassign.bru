@@ -1,0 +1,32 @@
+meta {
+  name: Work Items E2E 18 - Unassign
+  type: http
+  seq: 18
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/work-items/{{workItemId}}?action=unassign
+  body: json
+  auth: none
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (raw.workItem.assignedTo) {
+    throw new Error('Unassign must clear the assignee');
+  }
+}
+
+docs {
+  §12/§26 — removing the ONE primary assignee leaves the work item itself
+  intact and audits WORK_ITEM_UNASSIGNED.
+}

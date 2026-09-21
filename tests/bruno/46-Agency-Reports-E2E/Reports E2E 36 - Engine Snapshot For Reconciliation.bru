@@ -1,0 +1,44 @@
+meta {
+  name: Reports E2E 36 - Engine Snapshot For Reconciliation
+  type: http
+  seq: 36
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/profitability
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const pf = raw.portfolio;
+  if (pf.projects.length !== 2) throw new Error('engine projects: ' + pf.projects.length);
+
+  // Freeze the Module 13 engine's numbers for the next request to
+  // reconcile against — the §41 acceptance is a live cross-check between
+  // the engine and the report, not a set of frozen constants.
+  for (const p of pf.projects) {
+    const key = p.projectId === bru.getVar('project2Id') ? 'p2' : 'p1';
+    bru.setVar('eng_' + key + '_revenue', String(p.applicableRevenue.amount));
+    bru.setVar('eng_' + key + '_cost', String(p.deliveryCost.amount));
+    bru.setVar('eng_' + key + '_profit', String(p.grossProfit.amount));
+    bru.setVar('eng_' + key + '_currency', p.currency);
+  }
+  const s = pf.summary;
+  bru.setVar('eng_summary_count', String(s.projectCount));
+  bru.setVar('eng_summary_revenue', String(s.applicableRevenue.amount));
+  bru.setVar('eng_summary_cost', String(s.deliveryCost.amount));
+  bru.setVar('eng_summary_profit', String(s.grossProfit.amount));
+  bru.setVar('eng_summary_margin', String(s.marginPercent));
+}
+
+docs {
+  First half of THE §41 headline (every report reconciles with its
+  source engine): the Module 13 engine's own numbers, captured fresh.
+}

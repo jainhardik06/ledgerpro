@@ -1,0 +1,25 @@
+meta {
+  name: Alerts E2E 29 - Add MANUAL Line 150000 to Invoice B
+  type: http
+  seq: 29
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{invBId}}/lines
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "type": "MANUAL",
+    "description": "Brand sprint — final invoice",
+    "amount": 150000
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.line.type: eq MANUAL
+  res.body.invoice.subtotal.amount: eq 150000
+}

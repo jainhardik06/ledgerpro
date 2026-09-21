@@ -1,0 +1,35 @@
+meta {
+  name: Expenses E2E 31 - Admin Re-Approves Main - Same Transaction
+  type: http
+  seq: 31
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/expenses/{{expMainId}}/approve
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.expense.status: eq APPROVED
+  res.body.expense.billingStatus: eq UNBILLED
+  res.body.expense.clientChargeAmount.amount: eq 12000
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const e = raw.expense;
+  // §42 — idempotent: re-approval links the SAME transaction, never a second one.
+  const txMainId = bru.getVar('txMainId');
+  if (e.transactionId !== txMainId) {
+    throw new Error('§42 violated: re-approval must reuse transactionId ' + txMainId + ', got ' + e.transactionId);
+  }
+}
+
+docs {
+  The §42 pin: after correction-rejection and rework, re-approval RE-LINKS
+  the original transaction instead of creating a duplicate — the ledger
+  never double-counts one expense.
+}

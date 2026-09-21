@@ -1,0 +1,38 @@
+meta {
+  name: Rates E2E 35 - Ready for Tracking 126
+  type: http
+  seq: 35
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.readiness.readyForTracking: eq true
+  res.body.readiness.rateReady: eq true
+  res.body.readiness.billingReady: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const checks = (raw.readiness && raw.readiness.checks) || [];
+  const notReady = checks.filter(c => !c.ready).map(c => c.key);
+  if (notReady.length > 0) {
+    throw new Error('READY_FOR_TRACKING project has unready checks: ' + notReady.join(', '));
+  }
+  if (!raw.readiness.readyForTracking) {
+    throw new Error('§126 composite must be true: client + ACTIVE + team + work item + cost + billing all resolved');
+  }
+}
+
+docs {
+  §126 — the composite the future Module 7 can enforce: client linked,
+  project ACTIVE, team configured, a work item to log against, cost rates
+  resolvable, billing rates resolvable (T&M). The §119 journey is complete:
+  Project → Team → Cost Rate → Work Item → ACTIVE → Ready for Time
+  Tracking.
+}

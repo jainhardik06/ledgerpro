@@ -1,0 +1,23 @@
+meta {
+  name: Expenses E2E 25 - Ledger Unchanged After Correction-Reject
+  type: http
+  seq: 25
+}
+
+get {
+  url: {{BASE_URL}}/api/transactions?limit=100
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const expenseDebits = raw.transactions.filter(t => t.category === 'Expense' && t.type === 'Debit');
+  if (expenseDebits.length !== 2) throw new Error('correction-rejection must NOT delete the transaction (§42)');
+  const sum = expenseDebits.reduce((s, t) => s + Number(t.amount), 0);
+  if (sum !== 12000) throw new Error('expense debits must still total 12000, got ' + sum);
+}

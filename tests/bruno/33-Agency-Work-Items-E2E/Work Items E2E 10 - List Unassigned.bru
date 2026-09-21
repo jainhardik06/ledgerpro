@@ -1,0 +1,28 @@
+meta {
+  name: Work Items E2E 10 - List Unassigned
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/work-items?view=unassigned
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const unassigned = raw.workItems || [];
+  if (unassigned.length !== 1 || unassigned[0].id !== bru.getVar('secondWorkItemId')) {
+    throw new Error('view=unassigned must return exactly the unassigned work item, got ' + unassigned.length);
+  }
+}
+
+docs {
+  §24 "Unassigned" view — items with no primary assignee (§12).
+}

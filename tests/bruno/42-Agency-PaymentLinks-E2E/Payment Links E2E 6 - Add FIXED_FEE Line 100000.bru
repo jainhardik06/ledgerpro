@@ -1,0 +1,27 @@
+meta {
+  name: Payment Links E2E 6 - Add FIXED_FEE Line 100000
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{plInvAId}}/lines
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "type": "FIXED_FEE",
+    "description": "September engagement — full month",
+    "quantity": 1,
+    "unitPrice": 100000,
+    "amount": 0
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.invoice.total.amount: eq 100000
+}

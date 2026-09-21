@@ -1,0 +1,26 @@
+meta {
+  name: Alerts E2E 70 - Patch Unknown Rule Is 404
+  type: http
+  seq: 70
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/alert-rules/000000000000000000000000
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "enabled": false
+  }
+}
+
+assert {
+  res.status: eq 404
+}
+
+docs {
+  §113 — an unknown rule id is a plain 404, identical for "missing" and
+  "another tenant's" (the tenant-scoped query cannot tell them apart).
+}

@@ -1,0 +1,53 @@
+meta {
+  name: Time E2E 21 - Admin Timer Stop with Review
+  type: http
+  seq: 21
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/timer/stop
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "review": {
+      "billable": false,
+      "durationMinutes": 1,
+      "notes": "Standup and planning"
+    }
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timerSession.status: eq STOPPED
+  res.body.timeEntry.approvalStatus: eq DRAFT
+  res.body.timeEntry.durationMinutes: eq 1
+  res.body.timeEntry.billable: eq false
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('adminEntryId', raw.timeEntry.id);
+  if (!raw.timeEntry.id) throw new Error('Stop-with-review must return the created entry id');
+  // §13 — timer entries capture the CURRENT day only. "Today" is the TENANT
+  // timezone (Asia/Kolkata default), not the runner's UTC clock — IST is
+  // UTC+5:30, so between 18:30 UTC and midnight UTC the dates diverge.
+  const ist = new Date(Date.now() + 5.5 * 60 * 60 * 1000);
+  const today = ist.toISOString().slice(0, 10);
+  if (raw.timeEntry.date !== today) throw new Error('Timer entry must be dated today (§13), got ' + raw.timeEntry.date);
+  // The admin has NO cost assignment and no project role — §24 honest path.
+  if (raw.timeEntry.financialStatus !== 'RATE_CONFIGURATION_REQUIRED') {
+    throw new Error('Admin timer entry has no configured rates — §24 must block recognition, got ' + raw.timeEntry.financialStatus);
+  }
+  if (raw.timeEntry.calculatedCost !== undefined) throw new Error('No cost may exist for a rate-missing entry (§96)');
+}
+
+docs {
+  §8 Path B — stop → review → save in one step. The duration override (1
+  minute) can only adjust DOWN from real elapsed time (Rule 6); the entry
+  lands on TODAY's date (§13). The admin has no cost rate — so this entry
+  is honestly RATE_CONFIGURATION_REQUIRED: tracked, never a fake zero.
+}

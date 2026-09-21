@@ -1,0 +1,29 @@
+meta {
+  name: Payments E2E 15 - Payment List Two No Duplicates
+  type: http
+  seq: 15
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/payments
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const pays = raw.payments;
+  if (pays.length !== 2) throw new Error('Expected exactly 2 payments, found ' + pays.length);
+  for (const p of pays) {
+    if (p.status !== 'CONFIRMED') throw new Error('Both payments must be CONFIRMED, got ' + p.status);
+    if (!p.transactionId) throw new Error('§129: each confirmed payment links its transaction');
+  }
+  // §20 — labels resolve alongside.
+  const invAId = bru.getVar('invAId');
+  if (raw.invoiceLabels[invAId] !== 'INV-000001') throw new Error('Invoice label must be the number, got ' + raw.invoiceLabels[invAId]);
+}

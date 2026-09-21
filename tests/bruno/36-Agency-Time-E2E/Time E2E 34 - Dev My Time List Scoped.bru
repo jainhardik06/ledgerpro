@@ -1,0 +1,36 @@
+meta {
+  name: Time E2E 33 - Dev My Time List Scoped
+  type: http
+  seq: 34
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/time?dateFrom={{entryDate}}&dateTo={{entryDate}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const entries = raw.timeEntries || [];
+  // §33 — the server forces the USER scope: only the dev's own entries.
+  if (entries.length < 2) throw new Error('Expected the dev\'s own entries, got ' + entries.length);
+  for (const e of entries) {
+    if (e.costRateSnapshot !== undefined || e.calculatedCost !== undefined) {
+      throw new Error('§99: cost side must be redacted in USER lists');
+    }
+  }
+  // §20 spirit — labels, never raw ids.
+  if (!raw.userLabels || Object.keys(raw.userLabels).length === 0) throw new Error('List must resolve userLabels');
+  if (!raw.projectNames || !raw.projectNames[entries[0].projectId]) throw new Error('List must resolve projectNames');
+}
+
+docs {
+  §25/§33/§99 — the My Time payload: own entries only, cost side stripped,
+  labels resolved server-side so the UI never renders raw ids.
+}

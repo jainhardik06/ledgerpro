@@ -1,0 +1,22 @@
+meta {
+  name: Team E2E 14 - Remove Member
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/members/{{memberRowId}}/remove
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+docs {
+  §45/§47 — the canonical "Remove from Project" action: the membership is
+  SOFT-deactivated (active=false). Nothing is deleted — the row survives as
+  history (§37).
+}

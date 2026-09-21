@@ -3,6 +3,15 @@
 **Cluster**: `money-os-growth`
 **Database**: `money_os_growth`
 
+> **Implementation status (2026-09-15):** all 23 collections below exist in
+> the live growth database (created idempotently by
+> `money-os-discovery/scripts/seed-growth-db.mjs`). The ones currently
+> read/written by application code are: `directories` and
+> `directory_submissions` (main app, `connectGrowthDb()`), `social_profiles`
+> (main app), and `affiliate_links` / `affiliate_clicks` (money-os-discovery,
+> `src/lib/growth-db.ts`). The rest are schema-ready and awaiting their
+> owning feature.
+
 ## Philosophy
 The Growth Cluster is strictly decoupled from the Product Engine. Designing for 100k+ content records, 100k+ crawler events, and 1,000+ backlinks requires a schema that will never compete for resources with SaaS transactions, budgets, or auth logic. We design for scale while remaining compatible with MongoDB Atlas Free tier initially.
 

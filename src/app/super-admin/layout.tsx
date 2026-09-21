@@ -3,11 +3,11 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { 
-  Building2, Users, LineChart, ShieldAlert, FileText, 
+import {
+  Building2, Users, LineChart, ShieldAlert, FileText,
   ToggleLeft, LifeBuoy, Megaphone, Settings, Search,
   TerminalSquare, ArrowLeft, Command, TrendingUp, Activity, Stethoscope, ListChecks,
-  Menu, X
+  Menu, X, Briefcase
 } from 'lucide-react';
 import { BrandMark } from '@/components/ui/BrandMark';
 import { CommandPalette } from '@/components/ui/CommandPalette';
@@ -17,6 +17,7 @@ const primaryNav = [
   { name: 'Organizations', href: '/super-admin/tenants', icon: Building2 },
   { name: 'Global Users', href: '/super-admin/users', icon: Users },
   { name: 'Revenue', href: '/super-admin/revenue', icon: LineChart },
+  { name: 'Agency Analytics', href: '/super-admin/agency', icon: Briefcase },
   { name: 'Growth & Funnels', href: '/super-admin/growth', icon: TrendingUp },
   { name: 'Discovery Engine', href: '/super-admin/discovery', icon: Search },
   { name: 'Attribution', href: '/super-admin/attribution', icon: Activity },

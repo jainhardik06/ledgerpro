@@ -1,0 +1,40 @@
+meta {
+  name: Settings E2E 50 - Invoice Without Currency Uses Agency Default
+  type: http
+  seq: 50
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "clientId": "{{stCcClientId}}",
+    "issueDate": "{{stToday}}"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.invoice.currency: eq USD
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('stPrefixInvId', raw.invoice.id);
+  if (raw.invoice.currency !== 'USD') {
+    throw new Error('currency: expected USD (agency general.defaultCurrency), got ' + raw.invoice.currency);
+  }
+}
+
+docs {
+  §44 engine consumption — the currency fallback ladder: no explicit
+  currency, no client billingProfile.currency ⇒ the AGENCY
+  general.defaultCurrency rung applies (USD, set in request 5). The number
+  is INR only for unconfigured tenants. The draft is reused for the
+  invoicePrefix finalize chain below.
+}

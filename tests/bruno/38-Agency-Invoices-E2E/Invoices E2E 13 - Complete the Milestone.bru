@@ -1,0 +1,35 @@
+meta {
+  name: Invoices E2E 13 - Complete the Milestone
+  type: http
+  seq: 13
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/milestones/{{milestoneId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Discovery and strategy sign-off",
+    "sequence": 1,
+    "amount": 150000,
+    "dueDate": "2026-10-15",
+    "status": "COMPLETED"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.milestone.status: eq COMPLETED
+  res.body.milestone.billingStatus: eq UNBILLED
+}
+
+docs {
+  §70 — only a COMPLETED milestone is billable. The milestone PATCH carries
+  the full commercial definition (the validator demands name/sequence/
+  amount on every update — the §46 XOR rules re-checked with the payload).
+  The billing stamp stays honestly UNBILLED until an invoice reserves it.
+}

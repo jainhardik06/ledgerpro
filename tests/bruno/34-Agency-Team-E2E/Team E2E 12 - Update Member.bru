@@ -1,0 +1,28 @@
+meta {
+  name: Team E2E 12 - Update Member
+  type: http
+  seq: 12
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/members/{{memberRowId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "role": "Senior Designer",
+    "allocationPercent": 40
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+docs {
+  §47 PATCH — mutable fields only (role/allocation/dates). The payload
+  carries no userId: membership identity is fixed (remove + re-add instead).
+}

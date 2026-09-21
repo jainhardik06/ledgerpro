@@ -1,0 +1,52 @@
+meta {
+  name: Reports E2E 37 - Portfolio Reconciles With Engine
+  type: http
+  seq: 37
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/portfolio
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const rep = raw.report;
+  const near = (a, b, what) => {
+    if (a === null || a === undefined || Math.abs(a - b) > 0.001) {
+      throw new Error(what + ': expected ' + b + ', got ' + a);
+    }
+  };
+
+  // §41 — the report must carry the engine's numbers exactly, per row…
+  if (rep.rows.length !== 2) throw new Error('rows: ' + rep.rows.length);
+  const p1 = rep.rows.find(r => r.projectId === bru.getVar('projectId'));
+  const p2 = rep.rows.find(r => r.projectId === bru.getVar('project2Id'));
+  if (!p1 || !p2) throw new Error('both engine projects must be report rows');
+  near(p1.applicableRevenue, Number(bru.getVar('eng_p1_revenue')), 'p1 revenue vs engine');
+  near(p1.deliveryCost, Number(bru.getVar('eng_p1_cost')), 'p1 cost vs engine');
+  near(p1.profit, Number(bru.getVar('eng_p1_profit')), 'p1 profit vs engine');
+  near(p2.applicableRevenue, Number(bru.getVar('eng_p2_revenue')), 'p2 revenue vs engine');
+  near(p2.deliveryCost, Number(bru.getVar('eng_p2_cost')), 'p2 cost vs engine');
+  near(p2.profit, Number(bru.getVar('eng_p2_profit')), 'p2 profit vs engine');
+
+  // …and in summary. A report that recalculated anything would fail here.
+  const s = rep.summary;
+  if (s.projectCount !== Number(bru.getVar('eng_summary_count'))) throw new Error('project count vs engine');
+  near(s.applicableRevenue, Number(bru.getVar('eng_summary_revenue')), 'summary revenue vs engine');
+  near(s.deliveryCost, Number(bru.getVar('eng_summary_cost')), 'summary cost vs engine');
+  near(s.profit, Number(bru.getVar('eng_summary_profit')), 'summary profit vs engine');
+  near(s.weightedMarginPercent, Number(bru.getVar('eng_summary_margin')), 'summary margin vs engine');
+}
+
+docs {
+  Second half of THE §41 headline: the portfolio report fetched
+  immediately after the engine, agreeing on every per-project and summary
+  figure. One engine, one truth — the report only reshapes (§26).
+}

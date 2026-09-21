@@ -1,0 +1,26 @@
+meta {
+  name: Reports E2E 82 - Agency B CSV Portfolio Header Only
+  type: http
+  seq: 82
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/portfolio/export.csv
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+script:post-response {
+  const csv = typeof res.body === 'string' ? res.body : String(res.body);
+  const lines = csv.replace(/\r\n$/, '').split('\r\n');
+  // §113 — the export path is tenant-scoped too: the header contract
+  // arrives with zero data rows.
+  if (lines.length !== 1) throw new Error('header only expected, got ' + lines.length + ' lines');
+  if (!lines[0].startsWith('Project,Client,Status,Currency')) throw new Error('header: ' + lines[0]);
+  const xrc = res.headers['x-row-count'] || res.headers['X-Row-Count'];
+  if (String(xrc) !== '0') throw new Error('X-Row-Count must be 0, got ' + xrc);
+}

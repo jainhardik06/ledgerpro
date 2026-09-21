@@ -1,0 +1,48 @@
+meta {
+  name: Rates E2E 10 - Create T&M Project Website Redesign
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "clientId": "{{clientId}}",
+    "name": "Website Redesign",
+    "code": "E2E-ACME-WEB",
+    "billingModel": "TIME_AND_MATERIALS",
+    "currency": "INR",
+    "revenueBudget": 20000,
+    "budgetCost": 7200,
+    "targetMargin": 64,
+    "plannedHours": 8,
+    "projectManagerId": "{{userId}}"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.project.name: eq Website Redesign
+  res.body.project.billingModel: eq TIME_AND_MATERIALS
+  res.body.project.status: eq DRAFT
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('projectId', raw.project.id);
+  if (!raw.project.id) {
+    throw new Error('Create must return the project id for the team/readiness steps');
+  }
+}
+
+docs {
+  §136 scenario project: Website Redesign for Acme, T&M so billing resolves
+  by role (§89). Planned economics reflect the §136 arithmetic: 8 hours at
+  ₹2,500 billed = ₹20,000 revenue, 8 hours at ₹900 cost = ₹7,200.
+}

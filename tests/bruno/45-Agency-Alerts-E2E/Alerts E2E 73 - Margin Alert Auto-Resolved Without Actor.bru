@@ -1,0 +1,23 @@
+meta {
+  name: Alerts E2E 73 - Margin Alert Auto-Resolved Without Actor
+  type: http
+  seq: 73
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/alerts?ruleType=PROJECT_MARGIN_BELOW_TARGET&status=RESOLVED
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.count: eq 1
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const a = raw.alerts[0];
+  if (a.resolvedBy !== undefined) throw new Error('Silenced rule auto-resolves with NO actor, got ' + a.resolvedBy);
+  if (!a.resolvedAt) throw new Error('Auto-resolution still stamps resolvedAt');
+}

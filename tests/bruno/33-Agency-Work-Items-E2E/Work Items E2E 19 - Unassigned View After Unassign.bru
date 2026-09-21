@@ -1,0 +1,37 @@
+meta {
+  name: Work Items E2E 19 - Unassigned View After Unassign
+  type: http
+  seq: 19
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/work-items?view=unassigned
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const items = raw.workItems || [];
+  // Regression (found in the Module 4 final audit): the unassign action
+  // writes assignedTo: '' — the filter must match BOTH that and a field that
+  // was never set, or a just-unassigned item vanishes from this view.
+  const justUnassigned = items.find(w => w.id === bru.getVar('workItemId'));
+  if (!justUnassigned) {
+    throw new Error('The just-unassigned work item must appear in the Unassigned view (got ' + items.length + ' items)');
+  }
+  if (justUnassigned.assignedTo) {
+    throw new Error('Unassigned item must read back without an assignee');
+  }
+}
+
+docs {
+  §24 "Unassigned" view immediately after §12's unassign — proves the
+  filter matches the explicit '' the unassign action writes, not only items
+  that were never assigned.
+}

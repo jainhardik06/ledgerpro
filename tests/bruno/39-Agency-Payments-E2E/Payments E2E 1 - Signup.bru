@@ -1,0 +1,39 @@
+meta {
+  name: Payments E2E 1 - Signup
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "E2E Payments Agency",
+    "username": "{{payAdminUsername}}",
+    "password": "{{payAdminPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('payAdminUsername', 'e2e_pay_admin_' + suffix);
+  bru.setVar('payAdminPassword', 'E2ePayAdmin#2026');
+}
+
+docs {
+  Fresh agency for the Module 10 payment journey (§87–§129): the §156
+  collection gate — 100k invoice → 40k payment → core transaction → 60k
+  payment → PAID → account cash +100k with NO duplicate transactions —
+  then overpayment, reversal, and the Razorpay webhook matrix (duplicate
+  replay, invalid signature, wrong-invoice hints, unresolved, rejection,
+  retry/recovery).
+}

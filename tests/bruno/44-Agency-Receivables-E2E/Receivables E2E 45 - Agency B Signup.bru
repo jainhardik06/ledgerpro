@@ -1,0 +1,30 @@
+meta {
+  name: Receivables E2E 45 - Agency B Signup
+  type: http
+  seq: 45
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "E2E Receivables Agency B",
+    "username": "{{rcvBUsername}}",
+    "password": "{{rcvBPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('rcvBUsername', 'e2e_rcv_b_' + suffix);
+  bru.setVar('rcvBPassword', 'E2eRcvB#2026');
+}

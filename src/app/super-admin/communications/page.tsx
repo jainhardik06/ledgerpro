@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Megaphone, Send } from 'lucide-react';
+import { Select } from '@/components/ui/Select';
 
 export default function CommunicationsPage() {
   const [broadcasts, setBroadcasts] = useState<any[]>([]);
@@ -76,11 +77,11 @@ export default function CommunicationsPage() {
             <div className="p-5 space-y-4 flex-1">
               <div>
                 <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">Notice Type</label>
-                <select value={type} onChange={e=>setType(e.target.value)} className="w-full bg-[#000000] border border-white/[0.1] rounded-md px-3 py-2 text-[13px] text-white outline-none focus:border-white/[0.2]">
+                <Select value={type} onChange={e=>setType(e.target.value)} className="w-full bg-[#000000] border border-white/[0.1] rounded-md px-3 py-2 text-[13px] text-white outline-none focus:border-white/[0.2]">
                   <option>Maintenance Notice</option>
                   <option>Feature Announcement</option>
                   <option>Emergency Alert</option>
-                </select>
+                </Select>
               </div>
               <div>
                 <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">Message Content</label>
@@ -93,11 +94,11 @@ export default function CommunicationsPage() {
               </div>
               <div>
                 <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">Target Audience</label>
-                <select value={target} onChange={e=>setTarget(e.target.value)} className="w-full bg-[#000000] border border-white/[0.1] rounded-md px-3 py-2 text-[13px] text-white outline-none focus:border-white/[0.2]">
+                <Select value={target} onChange={e=>setTarget(e.target.value)} className="w-full bg-[#000000] border border-white/[0.1] rounded-md px-3 py-2 text-[13px] text-white outline-none focus:border-white/[0.2]">
                   <option>All Active Tenants</option>
                   <option>Enterprise Plans Only</option>
                   <option>Administrators Only</option>
-                </select>
+                </Select>
               </div>
             </div>
             <div className="p-4 border-t border-white/[0.05] bg-white/[0.02] flex justify-end">

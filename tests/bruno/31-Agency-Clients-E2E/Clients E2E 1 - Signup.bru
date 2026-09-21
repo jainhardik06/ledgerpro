@@ -1,0 +1,36 @@
+meta {
+  name: Clients E2E 1 - Signup
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "E2E Clients Agency",
+    "username": "{{clientsUsername}}",
+    "password": "{{clientsPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  // Unique credentials per run so the suite is repeatable against a
+  // persistent database.
+  const suffix = Date.now().toString(36);
+  bru.setVar('clientsUsername', 'e2e_clients_' + suffix);
+  bru.setVar('clientsPassword', 'E2eClients#2026');
+}
+
+docs {
+  Module 2.8 E2E — a fresh agency tenant for the client lifecycle flow.
+}

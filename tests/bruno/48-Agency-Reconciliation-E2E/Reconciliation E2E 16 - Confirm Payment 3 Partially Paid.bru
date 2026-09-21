@@ -1,0 +1,33 @@
+meta {
+  name: Reconciliation E2E 16 - Confirm Payment 3 Partially Paid
+  type: http
+  seq: 16
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payments/{{recPay3Id}}/confirm
+  body: json
+  auth: none
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.payment.status: eq CONFIRMED
+  res.body.invoice.status: eq PARTIALLY_PAID
+  res.body.invoice.amountPaid.amount: eq 20000
+  res.body.invoice.amountDue.amount: eq 30000
+}
+
+docs {
+  The journey's final state, written by the engines:
+    invoices  150000 finalized (A 100000 PAID, B 50000 PARTIALLY_PAID)
+    payments  120000 confirmed in 3 payments
+    open      30000 (invoice B only)
+  Everything from here is a READ — if any view disagrees, it is the view
+  that is wrong.
+}

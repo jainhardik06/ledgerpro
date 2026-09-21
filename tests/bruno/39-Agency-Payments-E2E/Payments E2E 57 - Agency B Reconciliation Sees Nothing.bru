@@ -1,0 +1,28 @@
+meta {
+  name: Payments E2E 57 - Agency B Reconciliation Sees Nothing
+  type: http
+  seq: 57
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/payments/reconciliation
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const ov = raw.reconciliation;
+  if (ov.counts.total !== 0) throw new Error('§113: Agency B must see zero gateway payments, got ' + ov.counts.total);
+  if (ov.gatewayPayments.length !== 0) throw new Error('§113: the gateway payment list must be empty');
+}
+
+docs {
+  The reconciliation overview is tenant-scoped like every other read —
+  Agency A's three gateway payments are invisible here.
+}

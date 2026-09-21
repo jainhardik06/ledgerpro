@@ -1,0 +1,31 @@
+meta {
+  name: Alerts E2E 53 - Admin Alert Rules 11 Enabled
+  type: http
+  seq: 53
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/alert-rules
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (raw.rules.length !== 11) throw new Error('Must list all 11 rules, got ' + raw.rules.length);
+  const disabled = raw.rules.filter(r => r.enabled === false);
+  if (disabled.length > 0) throw new Error('All rules start enabled — the dev 403 must not have mutated anything');
+  // Every row carries the catalog metadata for the admin screen.
+  if (!raw.rules.every(r => r.label && r.category && r.defaultSeverity)) {
+    throw new Error('Rule rows must carry label, category and defaultSeverity');
+  }
+}
+
+docs {
+  §24 pre-state: the whole catalog, untouched by the USER's 403 probe.
+}

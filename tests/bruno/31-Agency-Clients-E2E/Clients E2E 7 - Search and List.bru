@@ -1,0 +1,32 @@
+meta {
+  name: Clients E2E 7 - Search and List
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/clients?search=acme&page=1&limit=25
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const clients = raw.clients || [];
+  if (clients.length !== 2) {
+    throw new Error(`Expected the 2 created clients in the search results, got ${clients.length}`);
+  }
+  // The full profile round-trips on the list too.
+  const full = clients.find(c => c.id === bru.getVar('clientId'));
+  if (!full || full.commercialDefaults?.paymentTerms !== 'NET_15') {
+    throw new Error('The created client must appear with its commercial defaults');
+  }
+}
+
+docs {
+  §19 search — name/email/legalName, tenant-scoped, paginated.
+}

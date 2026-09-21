@@ -1,0 +1,25 @@
+meta {
+  name: Settings E2E 6 - GET Reflects General
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/settings
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.settings.general.agencyName: eq E2E Settings Agency One
+  res.body.settings.general.logoUrl: eq https://cdn.example.com/logo.png
+  res.body.settings.general.defaultCurrency: eq USD
+  res.body.settings.general.timezone: eq Europe/Berlin
+  res.body.settings.general.fiscalYearStartMonth: eq 1
+}
+
+docs {
+  The stored section survives a round trip — a later GET (this is what the
+  UI renders) reflects the normalized values, not the raw input.
+}

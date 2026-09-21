@@ -3,6 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { RefreshCw, PieChart, Plus, Target, AlertTriangle } from 'lucide-react';
 import { Drawer } from '@/components/ui/Drawer';
+import { Select } from '@/components/ui/Select';
+import { Req, Opt } from '@/components/ui/Req';
+import { confirmModal } from '@/components/ui/Dialog';
 
 export default function BudgetsPage() {
   const [loading, setLoading] = useState(true);
@@ -16,6 +19,7 @@ export default function BudgetsPage() {
   const [bCategory, setBCategory] = useState('');
   const [bLimit, setBLimit] = useState('');
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -44,27 +48,47 @@ export default function BudgetsPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!bCategory) {
+      setFormError('Please select a category.');
+      return;
+    }
+    const parsedLimit = Number(bLimit);
+    if (!bLimit || isNaN(parsedLimit) || parsedLimit <= 0) {
+      setFormError('Please enter a valid monthly limit greater than zero.');
+      return;
+    }
+
+    setFormError(null);
     setSaving(true);
     try {
       const url = selectedBudget ? `/api/budgets/${selectedBudget.id}` : '/api/budgets';
       const method = selectedBudget ? 'PUT' : 'POST';
       const res = await fetch(url, {
         method, headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ category: bCategory, limitAmount: Number(bLimit), month: new Date().toISOString().substring(0, 7) })
+        body: JSON.stringify({ category: bCategory, limitAmount: parsedLimit, month: new Date().toISOString().substring(0, 7) })
       });
       if (res.ok) {
         setIsDrawerOpen(false);
         fetchData();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setFormError(data.error || 'Failed to save budget.');
       }
     } catch (e) {
-      console.error(e);
+      setFormError('Network error while saving budget.');
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this budget?')) return;
+    const ok = await confirmModal({
+      title: 'Delete Budget',
+      message: 'Are you sure you want to delete this budget?',
+      confirmText: 'Delete',
+      variant: 'danger',
+    });
+    if (!ok) return;
     try {
       const res = await fetch(`/api/budgets/${id}`, { method: 'DELETE' });
       if (res.ok) {
@@ -78,6 +102,7 @@ export default function BudgetsPage() {
     setSelectedBudget(null);
     setBCategory('');
     setBLimit('');
+    setFormError(null);
     setIsDrawerOpen(true);
   }
 
@@ -85,6 +110,7 @@ export default function BudgetsPage() {
     setSelectedBudget(bud);
     setBCategory(bud.category);
     setBLimit(bud.limitAmount.toString());
+    setFormError(null);
     setIsDrawerOpen(true);
   };
 
@@ -96,7 +122,7 @@ export default function BudgetsPage() {
   const formatCurrency = (val: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8 animate-in fade-in duration-500 w-full overflow-hidden">
+    <div className="p-4 sm:p-6 lg:p-8 w-full space-y-6 sm:space-y-8 animate-in fade-in duration-500 overflow-hidden">
       
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -108,7 +134,7 @@ export default function BudgetsPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {budgets.map(bud => {
           const spent = currentMonthTxs.filter(t => t.category === bud.category).reduce((s, t) => s + t.amount, 0);
           const percent = bud.limitAmount > 0 ? (spent / bud.limitAmount) * 100 : 0;
@@ -163,20 +189,54 @@ export default function BudgetsPage() {
 
       <Drawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} title={selectedBudget ? "Edit Budget" : "New Budget"}>
         <form onSubmit={handleSave} className="space-y-6 flex flex-col h-full">
-           <div className="space-y-5 flex-1">
-             <div>
-               <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">Category</label>
-               <select value={bCategory} onChange={e=>setBCategory(e.target.value)} required className="w-full h-9 bg-white/[0.02] border border-white/[0.05] rounded-md px-2 text-[13px] text-white focus:border-white/[0.2] outline-none [&>option]:bg-[#000000]">
-                 <option value="">Select a category</option>
-                 {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-               </select>
-             </div>
+            <div className="space-y-5 flex-1">
+              {formError && (
+                <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[12.5px]">
+                  {formError}
+                </div>
+              )}
 
-             <div>
-               <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">Monthly Limit (₹)</label>
-               <input type="number" value={bLimit} onChange={e=>setBLimit(e.target.value)} required min="1" step="0.01" className="w-full h-12 bg-transparent border-b border-white/[0.1] text-3xl font-semibold text-white focus:border-emerald-500 outline-none tabular-nums" placeholder="0.00" />
-             </div>
-           </div>
+              <div>
+                <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">
+                  Category <Req satisfied={Boolean(bCategory)} />
+                </label>
+                <Select
+                  value={bCategory}
+                  onChange={e => {
+                    setBCategory(e.target.value);
+                    if (formError) setFormError(null);
+                  }}
+                  required
+                  className={`w-full h-9 ${formError && !bCategory ? 'border-rose-500/80' : ''}`}
+                >
+                  <option value="">Select a category</option>
+                  {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                </Select>
+              </div>
+
+              <div>
+                <label className="block text-[12px] font-medium text-neutral-400 mb-1.5">
+                  Monthly Limit (₹) <Req satisfied={Boolean(bLimit && Number(bLimit) > 0)} />
+                </label>
+                <input
+                  type="number"
+                  value={bLimit}
+                  onChange={e => {
+                    setBLimit(e.target.value);
+                    if (formError) setFormError(null);
+                  }}
+                  required
+                  min="0.01"
+                  step="0.01"
+                  className={`w-full h-12 bg-transparent border-b text-3xl font-semibold text-white outline-none tabular-nums transition-colors ${
+                    formError && (!bLimit || Number(bLimit) <= 0)
+                      ? 'border-rose-500/80 focus:border-rose-500'
+                      : 'border-white/[0.1] focus:border-emerald-500'
+                  }`}
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
 
            <div className="flex items-center justify-between pt-6 border-t border-white/[0.05]">
              {selectedBudget ? (

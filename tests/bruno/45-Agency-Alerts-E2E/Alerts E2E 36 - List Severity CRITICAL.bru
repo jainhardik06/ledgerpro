@@ -1,0 +1,21 @@
+meta {
+  name: Alerts E2E 36 - List Severity CRITICAL
+  type: http
+  seq: 36
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/alerts?severity=CRITICAL
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.count: eq 4
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (!raw.alerts.every(a => a.severity === 'CRITICAL')) throw new Error('Severity filter must hold');
+}

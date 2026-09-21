@@ -10,7 +10,7 @@ export default function OfflinePage() {
         </div>
         <h1 className="text-2xl font-bold text-white mb-2">You are offline</h1>
         <p className="text-gray-400 mb-8">
-          It looks like you've lost your internet connection. Some features of LedgerPro are unavailable while offline.
+          It looks like you've lost your internet connection. Some features of Money OS are unavailable while offline.
         </p>
         <Link 
           href="/" 

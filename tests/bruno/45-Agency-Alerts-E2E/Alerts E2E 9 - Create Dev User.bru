@@ -1,0 +1,41 @@
+meta {
+  name: Alerts E2E 9 - Create Dev User
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{BASE_URL}}/api/tenant/users
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{alDevUsername}}",
+    "password": "E2eAlDev#2026"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.user.role: eq USER
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('alDevUsername', 'e2e_al_dev_' + suffix);
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('devUserId', raw.user.id);
+  if (!raw.user.id) throw new Error('Create must return the user id');
+}
+
+docs {
+  The delivery author and later the §114 probe session (a plain USER).
+  §21 forbids approving your own time, so the admin stays the approver —
+  every alert below consumes APPROVED economics, never draft intent.
+}

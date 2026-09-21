@@ -26,7 +26,7 @@ export default function LoginPage() {
       const data = await res.json();
       
       if (res.ok && data.success) {
-        window.location.href = '/dashboard';
+        window.location.href = data.redirectTo || '/dashboard';
       } else {
         setError(data.error || 'Invalid credentials');
       }

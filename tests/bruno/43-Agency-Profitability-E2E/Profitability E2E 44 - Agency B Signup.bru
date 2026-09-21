@@ -1,0 +1,30 @@
+meta {
+  name: Profitability E2E 44 - Agency B Signup
+  type: http
+  seq: 44
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "E2E Profitability Agency B",
+    "username": "{{profBUsername}}",
+    "password": "{{profBPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('profBUsername', 'e2e_prof_b_' + suffix);
+  bru.setVar('profBPassword', 'E2eProfB#2026');
+}

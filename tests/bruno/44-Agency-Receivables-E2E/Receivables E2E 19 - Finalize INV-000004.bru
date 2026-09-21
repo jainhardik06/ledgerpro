@@ -1,0 +1,19 @@
+meta {
+  name: Receivables E2E 19 - Finalize INV-000004
+  type: http
+  seq: 19
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{inv4Id}}/finalize
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.invoice.status: eq SENT
+  res.body.invoice.invoiceNumber: eq INV-000004
+  res.body.invoice.total.amount: eq 15000
+}

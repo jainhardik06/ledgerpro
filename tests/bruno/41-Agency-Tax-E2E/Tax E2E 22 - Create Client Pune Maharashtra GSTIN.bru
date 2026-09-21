@@ -1,0 +1,51 @@
+meta {
+  name: Tax E2E 22 - Create Client Pune Maharashtra GSTIN
+  type: http
+  seq: 22
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/clients
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Pune Industries",
+    "legalName": "Pune Industries Private Limited",
+    "email": "ap@pune-industries.test",
+    "billingProfile": { "country": "India", "currency": "INR", "address": "4 FC Road", "city": "Pune", "state": "Maharashtra", "postalCode": "411005" },
+    "taxProfile": {
+      "country": "IN",
+      "state": "Maharashtra",
+      "taxTreatment": "REGISTERED",
+      "registrationType": "GSTIN",
+      "registrationNumber": "27AAFCA5212M1Z8",
+      "taxIdentifiers": [
+        { "type": "GSTIN", "value": "27AAFCA5212M1Z8", "country": "IN" }
+      ]
+    },
+    "commercialDefaults": { "billingModel": "TIME_AND_MATERIALS", "paymentTerms": "NET_30", "currency": "INR" }
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.client.taxProfile.state: eq Maharashtra
+  res.body.client.taxProfile.taxIdentifiers[0].value: eq 27AAFCA5212M1Z8
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('clientIdMH', raw.client.id);
+  if (!raw.client.id) throw new Error('Create must return the client id');
+}
+
+docs {
+  §30 CGST+SGST coverage — the INTRA_STATE counterpart to file 9's Karnataka
+  client: a Maharashtra recipient (27-prefix GSTIN), the SAME state as the
+  Maharashtra supplier from file 4. The billing address freezes into the §25
+  snapshot in file 27.
+}

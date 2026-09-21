@@ -1,0 +1,42 @@
+meta {
+  name: Team E2E 20 - PM Auto-Added
+  type: http
+  seq: 20
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/members?includeInactive=true
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const members = raw.members || [];
+  const active = members.filter(m => m.active !== false);
+  const history = members.filter(m => m.active === false);
+  if (active.length !== 2) {
+    throw new Error('Expected 2 active members after §39 auto-add, got ' + active.length);
+  }
+  if (history.length !== 1) {
+    throw new Error('The removed membership must still be history (§37)');
+  }
+  const pmRow = active.find(m => m.userId === bru.getVar('userId'));
+  if (!pmRow) {
+    throw new Error('The project manager must have been auto-added at activation (§39)');
+  }
+  if (pmRow.role !== 'Project Manager') {
+    throw new Error('Auto-add must stamp role "Project Manager", got ' + pmRow.role);
+  }
+}
+
+docs {
+  §39 — at activation the system auto-added the project manager to the
+  team with role "Project Manager". The re-added developer and the kept
+  history row are both intact.
+}

@@ -1,0 +1,15 @@
+meta {
+  name: Reports E2E 72 - Dev 403 Profitability Report
+  type: http
+  seq: 72
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/project-profitability
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 403
+}

@@ -1,0 +1,16 @@
+meta {
+  name: Expenses E2E 29 - Dev Resubmits Main Expense
+  type: http
+  seq: 29
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/expenses/{{expMainId}}/submit
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.expense.status: eq SUBMITTED
+}

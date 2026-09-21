@@ -1,0 +1,27 @@
+meta {
+  name: Payments E2E 19 - Add FIXED_FEE Line 100000 to B
+  type: http
+  seq: 19
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{invBId}}/lines
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "type": "FIXED_FEE",
+    "description": "October engagement — webhook collection",
+    "quantity": 1,
+    "unitPrice": 100000,
+    "amount": 0
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.invoice.total.amount: eq 100000
+}

@@ -1,0 +1,24 @@
+meta {
+  name: Profitability E2E 22 - Admin Approves Entry 2
+  type: http
+  seq: 22
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/time/{{entry2Id}}/approve
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.timeEntry.approvalStatus: eq APPROVED
+  res.body.timeEntry.calculatedCost.amount: eq 900
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (raw.timeEntry.calculatedBillableAmount !== undefined) {
+    throw new Error('Non-billable time must never carry a billable amount');
+  }
+}

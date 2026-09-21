@@ -1,0 +1,31 @@
+meta {
+  name: Payments E2E 31 - Ledger Unchanged After Replay
+  type: http
+  seq: 31
+}
+
+get {
+  url: {{BASE_URL}}/api/transactions?limit=100
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const txs = raw.transactions;
+  const payGW1Id = bru.getVar('payGW1Id');
+
+  // After the replay: A(2 Credits) + B(payB1 Credit, payB1 reverse Debit, gw1 Credit) = 5.
+  if (txs.length !== 5) throw new Error('Expected exactly 5 transactions after the replay, found ' + txs.length);
+  const forGw1 = txs.filter(t => t.paymentId === payGW1Id);
+  if (forGw1.length !== 1) throw new Error('§99/§129: the replay must not create a second transaction for the gateway payment');
+
+  // Net cash: A +100000, B net 0 (40k in, 40k reversed out, 40k gateway in) = 140000.
+  const net = txs.reduce((sum, t) => sum + (t.type === 'Credit' ? t.amount : -t.amount), 0);
+  if (net !== 140000) throw new Error('Expected net cash 140000 after replay, got ' + net);
+}

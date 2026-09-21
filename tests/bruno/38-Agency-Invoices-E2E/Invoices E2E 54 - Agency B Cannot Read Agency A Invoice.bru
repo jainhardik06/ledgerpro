@@ -1,0 +1,21 @@
+meta {
+  name: Invoices E2E 54 - Agency B Cannot Read Agency A Invoice
+  type: http
+  seq: 54
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/invoices/{{invAId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 404
+  res.body.error: eq Invoice not found
+}
+
+docs {
+  §113 — the identical-404: Agency B's admin gets "not found", never a
+  hint that INV-000001 exists in another tenant.
+}

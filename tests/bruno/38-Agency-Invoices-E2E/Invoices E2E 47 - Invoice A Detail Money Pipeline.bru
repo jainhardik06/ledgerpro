@@ -1,0 +1,33 @@
+meta {
+  name: Invoices E2E 47 - Invoice A Detail Money Pipeline
+  type: http
+  seq: 47
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/invoices/{{invAId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.clientName: eq Acme Industries
+  res.body.projectName: eq Acme Portal Build
+  res.body.invoice.subtotal.amount: eq 192000
+  res.body.invoice.discount.amount: eq 2000
+  res.body.invoice.taxTotal.amount: eq 34200
+  res.body.invoice.total.amount: eq 224200
+  res.body.invoice.amountDue.amount: eq 224200
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  // §59 — all four line types on the issued invoice, sources traceable.
+  if (raw.lines.length !== 4) throw new Error('expected 4 lines, got ' + raw.lines.length);
+  const types = raw.lines.map(l => l.type).sort().join(',');
+  if (types !== 'EXPENSE,FIXED_FEE,MILESTONE,TIME') throw new Error('unexpected line types: ' + types);
+  const withoutSource = raw.lines.filter(l => l.type !== 'FIXED_FEE' && !l.sourceId);
+  if (withoutSource.length !== 0) throw new Error('§60: every source-backed line must carry its sourceId');
+}

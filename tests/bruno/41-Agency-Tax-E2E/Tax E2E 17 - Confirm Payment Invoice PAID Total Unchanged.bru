@@ -1,0 +1,34 @@
+meta {
+  name: Tax E2E 17 - Confirm Payment Invoice PAID Total Unchanged
+  type: http
+  seq: 17
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payments/{{payAId}}/confirm
+  body: json
+  auth: none
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.payment.status: eq CONFIRMED
+  res.body.payment.withholdingAmount.amount: eq 2000
+  res.body.invoice.status: eq PAID
+  res.body.invoice.amountPaid.amount: eq 118000
+  res.body.invoice.amountDue.amount: eq 0
+  res.body.invoice.total.amount: eq 118000
+  res.body.invoice.invoiceNumber: eq INV-000001
+}
+
+docs {
+  §21 — the gate that matters: the invoice is PAID at 118000 and its TOTAL
+  is STILL 118000. Withholding adjusted the cash (116000 lands in the bank),
+  never the invoice. The frozen compliance snapshot from file 14 reads
+  exactly what was issued.
+}

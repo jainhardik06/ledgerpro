@@ -1,0 +1,37 @@
+meta {
+  name: Tax E2E 18 - Create Invoice Draft B
+  type: http
+  seq: 18
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "clientId": "{{clientId}}",
+    "issueDate": "{{issueDate}}",
+    "notes": "September consulting — export of service, zero-rated"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.invoice.status: eq DRAFT
+  res.body.invoice.total.amount: eq 0
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('invBId', raw.invoice.id);
+  if (!raw.invoice.id) throw new Error('Create must return the invoice id');
+}
+
+docs {
+  The exempt journey (§16): a second draft on the same client for the
+  zero-rated export scenario.
+}

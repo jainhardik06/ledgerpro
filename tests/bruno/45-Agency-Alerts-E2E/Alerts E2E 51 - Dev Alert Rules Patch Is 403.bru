@@ -1,0 +1,26 @@
+meta {
+  name: Alerts E2E 51 - Dev Alert Rules Patch Is 403
+  type: http
+  seq: 51
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/alert-rules/{{marginRuleId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "enabled": false
+  }
+}
+
+assert {
+  res.status: eq 403
+}
+
+docs {
+  §24 — tuning is admin-only (agency.alerts.manage): the USER gets 403
+  before the rule is touched.
+}

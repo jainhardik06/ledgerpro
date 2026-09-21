@@ -1,0 +1,24 @@
+meta {
+  name: Rates E2E 18 - History Stable at 900
+  type: http
+  seq: 18
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/rates/resolve?userId={{userId}}&date=2026-06-15
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.cost.status: eq RESOLVED
+  res.body.cost.amount: eq 900
+  res.body.cost.effectiveTo: eq 2026-12-31
+}
+
+docs {
+  §122/§64 — the 2026 date still resolves to the CLOSED ₹900 version, and
+  the resolved range proves the old version was closed at 2026-12-31, not
+  deleted. Past work stays financially stable.
+}

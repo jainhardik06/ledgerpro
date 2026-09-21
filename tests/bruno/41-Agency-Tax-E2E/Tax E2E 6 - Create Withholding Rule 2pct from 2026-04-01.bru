@@ -1,0 +1,45 @@
+meta {
+  name: Tax E2E 6 - Create Withholding Rule 2pct from 2026-04-01
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/withholding-rules
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "jurisdiction": "IN",
+    "effectiveFrom": "2026-04-01",
+    "effectiveTo": "2027-03-31",
+    "ruleCode": "IT Act 2025 — TDS on services",
+    "rate": 2,
+    "threshold": 30000,
+    "conditions": { "recipientType": "COMPANY" }
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.rule.jurisdiction: eq IN
+  res.body.rule.effectiveFrom: eq 2026-04-01
+  res.body.rule.rate: eq 2
+  res.body.rule.threshold: eq 30000
+  res.body.rule.active: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('whRuleId', raw.rule.id);
+}
+
+docs {
+  §19 — withholding arrives as EFFECTIVE-DATED CONFIGURATION: an Income Tax
+  Act 2025-framework code, its own date window, rate and threshold. Nothing
+  here hard-codes a legacy section number — the rate exists because the
+  tenant configured it, and nothing else.
+}

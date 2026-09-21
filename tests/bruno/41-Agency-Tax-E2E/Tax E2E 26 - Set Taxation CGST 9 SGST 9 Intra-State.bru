@@ -1,0 +1,57 @@
+meta {
+  name: Tax E2E 26 - Set Taxation CGST 9 SGST 9 Intra-State
+  type: http
+  seq: 26
+}
+
+put {
+  url: {{BASE_URL}}/api/agency/invoices/{{invCId}}/taxation
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "taxes": [
+      {
+        "type": "CGST",
+        "name": "CGST",
+        "code": "CGST",
+        "rate": 9,
+        "metadata": { "rulesVersion": "gst-rules-2026.1" }
+      },
+      {
+        "type": "SGST",
+        "name": "SGST",
+        "code": "SGST",
+        "rate": 9,
+        "metadata": { "rulesVersion": "gst-rules-2026.1" }
+      }
+    ],
+    "placeOfSupply": { "country": "IN", "stateOrRegion": "Maharashtra", "code": "27" },
+    "reverseCharge": { "applicable": false }
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.invoice.subtotal.amount: eq 100000
+  res.body.invoice.taxLines[0].type: eq CGST
+  res.body.invoice.taxLines[0].rate: eq 9
+  res.body.invoice.taxLines[0].amount.amount: eq 9000
+  res.body.invoice.taxLines[1].type: eq SGST
+  res.body.invoice.taxLines[1].rate: eq 9
+  res.body.invoice.taxLines[1].amount.amount: eq 9000
+  res.body.invoice.taxTotal.amount: eq 18000
+  res.body.invoice.total.amount: eq 118000
+  res.body.invoice.placeOfSupply.stateOrRegion: eq Maharashtra
+}
+
+docs {
+  §30 — the confirmed intra-state structure: the caller accepts the §15/§25
+  suggestion and sends ONLY {type, name, code, rate} for BOTH components —
+  the engine computes CGST 9000 + SGST 9000 = 18000, total 118000 (the
+  intra-state twin of file 13's IGST example; same rupee outcome, different
+  components).
+}

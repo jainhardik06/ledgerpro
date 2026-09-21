@@ -1,0 +1,27 @@
+meta {
+  name: Rates E2E 14 - Resolve Cost Rate 900
+  type: http
+  seq: 14
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/rates/resolve?userId={{userId}}&date=2026-06-15
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.cost.status: eq RESOLVED
+  res.body.cost.amount: eq 900
+  res.body.cost.currency: eq INR
+  res.body.cost.source: eq USER_ASSIGNMENT
+  res.body.cost.unit: eq HOUR
+}
+
+docs {
+  §136 RELEASE GATE (cost half): resolveCostRate for the developer on
+  2026-06-15 must return ₹900/hour via the user assignment (§66 tier 1,
+  §131 pinned entry). 8 hours of this = the ₹7,200 planned cost.
+}

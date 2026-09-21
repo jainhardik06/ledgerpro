@@ -1,0 +1,23 @@
+meta {
+  name: Alerts E2E 68 - Patch Days Out of Bounds Is 400
+  type: http
+  seq: 68
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/alert-rules/{{dueSoonRuleId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "configuration": {
+      "days": 400
+    }
+  }
+}
+
+assert {
+  res.status: eq 400
+}

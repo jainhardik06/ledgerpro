@@ -1,0 +1,29 @@
+meta {
+  name: Receivables E2E 34 - Filter By Project
+  type: http
+  seq: 34
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/receivables?projectId={{projectId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const r = raw.receivables;
+  if (r.outstanding !== 70000) throw new Error('project outstanding must be 70000, got ' + r.outstanding);
+  if (r.openInvoiceCount !== 2) throw new Error('the project carries exactly 2 open invoices');
+  const order = r.invoices.map(i => i.invoiceNumber);
+  if (JSON.stringify(order) !== JSON.stringify(['INV-000001', 'INV-000002'])) {
+    throw new Error('project filter rows: ' + JSON.stringify(order));
+  }
+  if (r.byProject.length !== 1) throw new Error('byProject narrows to the one project');
+  if (r.byProject[0].projectId !== bru.getVar('projectId')) throw new Error('byProject row must be the filtered project');
+}

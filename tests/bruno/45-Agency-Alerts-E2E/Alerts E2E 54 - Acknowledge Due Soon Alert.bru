@@ -1,0 +1,23 @@
+meta {
+  name: Alerts E2E 54 - Acknowledge Due Soon Alert
+  type: http
+  seq: 54
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/alerts/{{dueSoonAlertId}}/acknowledge
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.alert.status: eq ACKNOWLEDGED
+  res.body.alert.acknowledgedBy: eq {{alAdminUsername}}
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (!raw.alert.acknowledgedAt) throw new Error('Acknowledge must stamp acknowledgedAt');
+}

@@ -1,0 +1,28 @@
+meta {
+  name: Receivables E2E 32 - Aging Endpoint Ladder
+  type: http
+  seq: 32
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/receivables/aging
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const a = raw.aging;
+  const expect = { CURRENT: 45000, '1-30': 20000, '31-60': 40000, '61-90': 0, '90+': 30000 };
+  for (const b of Object.keys(expect)) {
+    if (a.byAgingBucket[b] !== expect[b]) throw new Error('bucket ' + b + ': expected ' + expect[b] + ', got ' + a.byAgingBucket[b]);
+  }
+  if (a.overdueCount !== 3) throw new Error('overdue count must be 3');
+  if (a.openInvoiceCount !== 5) throw new Error('open count must be 5');
+  if (a.mixedCurrencies !== false) throw new Error('single-currency store must not be mixed');
+}

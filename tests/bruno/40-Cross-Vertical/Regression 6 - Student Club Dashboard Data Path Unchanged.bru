@@ -1,0 +1,21 @@
+meta {
+  name: Regression 6 - Student Club Dashboard Data Path Unchanged
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{BASE_URL}}/api/transactions
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+docs {
+  Student Club tenants use the same core ledger as Standard. After Module 1,
+  their data path must be unchanged.
+}

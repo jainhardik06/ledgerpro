@@ -1,0 +1,21 @@
+meta {
+  name: Receivables E2E 38 - Invalid Status Paid Is 400
+  type: http
+  seq: 38
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/receivables?status=PAID
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  §98 fail-closed: PAID is not a receivable display status (a paid invoice
+  owes nothing — §86). A typo'd status must be a 400, never a silently-empty
+  report that looks like "nothing owed".
+}

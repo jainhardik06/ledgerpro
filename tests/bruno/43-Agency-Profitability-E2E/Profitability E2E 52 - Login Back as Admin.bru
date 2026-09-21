@@ -1,0 +1,28 @@
+meta {
+  name: Profitability E2E 52 - Login Back as Admin
+  type: http
+  seq: 52
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{profAdminUsername}}",
+    "password": "{{profAdminPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+docs {
+  Restore the admin session so the §113 Agency-B probes below (and any
+  later suite inheriting the jar) run with the intended credentials.
+}

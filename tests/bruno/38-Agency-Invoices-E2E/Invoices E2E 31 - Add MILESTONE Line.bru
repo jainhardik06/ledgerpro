@@ -1,0 +1,31 @@
+meta {
+  name: Invoices E2E 31 - Add MILESTONE Line
+  type: http
+  seq: 31
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{invAId}}/lines
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "type": "MILESTONE",
+    "sourceId": "{{milestoneId}}",
+    "description": "Milestone 1 — Discovery and strategy sign-off"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.line.type: eq MILESTONE
+  res.body.invoice.subtotal.amount: eq 167000
+}
+
+docs {
+  §73 — the milestone's frozen amount (150000) rides the line: 17000 +
+  150000 = 167000 subtotal.
+}

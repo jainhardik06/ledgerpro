@@ -1,0 +1,29 @@
+meta {
+  name: Work Items E2E 20 - Assign
+  type: http
+  seq: 20
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/work-items/{{workItemId}}?action=assign
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "userId": "{{userId}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.workItem.assignedTo: eq {{userId}}
+}
+
+docs {
+  §12/§15/§26 — assign the single primary assignee; the domain service
+  verifies the user belongs to the same tenant before writing, and audits
+  WORK_ITEM_ASSIGNED.
+}

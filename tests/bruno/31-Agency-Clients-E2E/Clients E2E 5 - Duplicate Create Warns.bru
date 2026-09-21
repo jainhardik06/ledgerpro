@@ -1,0 +1,39 @@
+meta {
+  name: Clients E2E 5 - Duplicate Create Warns
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/clients
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "  acme   studio e2e "
+  }
+}
+
+assert {
+  res.status: eq 409
+  res.body.code: eq DUPLICATE_WARNING
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (!Array.isArray(raw.existing) || raw.existing.length < 1) {
+    throw new Error('409 must carry the existing clients for View Existing');
+  }
+  const match = raw.existing.some(c => c.id === bru.getVar('clientId'));
+  if (!match) {
+    throw new Error('The warning must name the client just created (normalized match)');
+  }
+}
+
+docs {
+  §18 — duplicates are a WARNING, never a rejection: same tenantId +
+  normalizedName (case/whitespace-insensitive) → 409 with the existing list.
+  The UI offers Create Anyway / View Existing / Cancel on top of this.
+}

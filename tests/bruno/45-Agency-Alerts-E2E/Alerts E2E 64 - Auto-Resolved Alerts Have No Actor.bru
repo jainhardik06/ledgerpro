@@ -1,0 +1,29 @@
+meta {
+  name: Alerts E2E 64 - Auto-Resolved Alerts Have No Actor
+  type: http
+  seq: 64
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/alerts?status=RESOLVED
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.count: eq 2
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const types = raw.alerts.map(a => a.ruleType).sort();
+  if (types.join(',') !== 'INVOICE_OVERDUE,LARGE_INVOICE_OVERDUE') {
+    throw new Error('The resolved set must be invoice B\'s two cash alerts, got ' + types.join(','));
+  }
+  // §19 — auto-resolution has NO actor; only manual resolve stamps a user.
+  for (const a of raw.alerts) {
+    if (a.resolvedBy !== undefined) throw new Error('Auto-resolved alert must not carry resolvedBy, got ' + a.resolvedBy);
+    if (!a.resolvedAt) throw new Error('Auto-resolution still stamps resolvedAt');
+  }
+}

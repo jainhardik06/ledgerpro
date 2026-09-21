@@ -1,0 +1,26 @@
+meta {
+  name: Time E2E 31 - Dev Reads Own Entry Redacted
+  type: http
+  seq: 32
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/time/{{timeEntryId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.timeEntry.approvalStatus: eq APPROVED
+  res.body.timeEntry.billingRateSnapshot.amount: eq 2500
+  res.body.timeEntry.calculatedBillableAmount.amount: eq 5000
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  // §99 — the cost side is salary data: never shown to a non-admin, even
+  // for their OWN entry. The billing side stays (it is their work's value).
+  if (raw.timeEntry.costRateSnapshot !== undefined) throw new Error('§99: cost snapshot must be redacted for a USER');
+  if (raw.timeEntry.calculatedCost !== undefined) throw new Error('§99: calculated cost must be redacted for a USER');
+}

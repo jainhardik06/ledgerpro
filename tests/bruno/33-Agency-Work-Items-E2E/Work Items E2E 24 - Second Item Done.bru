@@ -1,0 +1,27 @@
+meta {
+  name: Work Items E2E 24 - Second Item Done
+  type: http
+  seq: 24
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/work-items/{{secondWorkItemId}}?action=status
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "status": "IN_PROGRESS"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.workItem.status: eq IN_PROGRESS
+}
+
+docs {
+  §11 — the second item moves NOT_STARTED → IN_PROGRESS → DONE next, then
+  reopens — the full forward + reopen cycle.
+}

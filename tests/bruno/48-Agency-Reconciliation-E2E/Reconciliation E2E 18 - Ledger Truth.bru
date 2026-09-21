@@ -1,0 +1,52 @@
+meta {
+  name: Reconciliation E2E 18 - Ledger Truth
+  type: http
+  seq: 18
+}
+
+get {
+  url: {{BASE_URL}}/api/transactions?limit=100
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const txs = raw.transactions;
+  const invAId = bru.getVar('recInvAId');
+  const invBId = bru.getVar('recInvBId');
+  const accountId = bru.getVar('recAccountId');
+
+  // §156 — exactly one Credit per confirmed payment: 3 payments, 3 Credits.
+  if (txs.length !== 3) throw new Error('Expected exactly 3 transactions, found ' + txs.length);
+  const seen = {};
+  for (const t of txs) {
+    if (t.type !== 'Credit') throw new Error('Expected only Credits, found ' + t.type);
+    if (t.accountId !== accountId) throw new Error('§108: the Credit must enter the tracked account');
+    if (t.category !== 'Payment') throw new Error('Expected category Payment');
+    if (t.amount < 0) throw new Error('Negative transaction amount');
+    const key = t.paymentId + ':' + t.type;
+    if (seen[key]) throw new Error('§129: payment ' + t.paymentId + ' produced more than one ' + t.type);
+    seen[key] = true;
+  }
+
+  // Per-invoice cash: A 100000, B 20000. Total account cash 120000.
+  const netFor = (invId) => txs
+    .filter(t => t.invoiceId === invId)
+    .reduce((sum, t) => sum + (t.type === 'Credit' ? t.amount : -t.amount), 0);
+  if (netFor(invAId) !== 100000) throw new Error('Invoice A cash: ' + netFor(invAId));
+  if (netFor(invBId) !== 20000) throw new Error('Invoice B cash: ' + netFor(invBId));
+  const net = txs.reduce((sum, t) => sum + (t.type === 'Credit' ? t.amount : -t.amount), 0);
+  if (net !== 120000) throw new Error('§156: expected account cash 120000, got ' + net);
+}
+
+docs {
+  The core ledger agrees with the payment engine: 3 Credits (one per
+  confirmed payment), per-invoice cash A 100000 / B 20000, total 120000 —
+  exactly the confirmed payments, never a duplicate (§129) or negative.
+}

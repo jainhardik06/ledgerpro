@@ -1,0 +1,32 @@
+meta {
+  name: Invoices E2E 35 - Draft B Adds Entry 2
+  type: http
+  seq: 35
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{invBId}}/lines
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "type": "TIME",
+    "sourceId": "{{entry2Id}}",
+    "description": "Development — portal polish and fixes"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.line.type: eq TIME
+  res.body.invoice.subtotal.amount: eq 2500
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('lineBId', raw.line.id);
+  if (!raw.line.id) throw new Error('Add must return the line id');
+}

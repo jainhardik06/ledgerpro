@@ -1,0 +1,36 @@
+meta {
+  name: Settings E2E 32 - Test Stored Pair
+  type: http
+  seq: 32
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/settings/payment/test
+  body: json
+  auth: none
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  // No submitted pair ⇒ the STORED pair (itself fake) is tested: invalid or
+  // unreachable, never ok, never the secret.
+  if (raw.result !== 'invalid' && raw.result !== 'unreachable') {
+    throw new Error('stored fake credentials must not pass: ' + raw.result);
+  }
+  const text = JSON.stringify(raw);
+  if (text.includes('e2e_secret_value')) throw new Error('stored secret echoed');
+}
+
+docs {
+  §52 — the test endpoint with an empty body resolves the tenant's STORED
+  pair (decrypt in server memory, one authenticated read, never echoed).
+}

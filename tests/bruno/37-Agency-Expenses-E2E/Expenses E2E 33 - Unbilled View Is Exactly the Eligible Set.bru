@@ -1,0 +1,41 @@
+meta {
+  name: Expenses E2E 33 - Unbilled View Is Exactly the Eligible Set
+  type: http
+  seq: 33
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/expenses?view=unbilled
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const mainId = bru.getVar('expMainId');
+  // §48/§49 — invoice-eligible = APPROVED + billable + UNBILLED.
+  if (raw.expenses.length !== 1) throw new Error('expected exactly 1 invoice-eligible expense, got ' + raw.expenses.length);
+  const e = raw.expenses[0];
+  if (e.id !== mainId) throw new Error('the eligible expense must be the main 12000 charge, got ' + e.id);
+  // §49 — the value carried into an invoice is the CLIENT CHARGE.
+  if (e.clientChargeAmount.amount !== 12000) throw new Error('eligible value must be clientChargeAmount 12000, got ' + e.clientChargeAmount.amount);
+  if (e.status !== 'APPROVED' || e.billingStatus !== 'UNBILLED' || e.billable !== true) {
+    throw new Error('eligibility triple violated');
+  }
+  // The internal 2000 (approved but never billable) and the 5000 draft
+  // must NOT appear — they are not invoice-eligible.
+  const adminId = bru.getVar('expAdminId');
+  const secondId = bru.getVar('expSecondId');
+  if (raw.expenses.some(x => x.id === adminId || x.id === secondId)) throw new Error('internal/draft expenses leaked into the unbilled view');
+}
+
+docs {
+  Invoice eligibility (§48/§49): view=unbilled returns EXACTLY the eligible
+  set — the main expense alone, valued at its 12000 client charge. The
+  approved-but-internal 2000 and the reworked 5000 draft are absent.
+}

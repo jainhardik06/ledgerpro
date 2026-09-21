@@ -1,0 +1,43 @@
+meta {
+  name: Alerts E2E 1 - Signup
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "E2E Alerts Agency",
+    "username": "{{alAdminUsername}}",
+    "password": "{{alAdminPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('alAdminUsername', 'e2e_al_admin_' + suffix);
+  bru.setVar('alAdminPassword', 'E2eAlAdmin#2026');
+}
+
+docs {
+  Fresh agency for the Module 15 alerts journey (§1–§25): one deliberately
+  overrun ACTIVE T&M project (82% hours burn, 419% cost burn, margin below
+  target, unbilled time + expenses) plus one COMPLETED fixed-fee project
+  with its whole contract uninvoiced, and two open invoices — one due in 3
+  days, one 150k overdue 10 days. That is exactly 9 detections (4 CRITICAL,
+  3 WARNING, 2 INFO). Then the §20/§21 evaluation contract end to end:
+  idempotent re-runs, the full dedupe matrix (create / update / auto-resolve
+  / reopen), the §19 acknowledge/resolve lifecycle with 409s, §24 rule
+  tuning and silencing, §114 cost-row privacy for a USER, the fail-closed
+  400s, and Agency B isolation.
+}

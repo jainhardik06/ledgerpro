@@ -1,0 +1,26 @@
+meta {
+  name: Settings E2E 23 - PATCH Billing Bogus Tax Profile 400
+  type: http
+  seq: 23
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/settings/billing
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "defaultTaxProfileId": "507f1f77bcf86cd799439011"
+  }
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  §67 — the default tax profile must be a REAL, ACTIVE profile of THIS
+  tenant; a well-formed but unknown ObjectId is an explicit 400.
+}

@@ -1,0 +1,34 @@
+meta {
+  name: Alerts E2E 45 - Dev List Excludes Cost Rows
+  type: http
+  seq: 45
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/alerts
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.count: eq 7
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  // §114 — the two cost-bearing ruleTypes are REMOVED for a USER session.
+  const costRows = raw.alerts.filter(a =>
+    a.ruleType === 'PROJECT_OVER_BUDGET' || a.ruleType === 'PROJECT_MARGIN_BELOW_TARGET');
+  if (costRows.length > 0) throw new Error('§114 violated: a USER received cost-bearing rows');
+  // Operational noise stays: the dev still sees the hours band warning.
+  if (!raw.alerts.some(a => a.ruleType === 'PROJECT_HOURS_80')) {
+    throw new Error('§114 must not hide operational alerts — HOURS_80 missing');
+  }
+}
+
+docs {
+  §114 privacy end-to-end: a plain USER sees all 7 operational and cash
+  alerts, never the two cost-structure rows (over-budget, margin).
+}

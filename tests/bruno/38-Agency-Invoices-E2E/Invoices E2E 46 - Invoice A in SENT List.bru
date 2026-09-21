@@ -1,0 +1,26 @@
+meta {
+  name: Invoices E2E 46 - Invoice A in SENT List
+  type: http
+  seq: 46
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/invoices?status=SENT
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  // §85 — the list is filterable by status and carries §20 labels.
+  if (raw.invoices.length !== 1) throw new Error('expected exactly 1 SENT invoice, got ' + raw.invoices.length);
+  const inv = raw.invoices[0];
+  if (inv.invoiceNumber !== 'INV-000001') throw new Error('expected INV-000001, got ' + inv.invoiceNumber);
+  if (raw.clientNames[inv.clientId] !== 'Acme Industries') throw new Error('§20: client name must be resolved');
+  if (raw.projectNames[inv.projectId] !== 'Acme Portal Build') throw new Error('§20: project name must be resolved');
+}

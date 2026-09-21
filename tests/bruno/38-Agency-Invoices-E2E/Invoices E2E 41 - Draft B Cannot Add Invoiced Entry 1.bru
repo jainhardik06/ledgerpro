@@ -1,0 +1,30 @@
+meta {
+  name: Invoices E2E 41 - Draft B Cannot Add Invoiced Entry 1
+  type: http
+  seq: 41
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{invBId}}/lines
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "type": "TIME",
+    "sourceId": "{{entry1Id}}",
+    "description": "Second duplicate attempt on invoiced entry"
+  }
+}
+
+assert {
+  res.status: eq 409
+  res.body.code: eq SOURCE_ALREADY_INVOICED
+}
+
+docs {
+  The second duplicate-billing probe, after finalization: an INVOICED
+  source is refused with a distinct code. Billing the same work twice is
+  impossible at every state of its lifecycle (§61/§65/§148).
+}

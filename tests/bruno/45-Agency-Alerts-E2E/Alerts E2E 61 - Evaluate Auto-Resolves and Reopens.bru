@@ -1,0 +1,33 @@
+meta {
+  name: Alerts E2E 61 - Evaluate Auto-Resolves and Reopens
+  type: http
+  seq: 61
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/alerts/evaluate
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.result.created: eq 0
+  res.body.result.updated: eq 6
+  res.body.result.reopened: eq 1
+  res.body.result.autoResolved: eq 2
+  res.body.result.totalActive: eq 7
+}
+
+docs {
+  The full §20 dedupe matrix in one pass:
+    6 × UPDATE  — OPEN alerts whose conditions persist (hours, over-budget,
+                  margin, unbilled time, unbilled expense, completed)
+    2 × AUTO_RESOLVE — INV-000002's OVERDUE + LARGE (paid, no actor)
+    1 × REOPEN  — the manually-resolved DUE_SOON: its invoice is STILL open
+                  and due in 3 days, so the condition returned and the
+                  evaluator re-opened it as a fresh detection (§19 —
+                  reopening is evaluator-only).
+  totalActive = 8 active before + 1 reopened − 2 auto-resolved = 7.
+}

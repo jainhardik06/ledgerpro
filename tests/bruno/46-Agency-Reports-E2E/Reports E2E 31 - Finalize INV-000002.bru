@@ -1,0 +1,20 @@
+meta {
+  name: Reports E2E 31 - Finalize INV-000002
+  type: http
+  seq: 31
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{invBId}}/finalize
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.invoice.status: eq SENT
+  res.body.invoice.invoiceNumber: eq INV-000002
+  res.body.invoice.total.amount: eq 150000
+  res.body.invoice.amountDue.amount: eq 150000
+}

@@ -1,0 +1,35 @@
+meta {
+  name: Payments E2E 52 - Agency B Signup
+  type: http
+  seq: 52
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "E2E Payments Agency B",
+    "username": "{{payBAdminUsername}}",
+    "password": "{{payBAdminPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('payBAdminUsername', 'e2e_payb_admin_' + suffix);
+  bru.setVar('payBAdminPassword', 'E2ePayBAdmin#2026');
+}
+
+docs {
+  The wrong-tenant leg: a second agency probes Agency A's payment records
+  (§113 — cross-tenant refs are indistinguishable from missing).
+}

@@ -1,0 +1,21 @@
+meta {
+  name: Invoices E2E 55 - Agency B Cannot Void Agency A Invoice
+  type: http
+  seq: 55
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{invAId}}/void
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 404
+  res.body.error: eq Invoice not found
+}
+
+docs {
+  §113 on the WRITE side — the critical operation is tenant-scoped: the
+  void (like finalize) is the same 404 for a foreign invoice.
+}

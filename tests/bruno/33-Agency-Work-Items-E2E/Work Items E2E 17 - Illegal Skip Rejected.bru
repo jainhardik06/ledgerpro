@@ -1,0 +1,27 @@
+meta {
+  name: Work Items E2E 17 - Illegal Skip Rejected
+  type: http
+  seq: 17
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/work-items/{{secondWorkItemId}}?action=status
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "status": "DONE"
+  }
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  §11 — NOT_STARTED → DONE is an illegal skip; the state machine (domain
+  service, never the UI) rejects it. The second work item stays
+  NOT_STARTED for the reopen sequence later in this suite.
+}

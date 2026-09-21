@@ -1,0 +1,46 @@
+meta {
+  name: Invoices E2E 27 - Create Invoice Draft A
+  type: http
+  seq: 27
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "clientId": "{{clientId}}",
+    "projectId": "{{projectId}}",
+    "issueDate": "{{issueDate}}",
+    "notes": "September engagement — portal build"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.invoice.status: eq DRAFT
+  res.body.invoice.currency: eq INR
+  res.body.invoice.total.amount: eq 0
+}
+
+script:pre-request {
+  const ist = new Date(Date.now() + 5.5 * 60 * 60 * 1000);
+  bru.setVar('issueDate', ist.toISOString().slice(0, 10));
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const inv = raw.invoice;
+  bru.setVar('invAId', inv.id);
+  if (!inv.id) throw new Error('Create must return the invoice id');
+  // §74 — a draft NEVER carries a number.
+  if (inv.invoiceNumber != null) throw new Error('§74: draft must not carry a number');
+  // §68 step 5 — NET_30 from the client's commercialDefaults: +30 calendar days.
+  const expected = new Date(Date.UTC(+inv.issueDate.slice(0, 4), +inv.issueDate.slice(5, 7) - 1, +inv.issueDate.slice(8, 10), 12) + 30 * 86400000);
+  const expectedDue = expected.toISOString().slice(0, 10);
+  if (inv.dueDate !== expectedDue) throw new Error('dueDate: expected ' + expectedDue + ' (NET_30), got ' + inv.dueDate);
+}

@@ -1,0 +1,39 @@
+meta {
+  name: Alerts E2E 65 - Admin Dashboard Alerts Top 5
+  type: http
+  seq: 65
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/dashboard?period=THIS_MONTH
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const alerts = raw.data.alerts;
+  if (!Array.isArray(alerts) || alerts.length !== 5) {
+    throw new Error('Admin dashboard top must be 5 (3 CRITICAL + 2 WARNING), got ' + (alerts ? alerts.length : 'none'));
+  }
+  // §114 — the admin session sees the cost-bearing view type in the top.
+  if (!alerts.some(a => a.type === 'PROJECT_BUDGET')) {
+    throw new Error('Admin top must include the over-budget alert');
+  }
+  // The §28 shared-context lines stay live alongside (nothing was pended
+  // by wiring the alerts source).
+  if (raw.data.receivables.outstanding.sourceReady !== true) {
+    throw new Error('Receivables must stay live on the dashboard');
+  }
+}
+
+docs {
+  The §21 loop end-to-end for the admin: the dashboard renders the STORED
+  top 5 read-only (this request does NOT evaluate) — the same rows the
+  AlertsPanel shows on the Command Center.
+}

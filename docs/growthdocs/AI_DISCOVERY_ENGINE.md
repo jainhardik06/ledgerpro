@@ -66,7 +66,7 @@ These are the exact queries to test monthly and optimize for:
 
 ### 1. Official Page Optimization
 
-Every page on `money-os-discovery` and `moneyos.app` must clearly state:
+Every page on `money-os-discovery` and `moneyos.webasthetic.in` must clearly state:
 - What Money OS does (product category)
 - Who it is for (audience)
 - Key features (capabilities)
@@ -117,7 +117,7 @@ Allow: /
 User-agent: anthropic-ai
 Allow: /
 
-Sitemap: https://discover.moneyos.app/sitemap.xml
+Sitemap: https://discovermoneyos.webasthetic.in/sitemap.xml
 ```
 
 ### 4. JSON-LD Schema Presence
@@ -172,8 +172,8 @@ Each comparison page with Money OS will appear in AI searches for "[Competitor] 
 ## Sitemap for AI Crawlers
 
 Generate and submit sitemaps at:
-- `https://discover.moneyos.app/sitemap.xml`
-- `https://moneyos.app/sitemap.xml`
+- `https://discovermoneyos.webasthetic.in/sitemap.xml`
+- `https://moneyos.webasthetic.in/sitemap.xml`
 
 Astro auto-generates the sitemap via `@astrojs/sitemap`. Verify it includes all use case and doc pages after every build.
 

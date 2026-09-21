@@ -1,0 +1,37 @@
+meta {
+  name: Rates E2E 23 - User Sees Redacted Cost Cards 99
+  type: http
+  seq: 23
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/rate-cards
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.costRatesReadable: eq false
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const cost = (raw.cards || []).find(c => c.type === 'COST');
+  if (!cost) {
+    throw new Error('Expected the cost card to appear in the USER list (it exists)');
+  }
+  if (cost.costRedacted !== true) {
+    throw new Error('Cost card must be flagged costRedacted for a USER');
+  }
+  if (cost.entryCount !== 0) {
+    throw new Error('Cost card entryCount must be redacted to 0 for a USER, got ' + cost.entryCount);
+  }
+}
+
+docs {
+  §99/§104 — a USER's list: the cost card is VISIBLE (it exists) but its
+  entries and counts are redacted. Rates never leak; the UI renders
+  "Restricted", never a fake zero.
+}

@@ -1,0 +1,32 @@
+meta {
+  name: Expenses E2E 12 - 39 Negative INTERNAL and Billable
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/expenses
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "projectId": "{{projectId}}",
+    "vendorName": "Impossible Vendor",
+    "description": "INTERNAL yet billable - must be rejected",
+    "amount": 500,
+    "expenseType": "INTERNAL",
+    "billable": true,
+    "expenseDate": "{{expDate}}"
+  }
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  §39 — an INTERNAL expense is NEVER billable. The validator refuses the
+  combination at the boundary; no row is ever written.
+}

@@ -1,0 +1,29 @@
+meta {
+  name: Expenses E2E 18 - Dev Lists Own Expenses
+  type: http
+  seq: 18
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/expenses
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  // §33 — a USER default view is their OWN expenses: both dev rows.
+  if (raw.expenses.length !== 2) throw new Error('expected 2 own expenses, got ' + raw.expenses.length);
+  for (const e of raw.expenses) {
+    if (e.amount !== undefined) throw new Error('§99 redaction violated in list view');
+    if (e.markupPercent !== undefined) throw new Error('§99 redaction violated in list view');
+  }
+  // The admin internal expense is invisible to the dev (not theirs).
+  const adminId = bru.getVar('expAdminId');
+  if (raw.expenses.some(e => e.id === adminId)) throw new Error('dev must not see the admin expense');
+}

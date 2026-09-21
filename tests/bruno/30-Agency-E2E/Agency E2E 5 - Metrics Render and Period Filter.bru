@@ -1,0 +1,77 @@
+meta {
+  name: Agency E2E 5 - Metrics Render and Period Filter
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/dashboard?period=THIS_QUARTER
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.period.timezone: isDefined
+  res.body.data.financial.contractedRevenue: isDefined
+  res.body.data.financial.collectedRevenue: isDefined
+  res.body.data.profitability.grossMargin: isDefined
+  res.body.data.receivables.outstanding: isDefined
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const data = raw.data;
+
+  // Metrics render as TYPED metric objects (kind + value + sourceReady), and
+  // the honesty rule holds per source: a metric never renders live before
+  // its owning entity exists. Module 3 (Step 3.8) made the PROJECT metrics
+  // live; Module 7 (§117) made the TIME metrics live (unbilled revenue);
+  // Module 10 (§105/§117) made the INVOICE/PAYMENT metrics live (invoiced
+  // and collected revenue, receivables).
+  const metrics = [
+    data.financial.contractedRevenue,
+    data.financial.invoicedRevenue,
+    data.financial.collectedRevenue,
+    data.financial.unbilledRevenue,
+  ];
+  for (const m of metrics) {
+    if (!m || m.kind !== 'money') {
+      throw new Error('Financial metrics must be money-kind metric objects');
+    }
+  }
+  for (const m of [data.financial.contractedRevenue, data.financial.unbilledRevenue]) {
+    if (m.sourceReady !== true) {
+      throw new Error('Projects/time sources are wired — sourceReady must be true');
+    }
+  }
+  for (const m of [data.financial.invoicedRevenue, data.financial.collectedRevenue]) {
+    if (m.sourceReady !== true) {
+      throw new Error('Module 10 (§117): invoicing/payments sources are wired — sourceReady must be true');
+    }
+  }
+  if (data.receivables.outstanding.sourceReady !== true) {
+    throw new Error('Module 10 (§105): receivables read the invoice store — sourceReady must be true');
+  }
+
+  // Period filter: THIS_QUARTER resolves server-side to the quarter start.
+  const now = new Date();
+  const qMonth = [1, 4, 7, 10][Math.floor(now.getUTCMonth() / 3)];
+  const expectedFrom = `${now.getUTCFullYear()}-${String(qMonth).padStart(2, '0')}-01`;
+  if (data.period.from !== expectedFrom) {
+    throw new Error(`Expected quarter start ${expectedFrom}, got ${data.period.from}`);
+  }
+
+  // Alerts appear (empty array for a fresh tenant — present, not missing).
+  if (!Array.isArray(data.alerts)) {
+    throw new Error('alerts must be an array');
+  }
+}
+
+docs {
+  Filter period + metrics render + alerts appear — the tail of the Module
+  1.26 E2E flow. The client renders these metric objects as "—" pending
+  states; the API layer proves they are typed and honestly gated per
+  source (projects live since Module 3; time live since Module 7 §117;
+  invoices/payments pending).
+}

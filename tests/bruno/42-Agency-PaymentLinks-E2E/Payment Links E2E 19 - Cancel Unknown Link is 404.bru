@@ -1,0 +1,20 @@
+meta {
+  name: Payment Links E2E 19 - Cancel Unknown Link is 404
+  type: http
+  seq: 19
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payment-links/684f00000000000000000000/cancel
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 404
+}
+
+docs {
+  §113 — a missing link is a plain 404. (Another tenant's link is the same
+  404 — proven in the vitest unit suite.)
+}

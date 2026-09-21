@@ -1,0 +1,33 @@
+meta {
+  name: Work Items E2E 9 - List Mine
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/work-items?view=mine
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const mine = raw.workItems || [];
+  if (mine.length !== 1 || mine[0].id !== bru.getVar('workItemId')) {
+    throw new Error('view=mine must return exactly the assigned work item, got ' + mine.length);
+  }
+  // §20 — the assignee is labeled with a username, not a raw id
+  if (!raw.userLabels || !raw.userLabels[mine[0].assignedTo]) {
+    throw new Error('Assignee label missing from the list response (§20)');
+  }
+}
+
+docs {
+  §24 "My Work": the assignee is resolved from the SESSION — never from the
+  client, which could not be trusted to know who is asking.
+}

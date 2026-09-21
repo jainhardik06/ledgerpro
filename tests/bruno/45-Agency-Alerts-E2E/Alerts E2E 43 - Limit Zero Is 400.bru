@@ -1,0 +1,15 @@
+meta {
+  name: Alerts E2E 43 - Limit Zero Is 400
+  type: http
+  seq: 43
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/alerts?limit=0
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}

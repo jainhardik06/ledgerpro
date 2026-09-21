@@ -1,0 +1,21 @@
+meta {
+  name: Alerts E2E 80 - Agency B Cannot Acknowledge Agency A Alert
+  type: http
+  seq: 80
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/alerts/{{dueSoonAlertId}}/acknowledge
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 404
+}
+
+docs {
+  §113 — Agency B's admin passes the alerts.manage gate but the
+  tenant-scoped lookup cannot see Agency A's alert: a cross-tenant id and a
+  missing id are IDENTICAL 404s, never an existence leak.
+}

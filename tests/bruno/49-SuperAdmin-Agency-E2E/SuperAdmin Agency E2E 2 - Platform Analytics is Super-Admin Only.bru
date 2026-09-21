@@ -1,0 +1,21 @@
+meta {
+  name: SuperAdmin Agency E2E 2 - Platform Analytics is Super-Admin Only
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{BASE_URL}}/api/super-admin/agency
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 401
+}
+
+docs {
+  A TENANT_ADMIN session calling the cross-tenant platform analytics endpoint
+  must be rejected with 401 — the platform scope (all tenants' agency money)
+  must never leak to a tenant session.
+}

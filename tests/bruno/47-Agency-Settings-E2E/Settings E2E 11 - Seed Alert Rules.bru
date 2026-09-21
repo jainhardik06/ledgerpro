@@ -1,0 +1,23 @@
+meta {
+  name: Settings E2E 11 - Seed Alert Rules
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/alert-rules
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+docs {
+  The Module 15 rules are lazily seeded (§4) — this read guarantees the
+  PROJECT_HOURS_* and INVOICE_DUE_SOON rows exist BEFORE the profitability
+  PATCH, so the §46 write-through has rules to configure and the next GET
+  can assert the bands actually landed on them.
+}

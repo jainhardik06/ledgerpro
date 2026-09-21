@@ -1,0 +1,24 @@
+meta {
+  name: Invoices E2E 14 - Assign Cost Rate to Dev
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/users/{{devUserId}}/cost-rates
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "rateCardId": "{{costCardId}}",
+    "rateCardEntryId": "{{costEntryId}}",
+    "effectiveFrom": "2026-01-01"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.assignment.rateCardEntryId: eq {{costEntryId}}
+}

@@ -1,0 +1,37 @@
+meta {
+  name: Invoices E2E 1 - Signup
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "E2E Invoices Agency",
+    "username": "{{invAdminUsername}}",
+    "password": "{{invAdminPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('invAdminUsername', 'e2e_inv_admin_' + suffix);
+  bru.setVar('invAdminPassword', 'E2eInvAdmin#2026');
+}
+
+docs {
+  Fresh agency for the Module 9 journey: rates → project → approved work
+  (time + expense + milestone) → draft → reservation → tax → finalization
+  → the §148 gate (unique number, sources locked, duplicate billing
+  impossible) → void.
+}

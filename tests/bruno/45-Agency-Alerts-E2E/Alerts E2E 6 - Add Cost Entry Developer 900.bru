@@ -1,0 +1,31 @@
+meta {
+  name: Alerts E2E 6 - Add Cost Entry Developer 900
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/rate-cards/{{costCardId}}/entries
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Developer",
+    "amount": 900,
+    "effectiveFrom": "2026-01-01"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.entry.amount: eq 900
+  res.body.entry.unit: eq HOUR
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('costEntryId', raw.entry.id);
+  if (!raw.entry.id) throw new Error('Create must return the entry id');
+}

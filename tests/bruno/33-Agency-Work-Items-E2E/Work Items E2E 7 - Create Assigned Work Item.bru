@@ -1,0 +1,49 @@
+meta {
+  name: Work Items E2E 7 - Create Assigned Work Item
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/work-items
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Design system tokens",
+    "description": "Color, type and spacing tokens for the refresh",
+    "estimatedMinutes": 90,
+    "assignedTo": "{{userId}}"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.workItem.name: eq Design system tokens
+  res.body.workItem.estimatedMinutes: eq 90
+  res.body.workItem.status: eq NOT_STARTED
+  res.body.workItem.sortOrder: eq 0
+  res.body.workItem.assignedTo: eq {{userId}}
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('workItemId', raw.workItem.id);
+  if (!raw.workItem.id) {
+    throw new Error('Create must return the work item id for later steps');
+  }
+  // §9 — minutes are the canonical storage; hours never persist.
+  if (raw.workItem.estimatedHours !== undefined) {
+    throw new Error('estimatedHours must never be stored (§9)');
+  }
+}
+
+docs {
+  Module 4 §8/§22/§25: 90 MINUTES stored (the UI renders "1h 30m"), status
+  defaults to NOT_STARTED, sortOrder appends (first item → 0), and the ONE
+  primary assignee (§12) is set at creation with same-tenant integrity
+  already applied (§15).
+}

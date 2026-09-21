@@ -1,0 +1,31 @@
+meta {
+  name: Payments E2E 24 - Confirm 70000 Overpays is 400
+  type: http
+  seq: 24
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payments/{{payB2Id}}/confirm
+  body: json
+  auth: none
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 400
+  res.body.code: eq PAYMENT_EXCEEDS_BALANCE
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (!/§91/.test(raw.error || '')) throw new Error('The refusal must cite §91, got: ' + raw.error);
+}
+
+docs {
+  §91 — 40000 settled of 100000, so at most 60000 remains; confirming
+  70000 is rejected with PAYMENT_EXCEEDS_BALANCE and NO transaction is
+  created (§114 — nothing half-confirmed persists).
+}

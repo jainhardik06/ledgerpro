@@ -1,0 +1,30 @@
+meta {
+  name: Alerts E2E 24 - Admin Approves Expense
+  type: http
+  seq: 24
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/expenses/{{expenseId}}/approve
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.expense.status: eq APPROVED
+  res.body.expense.billingStatus: eq UNBILLED
+  res.body.expense.amount.amount: eq 1000
+  res.body.expense.clientChargeAmount.amount: eq 1100
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (!raw.expense.transactionId) throw new Error('APPROVED expense must carry a transactionId (§41)');
+}
+
+docs {
+  Delivery cost is now 7380 + 1000 = 8380 against a 2000 budget (419% burn)
+  and revenue 8200 — margin (8200 − 8380) / 8200 = −2.2% against a 40%
+  target. The admin sees the cost side (§99 redaction is per-session).
+}

@@ -1,0 +1,25 @@
+meta {
+  name: Receivables E2E 26 - Add MANUAL Line 118000 to Invoice 6
+  type: http
+  seq: 26
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{inv6Id}}/lines
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "type": "MANUAL",
+    "description": "Data migration programme — milestone 2",
+    "amount": 118000
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.line.type: eq MANUAL
+  res.body.invoice.subtotal.amount: eq 118000
+}

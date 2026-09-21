@@ -1,0 +1,29 @@
+meta {
+  name: Payments E2E 45 - Retry Reconcile Still Rejected
+  type: http
+  seq: 45
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payments/{{payGW3Id}}/reconcile
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "accountId": "{{accountId}}"
+  }
+}
+
+assert {
+  res.status: eq 400
+  res.body.code: eq PAYMENT_EXCEEDS_BALANCE
+}
+
+docs {
+  10F retry — a manual reconciliation retry re-drives the NORMAL
+  confirmPayment path, so the §91 refusal applies again: 40000 into a
+  30000 balance. The ERROR state persists (§115) — the rejection reason
+  lives in the audit trail and the overview.
+}

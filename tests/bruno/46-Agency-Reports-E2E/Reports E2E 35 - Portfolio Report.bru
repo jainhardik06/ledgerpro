@@ -1,0 +1,86 @@
+meta {
+  name: Reports E2E 35 - Portfolio Report
+  type: http
+  seq: 35
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/portfolio
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const rep = raw.report;
+  const near = (a, b, what) => {
+    if (a === null || a === undefined || Math.abs(a - b) > 0.001) {
+      throw new Error(what + ': expected ' + b + ', got ' + a);
+    }
+  };
+
+  if (rep.rows.length !== 2) throw new Error('rows: ' + rep.rows.length);
+  const p1 = rep.rows.find(r => r.projectId === bru.getVar('projectId'));
+  const p2 = rep.rows.find(r => r.projectId === bru.getVar('project2Id'));
+  if (!p1 || !p2) throw new Error('both projects must be present');
+
+  // §29 — the T&M row: engine numbers, unrounded pass-throughs.
+  if (p1.projectName !== 'Reports Portal Build') throw new Error('p1 name: ' + p1.projectName);
+  if (p1.clientName !== 'Repsoft Industries') throw new Error('p1 client: ' + p1.clientName);
+  if (p1.status !== 'ACTIVE') throw new Error('p1 status: ' + p1.status);
+  if (p1.currency !== 'INR') throw new Error('p1 currency: ' + p1.currency);
+  if (p1.contractValue !== null) throw new Error('p1 contractValue must be null (never negotiated)');
+  near(p1.applicableRevenue, 12500, 'p1 revenue');
+  near(p1.billedAmount, 0, 'p1 billed');
+  near(p1.collectedAmount, 0, 'p1 collected');
+  near(p1.deliveryCost, 7000, 'p1 delivery cost');
+  near(p1.profit, 5500, 'p1 profit');
+  near(p1.marginPercent, 44, 'p1 margin');
+
+  // §29 — the fixed-fee row: the contract IS the revenue concept. The
+  // project is freshly created → lifecycle status DRAFT.
+  if (p2.status !== 'DRAFT') throw new Error('p2 status: ' + p2.status);
+  near(p2.contractValue, 50000, 'p2 contract');
+  near(p2.applicableRevenue, 50000, 'p2 revenue');
+  near(p2.deliveryCost, 0, 'p2 cost');
+  near(p2.profit, 50000, 'p2 profit');
+  near(p2.marginPercent, 100, 'p2 margin');
+
+  // §29 — the WEIGHTED portfolio margin: 55500/62500 = 88.8%, NOT the
+  // naive average of 44 and 100 (which would lie at 72).
+  const s = rep.summary;
+  if (s.projectCount !== 2) throw new Error('summary count: ' + s.projectCount);
+  if (s.mixedCurrencies !== false) throw new Error('single-currency portfolio');
+  if (s.contractValue !== null) throw new Error('summary contractValue must be NULL — p1 has none (never a partial Σ)');
+  near(s.applicableRevenue, 62500, 'summary revenue');
+  near(s.deliveryCost, 7000, 'summary cost');
+  near(s.profit, 55500, 'summary profit');
+  near(s.weightedMarginPercent, 88.8, 'weighted margin');
+  near(s.billedAmount, 0, 'summary billed');
+  near(s.collectedAmount, 0, 'summary collected');
+
+  // §39 — default pagination envelope.
+  if (rep.pagination.total !== 2) throw new Error('pagination total: ' + rep.pagination.total);
+  if (rep.pagination.limit !== 50) throw new Error('default limit: ' + rep.pagination.limit);
+  if (rep.pagination.offset !== 0) throw new Error('default offset: ' + rep.pagination.offset);
+
+  // §41 — freeze the raw row values for the CSV comparison (byte-for-byte,
+  // so float formatting can never differ between the two views).
+  bru.setVar('p1Revenue', String(p1.applicableRevenue));
+  bru.setVar('p1Cost', String(p1.deliveryCost));
+  bru.setVar('p1Profit', String(p1.profit));
+  bru.setVar('p1Margin', String(p1.marginPercent));
+  bru.setVar('p2Revenue', String(p2.applicableRevenue));
+}
+
+docs {
+  §29 — the portfolio report over the Module 13 engine: both project rows
+  1:1, the weighted margin discipline (88.8 vs the naive 72), the NULL
+  contract total when one project never negotiated one, and the §39
+  pagination defaults.
+}

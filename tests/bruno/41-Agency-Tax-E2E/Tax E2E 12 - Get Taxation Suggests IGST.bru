@@ -1,0 +1,29 @@
+meta {
+  name: Tax E2E 12 - Get Taxation Suggests IGST
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/invoices/{{invAId}}/taxation?rate=18
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.taxation.subtotal.amount: eq 100000
+  res.body.taxation.taxableAmount.amount: eq 100000
+  res.body.taxation.classifications[0].classification.code: eq "998314"
+  res.body.gstSuggestion.structure: eq INTER_STATE
+  res.body.gstSuggestion.taxes[0].type: eq IGST
+  res.body.gstSuggestion.taxes[0].rate: eq 18
+}
+
+docs {
+  §15/§28 — the rules layer's ADVISORY suggestion, built from STORED
+  configuration: the supplier is Maharashtra (billing profile), the recipient
+  Karnataka (client tax profile), no place of supply stored yet → INTER_STATE,
+  IGST 18. The caller confirms; nothing was written by the suggestion.
+}

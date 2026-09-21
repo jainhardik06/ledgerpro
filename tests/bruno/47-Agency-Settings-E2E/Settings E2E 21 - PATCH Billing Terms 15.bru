@@ -1,0 +1,32 @@
+meta {
+  name: Settings E2E 21 - PATCH Billing Terms 15
+  type: http
+  seq: 21
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/settings/billing
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "paymentTermsDays": 15,
+    "defaultTaxProfileId": "{{stTaxProfileId}}",
+    "defaultPaymentMethods": ["UPI", "Bank Transfer", "Razorpay"]
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.settings.billing.paymentTermsDays: eq 15
+  res.body.settings.billing.defaultTaxProfileId: eq {{stTaxProfileId}}
+  res.body.settings.billing.defaultPaymentMethods[2]: eq Razorpay
+}
+
+docs {
+  §45 — invoice-facing defaults. The defaultTaxProfileId references a REAL
+  active profile of this tenant (validated server-side, §67).
+}

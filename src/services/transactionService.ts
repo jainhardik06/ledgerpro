@@ -16,11 +16,15 @@ export class TransactionService {
     const skip = (page - 1) * limit;
 
     // We don't need to pass tenantId here, it's enforced by the DAL
-    return await this.dal.find<Transaction>('transactions', {}, {
+    const docs = await this.dal.find<Transaction>('transactions', {}, {
       sort: { date: -1, createdAt: -1 },
       limit,
       skip,
     });
+    return docs.map((doc: any) => ({
+      ...doc,
+      id: doc.id || (doc._id?.toString ? doc._id.toString() : String(doc._id || '')),
+    }));
   }
 
   async createTransaction(data: Omit<Transaction, 'tenantId' | 'id' | '_id' | 'createdAt'>) {

@@ -1,0 +1,32 @@
+meta {
+  name: Alerts E2E 50 - Dev Alert Rules Read Is 200
+  type: http
+  seq: 50
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/alert-rules
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  // §4 — the catalog is seeded whole: all 11 rules, even before any tuning.
+  if (raw.rules.length !== 11) throw new Error('Must seed all 11 rules, got ' + raw.rules.length);
+  // §22 — the rules screen is shared context: a USER may READ it.
+  const margin = raw.rules.find(r => r.type === 'PROJECT_MARGIN_BELOW_TARGET');
+  const dueSoon = raw.rules.find(r => r.type === 'INVOICE_DUE_SOON');
+  if (!margin || !dueSoon) throw new Error('Catalog must include MARGIN and DUE_SOON rules');
+  // §114 honesty in the rules screen: cost-bearing rows are FLAGGED, not hidden.
+  if (margin.costBearing !== true) throw new Error('Margin rule must be flagged costBearing');
+  if (dueSoon.costBearing !== false) throw new Error('Due-soon rule must not be costBearing');
+  bru.setVar('marginRuleId', margin.id);
+  bru.setVar('dueSoonRuleId', dueSoon.id);
+  if (!margin.id || !dueSoon.id) throw new Error('Rules must carry their ids');
+}

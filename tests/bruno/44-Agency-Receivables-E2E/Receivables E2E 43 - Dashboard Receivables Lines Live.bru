@@ -1,0 +1,32 @@
+meta {
+  name: Receivables E2E 43 - Dashboard Receivables Lines Live
+  type: http
+  seq: 43
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/dashboard?period=THIS_MONTH
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const rv = raw.data && raw.data.receivables;
+  // §100 — the dashboard receives the SAME engine's numbers (one filtered
+  // fact set, no second math) and deep-links to the receivables page.
+  if (!rv) throw new Error('receivables source must be live (single-currency store, never pending)');
+  const live = (m, expected, what) => {
+    if (!m || m.sourceReady !== true) throw new Error(what + ' must be sourceReady');
+    if (m.value !== expected) throw new Error(what + ' must be ' + expected + ', got ' + m.value);
+  };
+  live(rv.outstanding, 135000, 'dashboard outstanding');
+  live(rv.dueSoon, 45000, 'dashboard due soon');
+  live(rv.overdue, 90000, 'dashboard overdue');
+  live(rv.overdueCount, 3, 'dashboard overdue count');
+}

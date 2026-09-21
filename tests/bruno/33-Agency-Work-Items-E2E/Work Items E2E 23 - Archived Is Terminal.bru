@@ -1,0 +1,26 @@
+meta {
+  name: Work Items E2E 23 - Archived Is Terminal
+  type: http
+  seq: 23
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/work-items/{{workItemId}}?action=status
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "status": "IN_PROGRESS"
+  }
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  §11 — no transition leaves ARCHIVED, not even the reopen that DONE
+  allows.
+}

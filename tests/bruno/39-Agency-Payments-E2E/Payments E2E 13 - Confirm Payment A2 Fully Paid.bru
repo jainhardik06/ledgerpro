@@ -1,0 +1,24 @@
+meta {
+  name: Payments E2E 13 - Confirm Payment A2 Fully Paid
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payments/{{payA2Id}}/confirm
+  body: json
+  auth: none
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.payment.status: eq CONFIRMED
+  res.body.invoice.status: eq PAID
+  res.body.invoice.amountPaid.amount: eq 100000
+  res.body.invoice.amountDue.amount: eq 0
+}

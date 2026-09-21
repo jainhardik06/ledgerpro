@@ -1,0 +1,20 @@
+meta {
+  name: Reports E2E 57 - Time invalid basis Is 400
+  type: http
+  seq: 57
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/time?basis=EVERYTHING
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  §33 — exactly two bases exist and they never blend: an unknown value is
+  a 400, never a fallback (a typo must never silently pick a population).
+}

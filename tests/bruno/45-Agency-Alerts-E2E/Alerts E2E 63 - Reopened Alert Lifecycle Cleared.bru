@@ -1,0 +1,29 @@
+meta {
+  name: Alerts E2E 63 - Reopened Alert Lifecycle Cleared
+  type: http
+  seq: 63
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/alerts?ruleType=INVOICE_DUE_SOON&status=OPEN
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.count: eq 1
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const a = raw.alerts[0];
+  if (a.id !== bru.getVar('dueSoonAlertId')) throw new Error('The reopened row must be the SAME record (fingerprint upsert)');
+  // §19 — REOPEN is a fresh detection: the old manual lifecycle is cleared.
+  if (a.acknowledgedAt !== undefined || a.acknowledgedBy !== undefined) {
+    throw new Error('Reopen must clear the acknowledgement lifecycle');
+  }
+  if (a.resolvedAt !== undefined || a.resolvedBy !== undefined) {
+    throw new Error('Reopen must clear the resolution lifecycle');
+  }
+}

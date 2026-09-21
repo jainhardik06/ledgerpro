@@ -1,0 +1,35 @@
+meta {
+  name: Tax E2E 4 - Set Billing Profile Maharashtra GSTIN
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/billing-profile
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "legalName": "Atlas Digital Private Limited",
+    "country": "IN",
+    "state": "Maharashtra",
+    "taxIdentifiers": [
+      { "type": "GSTIN", "value": "27AAPFU0939F1ZV", "country": "IN" }
+    ]
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.billingProfile.legalName: eq Atlas Digital Private Limited
+  res.body.billingProfile.state: eq Maharashtra
+  res.body.billingProfile.taxIdentifiers[0].type: eq GSTIN
+}
+
+docs {
+  §7 — the agency's own billing identity. The GSTIN's 27 prefix is
+  Maharashtra: the supplier side of the §15 place-of-supply mechanism.
+}

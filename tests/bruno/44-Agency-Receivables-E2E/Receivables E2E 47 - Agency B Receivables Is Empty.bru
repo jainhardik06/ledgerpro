@@ -1,0 +1,28 @@
+meta {
+  name: Receivables E2E 47 - Agency B Receivables Is Empty
+  type: http
+  seq: 47
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/receivables
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const r = raw.receivables;
+  // §113/§106 — tenant isolation: Agency A's 135k position is invisible.
+  if (r.outstanding !== 0) throw new Error('Agency B must see zero outstanding, got ' + r.outstanding);
+  if (r.openInvoiceCount !== 0) throw new Error('Agency B must see no open invoices');
+  if (r.invoices.length !== 0) throw new Error('Agency B must see no rows');
+  if (r.byClient.length !== 0) throw new Error('Agency B must see no client rows');
+  if (r.byProject.length !== 0) throw new Error('Agency B must see no project rows');
+  if (r.overdueCount !== 0) throw new Error('Agency B must see no overdue invoices');
+}

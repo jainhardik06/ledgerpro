@@ -1,0 +1,44 @@
+meta {
+  name: Projects E2E 11 - Project Workspace Payload
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.project.status: eq ACTIVE
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (!Array.isArray(raw.members) || raw.members.length < 1) {
+    throw new Error('Workspace must include the member added in the previous step');
+  }
+  if (!Array.isArray(raw.workItems) || raw.workItems.length < 1) {
+    throw new Error('Workspace must include the work item added in the previous step');
+  }
+  if (!Array.isArray(raw.milestones) || raw.milestones.length < 1) {
+    throw new Error('Workspace must include the milestone created earlier');
+  }
+  if (raw.clientName !== 'Northwind Retail E2E') {
+    throw new Error('Client name label must resolve, got: ' + raw.clientName);
+  }
+  if (!raw.userLabels || !raw.userLabels[bru.getVar('userId')]) {
+    throw new Error('Member usernames must resolve into userLabels');
+  }
+  if (!Array.isArray(raw.activity) || raw.activity.length < 1) {
+    throw new Error('Activity timeline must show the audited mutations');
+  }
+}
+
+docs {
+  §102 — the workspace payload: project + team + work items + milestones +
+  activity + display labels (names, never raw ids).
+}

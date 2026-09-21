@@ -1,0 +1,35 @@
+meta {
+  name: Reconciliation E2E 19 - Payment Reconciliation Overview Clean
+  type: http
+  seq: 19
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/payments/reconciliation
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const ov = raw.reconciliation;
+
+  // No gateway payments on this journey — the overview must say so honestly.
+  if (ov.counts.total !== 0) throw new Error('Expected 0 gateway payments, got ' + ov.counts.total);
+
+  // §128 — every touched invoice is consistent (engine-expected due equals
+  // stored due). §129 — no confirmed payment lacks its transaction.
+  if (ov.inconsistentInvoices !== 0) throw new Error('§128: ' + ov.inconsistentInvoices + ' inconsistent invoices');
+  if (ov.confirmedWithoutTransaction.length !== 0) throw new Error('§129: confirmed payments missing transactions');
+}
+
+docs {
+  The Module 10F diagnostics surface: zero gateway payments, zero
+  inconsistent invoices (§128), zero confirmed payments without their
+  transaction (§129) — the reconciliation posture is CLEAN.
+}

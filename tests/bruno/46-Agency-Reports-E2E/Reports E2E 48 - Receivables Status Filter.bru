@@ -1,0 +1,25 @@
+meta {
+  name: Reports E2E 48 - Receivables Status Filter
+  type: http
+  seq: 48
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/receivables?status=SENT
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const rep = raw.report;
+  // Stored status SENT — invoice A only; B is stored PARTIALLY_PAID even
+  // though its display verdict is OVERDUE (§91: two different questions).
+  if (rep.rows.length !== 1) throw new Error('rows: ' + rep.rows.length);
+  if (rep.rows[0].invoiceNumber !== 'INV-000001') throw new Error('must be invoice A');
+}

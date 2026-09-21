@@ -1,0 +1,35 @@
+meta {
+  name: Reconciliation E2E 4 - Create Bank Account
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BASE_URL}}/api/accounts
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "E2E Reconciliation HDFC",
+    "type": "Bank",
+    "initialBalance": 0
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('recAccountId', raw.account.id);
+  if (!raw.account.id) throw new Error('Create must return the account id');
+}
+
+docs {
+  §108 — the tracked account confirmed payment money enters. Starts at ZERO:
+  cash is measured purely as Σ Credit − Σ Debit of the journey's transactions.
+}

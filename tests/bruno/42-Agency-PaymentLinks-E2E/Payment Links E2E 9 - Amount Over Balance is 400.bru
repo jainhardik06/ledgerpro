@@ -1,0 +1,30 @@
+meta {
+  name: Payment Links E2E 9 - Amount Over Balance is 400
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{plInvAId}}/payment-link
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "amount": 100001
+  }
+}
+
+assert {
+  res.status: eq 400
+  res.body.code: eq "PAYMENT_LINK_AMOUNT_EXCEEDS_BALANCE"
+}
+
+docs {
+  §36/§37 — THE server-resolves-the-amount rule: a browser amount may only
+  NARROW the collection (an explicit partial). 100001 against a 100000
+  outstanding balance is a 400 BEFORE the gateway is ever contacted — the
+  browser's number is never the source of truth. A ₹1 link claiming to be
+  the collection against a ₹100,000 invoice is impossible by construction.
+}

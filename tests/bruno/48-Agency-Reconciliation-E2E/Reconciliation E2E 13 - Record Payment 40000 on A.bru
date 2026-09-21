@@ -1,0 +1,36 @@
+meta {
+  name: Reconciliation E2E 13 - Record Payment 40000 on A
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/payments
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "invoiceId": "{{recInvAId}}",
+    "amount": 40000,
+    "method": "BANK_TRANSFER",
+    "accountId": "{{recAccountId}}",
+    "reference": "REC-NEFT-2"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.payment.status: eq PENDING
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('recPay2Id', raw.payment.id);
+}
+
+docs {
+  The settling payment for invoice A.
+}

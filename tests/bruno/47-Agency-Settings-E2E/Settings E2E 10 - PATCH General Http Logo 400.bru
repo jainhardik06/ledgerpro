@@ -1,0 +1,25 @@
+meta {
+  name: Settings E2E 10 - PATCH General Http Logo 400
+  type: http
+  seq: 10
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/settings/general
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "logoUrl": "http://insecure.example.com/logo.png"
+  }
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  §44 — https URLs only.
+}

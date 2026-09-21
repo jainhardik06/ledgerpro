@@ -1,0 +1,21 @@
+meta {
+  name: Expenses E2E 39 - Agency B Cannot Read Agency A Expense
+  type: http
+  seq: 39
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/expenses/{{expMainId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 404
+  res.body.error: eq Expense not found
+}
+
+docs {
+  §113 — a cross-tenant expense id is an IDENTICAL 404: same body as any
+  unknown id, never a 403 that leaks the row existence.
+}

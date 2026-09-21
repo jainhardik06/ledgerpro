@@ -1,0 +1,44 @@
+meta {
+  name: Team E2E 8 - Add Member
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/members
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "userId": "{{devUserId}}",
+    "role": "Designer",
+    "allocationPercent": 80,
+    "startDate": "2026-09-01",
+    "endDate": "2026-11-30"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+  res.body.member.userId: eq {{devUserId}}
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('memberRowId', raw.member.id);
+  if (!raw.member.id) {
+    throw new Error('Add must return the membership id for the update/remove steps');
+  }
+  if (raw.member.allocationPercent !== 80) {
+    throw new Error('Allocation must persist through the member write');
+  }
+}
+
+docs {
+  §44 add workflow: a same-tenant user joins with a context-label role
+  (§33 — never a permission), 80% allocation (§34/§35) and membership dates
+  (§36).
+}

@@ -1,0 +1,26 @@
+meta {
+  name: Expenses E2E 16 - Dev Reads Main Expense Redacted
+  type: http
+  seq: 16
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/expenses/{{expMainId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.expense.status: eq SUBMITTED
+  res.body.expense.clientChargeAmount.amount: eq 12000
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const e = raw.expense;
+  // §99 — a USER reading their own SUBMITTED expense still sees no cost side.
+  if (e.amount !== undefined) throw new Error('§99 redaction violated on detail read');
+  if (e.markupPercent !== undefined) throw new Error('§99 redaction violated on detail read');
+}

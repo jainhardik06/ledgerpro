@@ -1,0 +1,20 @@
+meta {
+  name: Reports E2E 73 - Dev 403 Portfolio CSV
+  type: http
+  seq: 73
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/portfolio/export.csv
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 403
+}
+
+docs {
+  §114 on the export path: the CSV endpoint cannot become a side door
+  around the JSON routes' permission matrix — same gate, same 403.
+}

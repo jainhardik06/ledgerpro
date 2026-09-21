@@ -1,0 +1,29 @@
+meta {
+  name: Alerts E2E 31 - Admin Evaluate Creates 9
+  type: http
+  seq: 31
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/alerts/evaluate
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.result.created: eq 9
+  res.body.result.updated: eq 0
+  res.body.result.reopened: eq 0
+  res.body.result.autoResolved: eq 0
+  res.body.result.totalActive: eq 9
+}
+
+docs {
+  §20/§21 — the first pass over the seeded world. Expected detections:
+  HOURS_80 (WARNING), OVER_BUDGET (CRITICAL), MARGIN (CRITICAL, consumed
+  from the engine's marginAlert), UNBILLED_TIME (INFO), UNBILLED_EXPENSE
+  (INFO), COMPLETED_PROJECT_UNBILLED (CRITICAL), DUE_SOON (WARNING),
+  OVERDUE (WARNING), LARGE_INVOICE_OVERDUE (CRITICAL).
+}

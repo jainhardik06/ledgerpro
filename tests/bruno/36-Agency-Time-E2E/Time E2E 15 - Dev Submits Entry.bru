@@ -1,0 +1,20 @@
+meta {
+  name: Time E2E 15 - Dev Submits Entry
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/time/{{timeEntryId}}/submit
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.timeEntry.approvalStatus: eq SUBMITTED
+}
+
+docs {
+  §19 — DRAFT → SUBMITTED. The entry is now locked pending review (§28).
+}

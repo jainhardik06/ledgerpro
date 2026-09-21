@@ -1,0 +1,32 @@
+meta {
+  name: Settings E2E 37 - GET After Disable Reflects
+  type: http
+  seq: 37
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/settings
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.settings.payment.razorpayEnabled: eq false
+  res.body.settings.payment.hasKeySecret: eq true
+  res.body.settings.payment.hasWebhookSecret: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const text = JSON.stringify(raw);
+  if (text.includes('e2e_secret_value')) throw new Error('key secret plaintext present after disable');
+  if (text.includes('whsec_e2e_tenant_1')) throw new Error('webhook secret plaintext present after disable');
+  if (text.includes('v1:')) throw new Error('ciphertext leaked');
+}
+
+docs {
+  §50 — persisted state after disable: switch off, secrets kept, still
+  masked-only.
+}

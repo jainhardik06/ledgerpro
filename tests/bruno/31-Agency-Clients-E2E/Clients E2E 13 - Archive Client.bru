@@ -1,0 +1,21 @@
+meta {
+  name: Clients E2E 13 - Archive Client
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/clients/{{clientId}}/archive
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.client.status: eq ARCHIVED
+}
+
+docs {
+  §15 — archive is the delete surrogate. From INACTIVE the hop is legal;
+  financial history keeps the client resolvable.
+}

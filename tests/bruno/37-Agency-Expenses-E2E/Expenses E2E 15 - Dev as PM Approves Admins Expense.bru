@@ -1,0 +1,33 @@
+meta {
+  name: Expenses E2E 15 - Dev as PM Approves Admins Expense
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/expenses/{{expAdminId}}/approve
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.expense.status: eq APPROVED
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const e = raw.expense;
+  // §41 — approval is the transaction moment: the link exists now.
+  if (!e.transactionId) throw new Error('APPROVED expense must carry a transactionId (§41)');
+  bru.setVar('txAdminId', e.transactionId);
+  // §99 — the approver is a USER: cost side still redacted.
+  if (e.amount !== undefined) throw new Error('§99 redaction violated: amount leaked to a USER');
+}
+
+docs {
+  The PM approval tier, live: the dev is the project manager, so they may
+  approve SOMEONE ELSE expense (the admin internal 2000) even as a plain
+  USER. §41 — the core Transaction is created at this moment.
+}

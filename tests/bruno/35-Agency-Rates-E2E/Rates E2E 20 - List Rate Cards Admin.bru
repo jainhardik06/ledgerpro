@@ -1,0 +1,42 @@
+meta {
+  name: Rates E2E 20 - List Rate Cards Admin
+  type: http
+  seq: 20
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/rate-cards
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.costRatesReadable: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const cards = raw.cards || [];
+  if (cards.length !== 2) {
+    throw new Error('Expected the COST + BILLING cards, got ' + cards.length);
+  }
+  const cost = cards.find(c => c.type === 'COST');
+  const billing = cards.find(c => c.type === 'BILLING');
+  if (!cost || !billing) {
+    throw new Error('Expected one COST and one BILLING card');
+  }
+  if (cost.entryCount !== 1 || billing.entryCount !== 1) {
+    throw new Error('Admin must see real entry counts, got cost=' + cost.entryCount + ' billing=' + billing.entryCount);
+  }
+  if (cost.costRedacted) {
+    throw new Error('Admin list must not be cost-redacted');
+  }
+}
+
+docs {
+  §84 — the admin list: both truths side by side with real entry counts and
+  costRatesReadable true. The §99 redaction path is exercised from the USER
+  side at step 23.
+}

@@ -1,0 +1,29 @@
+meta {
+  name: Payments E2E 34 - GW2 Stored State Invoice B PAID
+  type: http
+  seq: 34
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/payments/{{payGW2Id}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.payment.status: eq CONFIRMED
+  res.body.payment.reconciliationStatus: eq RECONCILED
+  res.body.payment.amount.amount: eq 60000
+  res.body.invoice.id: eq {{invBId}}
+  res.body.invoice.status: eq PAID
+  res.body.invoice.amountPaid.amount: eq 100000
+  res.body.invoice.amountDue.amount: eq 0
+}
+
+docs {
+  The store won: invoice B (the STORED target) settled to PAID with the
+  stored 60000 — the payload's claimed INV-009999 / foreign tenant were
+  never read (§113).
+}

@@ -1,0 +1,30 @@
+meta {
+  name: Team E2E 13 - Idempotent Patch
+  type: http
+  seq: 13
+}
+
+patch {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/members/{{memberRowId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "role": "Senior Designer",
+    "allocationPercent": 40
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+docs {
+  Final-audit regression: resending the SAME role/allocation must be a 200.
+  The repository signals existence (matchedCount), not modification — Mongo
+  would report modifiedCount 0 for identical values, and a
+  modifiedCount-based read turned idempotent PATCHes into phantom 404s.
+}

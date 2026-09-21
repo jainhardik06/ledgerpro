@@ -1,0 +1,25 @@
+meta {
+  name: Receivables E2E 18 - Add MANUAL Line 15000 to Invoice 4
+  type: http
+  seq: 18
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{inv4Id}}/lines
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "type": "MANUAL",
+    "description": "Compliance review — November",
+    "amount": 15000
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.line.type: eq MANUAL
+  res.body.invoice.subtotal.amount: eq 15000
+}

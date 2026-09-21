@@ -1,0 +1,41 @@
+meta {
+  name: Reports E2E 8 - Create Dev User
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{BASE_URL}}/api/tenant/users
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{repDevUsername}}",
+    "password": "E2eRepDev#2026"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.user.role: eq USER
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('repDevUsername', 'e2e_rep_dev_' + suffix);
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('devUserId', raw.user.id);
+  if (!raw.user.id) throw new Error('Create must return the user id');
+}
+
+docs {
+  The delivery author and the §33 utilization subject. §21 forbids
+  approving your own time, so the admin stays the approver — every
+  financial number below is APPROVED economics.
+}

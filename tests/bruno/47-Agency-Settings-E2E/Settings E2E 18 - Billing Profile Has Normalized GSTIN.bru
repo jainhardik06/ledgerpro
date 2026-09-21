@@ -1,0 +1,34 @@
+meta {
+  name: Settings E2E 18 - Billing Profile Has Normalized GSTIN
+  type: http
+  seq: 18
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/billing-profile
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.billingProfile.taxRegistrationType: eq GSTIN
+  res.body.billingProfile.state: eq Maharashtra
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const ids = raw.billingProfile.taxIdentifiers || [];
+  const gstin = ids.find(i => (i.type || '').toUpperCase() === 'GSTIN');
+  if (!gstin) throw new Error('no GSTIN identifier: ' + JSON.stringify(ids));
+  if (gstin.value !== '27AAPFU0939F1ZV') {
+    throw new Error('GSTIN not normalized: ' + gstin.value);
+  }
+}
+
+docs {
+  The write-through proof: the settings PATCH landed on the billingProfile —
+  the single source of truth the invoice issuer reads — with the GSTIN
+  trimmed + upper-cased exactly as the §30 shape check demands.
+}

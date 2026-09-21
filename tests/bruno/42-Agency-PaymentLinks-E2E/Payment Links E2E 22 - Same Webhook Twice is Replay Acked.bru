@@ -1,0 +1,33 @@
+meta {
+  name: Payment Links E2E 22 - Same Webhook Twice is Replay Acked
+  type: http
+  seq: 22
+}
+
+post {
+  url: {{BASE_URL}}/api/webhooks/razorpay
+  body: text
+  auth: none
+}
+
+body:text {
+  {{plWhBody}}
+}
+
+headers {
+  Content-Type: application/json
+  x-razorpay-signature: {{plWhSig}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.received: eq true
+  res.body.outcome: eq REPLAY_ACKED
+}
+
+docs {
+  §42/§56 — the identical delivery (same bytes ⇒ same providerEventId, the
+  raw-body hash) is a REPLAY: 200 ack, zero writes. At the HTTP level, with
+  no gateway and no stored link, this pins the WebhookEvent store as the
+  first-line idempotency boundary.
+}

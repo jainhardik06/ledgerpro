@@ -1,0 +1,23 @@
+meta {
+  name: Alerts E2E 44 - Login as Dev for 114 Probes
+  type: http
+  seq: 44
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{alDevUsername}}",
+    "password": "E2eAlDev#2026"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}

@@ -1,0 +1,32 @@
+meta {
+  name: Agency E2E 1 - Signup
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "E2E Agency Tenant",
+    "username": "{{agencyUsername}}",
+    "password": "{{e2ePassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  // Unique credentials per run so the suite is repeatable against a
+  // persistent database (CI and local alike).
+  const suffix = Date.now().toString(36);
+  bru.setVar('agencyUsername', 'e2e_agency_' + suffix);
+  bru.setVar('e2ePassword', 'E2eAgency#2026');
+}

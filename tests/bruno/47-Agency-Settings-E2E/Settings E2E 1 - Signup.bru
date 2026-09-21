@@ -1,0 +1,59 @@
+meta {
+  name: Settings E2E 1 - Signup
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "E2E Settings Agency",
+    "username": "{{stAdminUsername}}",
+    "password": "{{stAdminPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('stAdminUsername', 'e2e_set_admin_' + suffix);
+  bru.setVar('stAdminPassword', 'E2eSetAdmin#2026');
+  bru.setVar('stRunToken', suffix);
+  // Date anchors in the agency timezone the suite CONFIGURES (request 5 sets
+  // Europe/Berlin — §44: the invoice engine's "today" anchor follows it, so
+  // an IST-computed date could be "tomorrow" = future-dated = 400 when the
+  // two zones are on different dates). The QuickJS sandbox has no Intl, so
+  // the Berlin offset (CET +1 / CEST +2, EU DST: last Sunday of March 01:00
+  // UTC → last Sunday of October 01:00 UTC) is computed in plain JS.
+  const berlinOffsetMs = (now) => {
+    const y = new Date(now).getUTCFullYear();
+    const lastSundayUtc = (month) => {
+      const d = new Date(Date.UTC(y, month + 1, 0));
+      return Date.UTC(y, d.getUTCMonth(), d.getUTCDate() - d.getUTCDay(), 1, 0, 0);
+    };
+    return (now >= lastSundayUtc(2) && now < lastSundayUtc(9)) ? 2 * 3600000 : 3600000;
+  };
+  const day = (offset) => new Date(Date.now() + berlinOffsetMs(Date.now()) + offset * 86400000).toISOString().slice(0, 10);
+  bru.setVar('stToday', day(0));
+  bru.setVar('stDuePlus15', day(15));
+}
+
+docs {
+  Fresh agency for the Module 17 settings journey (§42–§77): the §17.2
+  defaults, every section PATCH, the engine write-throughs (alert rules,
+  billing profile, invoice due-date ladder), the secret lifecycle
+  (save → masked → rotate → test → disable) with the plaintext asserted
+  ABSENT from every response, §51 multi-secret webhook verification (env
+  secret AND tenant-stored secret both verify; a bad signature is 401), the
+  §55 permission matrix (USER reads 200, writes 403), and §113 Agency B
+  isolation.
+}

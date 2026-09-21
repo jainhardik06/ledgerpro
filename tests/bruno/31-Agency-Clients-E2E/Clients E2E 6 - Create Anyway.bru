@@ -1,0 +1,33 @@
+meta {
+  name: Clients E2E 6 - Create Anyway
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/clients
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "acme studio e2e",
+    "allowDuplicate": true
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  bru.setVar('duplicateClientId', raw.client.id);
+}
+
+docs {
+  §18 tail — the explicit "Create Anyway" re-submit proceeds. Duplicates are
+  allowed by design; the warning only prevents accidental double-entry.
+}

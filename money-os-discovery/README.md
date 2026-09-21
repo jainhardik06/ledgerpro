@@ -49,7 +49,8 @@ It is a pure static engine designed to capture, educate, and convert traffic for
 - `/src/content/blog` - Articles and thought leadership
 - `/src/content/changelog` - Product updates
 - `/src/content/comparisons` - Competitor comparisons
-- `/src/content/use-cases` - Niche specific landing pages
+- `/src/content/resources` - Curated tool/resource entries
+- `/src/pages/use-cases` - Niche-specific landing pages (data from `/src/data`)
 - `/src/pages` - Astro file-based routing
 - `/src/components` - Reusable UI components
 - `/src/layouts` - Page wrappers

@@ -1,0 +1,23 @@
+meta {
+  name: Time E2E 27 - Login Back as Admin for Reject
+  type: http
+  seq: 28
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{timeAdminUsername}}",
+    "password": "{{timeAdminPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}

@@ -1,0 +1,24 @@
+meta {
+  name: Payment Links E2E 7 - Link on Draft Invoice is 409
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{plInvAId}}/payment-link
+  body: json
+  auth: none
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 409
+}
+
+docs {
+  §74 — a draft carries no number and cannot be collected against: the link
+  create is refused before the gateway is ever called.
+}

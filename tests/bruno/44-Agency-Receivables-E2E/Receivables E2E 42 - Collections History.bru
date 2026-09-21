@@ -1,0 +1,30 @@
+meta {
+  name: Receivables E2E 42 - Collections History
+  type: http
+  seq: 42
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/payments
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  // §104 collection history — the Collections tab's source.
+  if (!Array.isArray(raw.payments) || raw.payments.length !== 2) throw new Error('both confirmed payments must be listed');
+  if (!raw.payments.every(p => p.status === 'CONFIRMED')) throw new Error('both payments are confirmed');
+  const wh = raw.payments.find(p => p.id === bru.getVar('payWhId'));
+  if (!wh) throw new Error('the withholding payment must appear');
+  if (wh.amount.amount !== 118000) throw new Error('§93: the withholding payment carries its FULL amount');
+  const labels = Object.values(raw.invoiceLabels || {});
+  if (!labels.includes('INV-000005') || !labels.includes('INV-000006')) {
+    throw new Error('invoice labels must resolve to numbers: ' + JSON.stringify(labels));
+  }
+}

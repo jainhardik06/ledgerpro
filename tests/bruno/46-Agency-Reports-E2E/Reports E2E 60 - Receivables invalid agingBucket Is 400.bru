@@ -1,0 +1,20 @@
+meta {
+  name: Reports E2E 60 - Receivables invalid agingBucket Is 400
+  type: http
+  seq: 60
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/receivables?agingBucket=45-60
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  Aging buckets are ENGINE-owned boundaries (§88) — the report accepts
+  only the engine's five, never an arbitrary range.
+}

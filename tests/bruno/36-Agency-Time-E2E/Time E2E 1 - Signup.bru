@@ -1,0 +1,36 @@
+meta {
+  name: Time E2E 1 - Signup
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "E2E Time Agency",
+    "username": "{{timeAdminUsername}}",
+    "password": "{{timeAdminPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('timeAdminUsername', 'e2e_time_admin_' + suffix);
+  bru.setVar('timeAdminPassword', 'E2eTimeAdmin#2026');
+}
+
+docs {
+  Fresh agency for the Module 7 journey: rates → project → time → approval
+  → timer, with a second user so §21 (never your own time) is exercised
+  end-to-end.
+}

@@ -1,0 +1,40 @@
+meta {
+  name: Rates E2E 21 - Invite Read-Only User
+  type: http
+  seq: 21
+}
+
+post {
+  url: {{BASE_URL}}/api/tenant/users
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{ratesUserUsername}}",
+    "password": "{{ratesUserPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('ratesUserUsername', 'e2e_rates_user_' + suffix);
+  bru.setVar('ratesUserPassword', 'E2eRatesUser#2026');
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const user = raw.user || raw;
+  if (user.id) bru.setVar('devUserId', user.id);
+}
+
+docs {
+  A plain USER for the §99/§104 cost-privacy probes — cost rates are salary
+  data, and the next steps prove none of it reaches them.
+}

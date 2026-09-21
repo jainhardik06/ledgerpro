@@ -1,0 +1,37 @@
+meta {
+  name: Reconciliation E2E 21 - Dashboard Agreement
+  type: http
+  seq: 21
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/dashboard?period=THIS_MONTH
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const data = raw.data;
+
+  // The aggregate over the SAME engines, one THIS_MONTH window (every
+  // invoice and payment of this journey is dated today).
+  const live = (m, expected, what) => {
+    if (!m || m.sourceReady !== true) throw new Error(what + ' must be sourceReady');
+    if (m.value !== expected) throw new Error(what + ' must be ' + expected + ', got ' + m.value);
+  };
+  live(data.financial.invoicedRevenue, 150000, 'invoiced revenue (A + B)');
+  live(data.financial.collectedRevenue, 120000, 'collected revenue (3 confirmed payments)');
+  live(data.receivables.outstanding, 30000, 'receivables outstanding (invoice B)');
+}
+
+docs {
+  Module 1's aggregate agrees with the engines it reads: 150000 invoiced,
+  120000 collected, 30000 outstanding — the same three numbers the store,
+  ledger and receivables engine each independently reported above.
+}

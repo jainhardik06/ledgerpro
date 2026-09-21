@@ -1,0 +1,51 @@
+meta {
+  name: Profitability E2E 51 - Dev Dashboard Profitability Pending
+  type: http
+  seq: 51
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/dashboard?period=THIS_MONTH
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const d = raw.data;
+
+  // §114 — the dashboard itself is shared context (agency.dashboard.read),
+  // so the dev gets a 200 — but the profitability source is NOT resolved for
+  // a USER: cost/profit/margin stay in their honest PENDING state (Module 1
+  // zero-value contract), never the cost ledger.
+  const dc = d.profitability.deliveryCost;
+  const gp = d.profitability.grossProfit;
+  const gm = d.profitability.grossMargin;
+  if (!dc || dc.sourceReady !== false || dc.value !== 0) {
+    throw new Error('§114 — a USER must see deliveryCost pending (0, not ready), got ' + JSON.stringify(dc));
+  }
+  if (!gp || gp.sourceReady !== false || gp.value !== 0) {
+    throw new Error('§114 — a USER must see grossProfit pending (0, not ready), got ' + JSON.stringify(gp));
+  }
+  if (!gm || gm.sourceReady !== false) {
+    throw new Error('§114 — a USER must see grossMargin pending, got ' + JSON.stringify(gm));
+  }
+
+  // §28 shared context is untouched by the §114 gate: receivables (Module 14)
+  // remain live for the whole workspace — only the cost ledger is withheld.
+  const rv = d.receivables.outstanding;
+  if (!rv || rv.sourceReady !== true) {
+    throw new Error('§114 must not pend shared context — receivables stay live, got ' + JSON.stringify(d.receivables));
+  }
+}
+
+docs {
+  §114 end-to-end at the aggregate: the Command Center renders for a USER,
+  its profitability lines honestly pending, while shared-context metrics
+  (receivables) stay live. The admin (E2E 36) sees the engine numbers.
+}

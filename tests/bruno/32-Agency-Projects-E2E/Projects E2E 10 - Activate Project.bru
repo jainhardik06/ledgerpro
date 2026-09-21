@@ -1,0 +1,34 @@
+meta {
+  name: Projects E2E 10 - Activate Project
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/projects/{{projectId}}/activate
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.project.status: eq ACTIVE
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  // §75 — the commercial core passed (client, name, model, currency) and a
+  // contract value exists, so no advisory warnings ride along.
+  if (raw.warnings && raw.warnings.length > 0) {
+    throw new Error('Expected no activation warnings for a fully-budgeted project');
+  }
+}
+
+docs {
+  The §75 activation gate: DRAFT → ACTIVE through the ONLY status path
+  (the dedicated lifecycle action, §41). This project is MILESTONE-billed,
+  so the HARD requirement — at least one non-cancelled milestone — is
+  satisfied by step 9. Status can never be smuggled through a PATCH
+  payload.
+}

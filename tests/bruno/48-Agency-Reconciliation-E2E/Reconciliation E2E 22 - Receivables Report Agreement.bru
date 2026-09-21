@@ -1,0 +1,40 @@
+meta {
+  name: Reconciliation E2E 22 - Receivables Report Agreement
+  type: http
+  seq: 22
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/receivables
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const rep = raw.report;
+
+  if (rep.rows.length !== 1) throw new Error('rows: ' + rep.rows.length);
+  const row = rep.rows[0];
+  if (row.invoiceNumber !== 'INV-000002') throw new Error('row must be INV-000002, got ' + row.invoiceNumber);
+  if (row.status !== 'PARTIALLY_PAID') throw new Error('stored status: ' + row.status);
+  if (row.outstanding !== 30000) throw new Error('row outstanding: ' + row.outstanding);
+  if (row.paid !== 20000) throw new Error('row paid: ' + row.paid);
+
+  const s = rep.summary;
+  if (s.openInvoiceCount !== 1) throw new Error('summary open invoices: ' + s.openInvoiceCount);
+  if (s.outstanding !== 30000) throw new Error('summary outstanding: ' + s.outstanding);
+  if (s.overdueAmount !== 0) throw new Error('summary overdue: ' + s.overdueAmount);
+}
+
+docs {
+  Module 16's report (§35) over Module 14's engine — the sixth view, same
+  numbers. THE RECONCILIATION CLOSES: invoice store, core ledger, payment
+  diagnostics, receivables engine, dashboard aggregate and reports all
+  agree on 150000 invoiced / 120000 collected / 30000 open.
+}

@@ -1,0 +1,15 @@
+meta {
+  name: Profitability E2E 43 - Unknown Project is 404
+  type: http
+  seq: 43
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/projects/000000000000000000000000/profitability
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 404
+}

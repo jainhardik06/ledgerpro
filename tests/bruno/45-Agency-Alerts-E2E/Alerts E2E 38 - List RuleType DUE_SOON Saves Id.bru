@@ -1,0 +1,31 @@
+meta {
+  name: Alerts E2E 38 - List RuleType DUE_SOON Saves Id
+  type: http
+  seq: 38
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/alerts?ruleType=INVOICE_DUE_SOON
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.count: eq 1
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const a = raw.alerts[0];
+  if (a.status !== 'OPEN') throw new Error('Due-soon alert must be OPEN');
+  if (a.severity !== 'WARNING') throw new Error('Due-soon default severity is WARNING, got ' + a.severity);
+  bru.setVar('dueSoonAlertId', a.id);
+  if (!a.id) throw new Error('List must return the alert id');
+}
+
+docs {
+  Saves the §19 lifecycle subject: the INV-000001 due-soon alert, chosen
+  because its condition SURVIVES the manual resolve below — which is what
+  makes the evaluator-only REOPEN provable later.
+}

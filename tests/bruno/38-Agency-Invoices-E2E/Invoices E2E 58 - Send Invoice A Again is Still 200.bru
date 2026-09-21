@@ -1,0 +1,30 @@
+meta {
+  name: Invoices E2E 58 - Send Invoice A Again is Still 200
+  type: http
+  seq: 58
+}
+
+post {
+  url: {{BASE_URL}}/api/agency/invoices/{{invAId}}/send
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.invoice.status: eq SENT
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  if (!raw.invoice.sentAt) {
+    throw new Error('Expected the re-send to re-stamp sentAt (§81)');
+  }
+}
+
+docs {
+  §81 — sending is repeatable: each delivery is recorded (fresh sentAt +
+  a fresh INVOICE_SENT audit line). It never re-numbers, never mutates
+  money, never touches the billed sources.
+}

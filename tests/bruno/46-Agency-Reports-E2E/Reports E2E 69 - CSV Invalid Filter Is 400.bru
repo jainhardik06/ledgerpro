@@ -1,0 +1,20 @@
+meta {
+  name: Reports E2E 69 - CSV Invalid Filter Is 400
+  type: http
+  seq: 69
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/reports/portfolio/export.csv?userId=abc
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  The CSV endpoint enforces the SAME filter contract as the JSON route —
+  a rejected filter is a 400 on both, so the two can never disagree.
+}

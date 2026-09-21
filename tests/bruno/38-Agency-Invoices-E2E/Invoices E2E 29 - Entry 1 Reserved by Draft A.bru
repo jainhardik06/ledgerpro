@@ -1,0 +1,23 @@
+meta {
+  name: Invoices E2E 29 - Entry 1 Reserved by Draft A
+  type: http
+  seq: 29
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/time/{{entry1Id}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.timeEntry.billingStatus: eq RESERVED
+  res.body.timeEntry.reservedInvoiceId: eq {{invAId}}
+}
+
+docs {
+  §63 — adding the line RESERVED the source: the entry now points at the
+  draft holding it. This is the lock that makes duplicate billing
+  impossible (probed next by a second draft).
+}

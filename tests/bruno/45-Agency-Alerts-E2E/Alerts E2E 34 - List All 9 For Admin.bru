@@ -1,0 +1,57 @@
+meta {
+  name: Alerts E2E 34 - List All 9 For Admin
+  type: http
+  seq: 34
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/alerts
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.count: eq 9
+}
+
+script:post-response {
+  const raw = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+  const expected = [
+    'PROJECT_HOURS_80', 'PROJECT_OVER_BUDGET', 'PROJECT_MARGIN_BELOW_TARGET',
+    'UNBILLED_APPROVED_TIME', 'UNBILLED_EXPENSE', 'COMPLETED_PROJECT_UNBILLED_WORK',
+    'INVOICE_DUE_SOON', 'INVOICE_OVERDUE', 'LARGE_INVOICE_OVERDUE',
+  ];
+  const got = raw.alerts.map(a => a.ruleType).sort();
+  const want = [...expected].sort();
+  if (got.length !== want.length || got.some((t, i) => t !== want[i])) {
+    throw new Error('Admin list must be exactly the 9 seeded ruleTypes, got: ' + got.join(','));
+  }
+  // §90 — the alert rows must be entity-linked for the click-through.
+  const byType = Object.fromEntries(raw.alerts.map(a => [a.ruleType, a]));
+  if (byType.PROJECT_HOURS_80.projectId !== bru.getVar('projectId')) throw new Error('Hours alert must link the project');
+  if (byType.INVOICE_DUE_SOON.invoiceId !== bru.getVar('invAId')) throw new Error('Due-soon alert must link invoice A');
+  if (byType.INVOICE_OVERDUE.invoiceId !== bru.getVar('invBId')) throw new Error('Overdue alert must link invoice B');
+  if (byType.LARGE_INVOICE_OVERDUE.invoiceId !== bru.getVar('invBId')) throw new Error('Large overdue alert must link invoice B');
+  if (byType.COMPLETED_PROJECT_UNBILLED_WORK.projectId !== bru.getVar('project2Id')) throw new Error('Completed alert must link project 2');
+  // §11/§12 — the hours band value is the utilization percent (82 vs an 80 threshold).
+  if (byType.PROJECT_HOURS_80.severity !== 'WARNING' || byType.PROJECT_HOURS_80.value !== 82) {
+    throw new Error('HOURS_80 must be WARNING with value 82, got ' + JSON.stringify(byType.PROJECT_HOURS_80));
+  }
+  if (byType.PROJECT_MARGIN_BELOW_TARGET.severity !== 'CRITICAL') {
+    throw new Error('Margin alert must carry the engine CRITICAL (raise-only §7), got ' + byType.PROJECT_MARGIN_BELOW_TARGET.severity);
+  }
+  if (byType.LARGE_INVOICE_OVERDUE.value !== 150000) {
+    throw new Error('Large overdue value is the major-unit due amount, got ' + byType.LARGE_INVOICE_OVERDUE.value);
+  }
+  // View enrichment: catalog-derived category and label on every row.
+  if (byType.INVOICE_DUE_SOON.category !== 'CASH' || !byType.INVOICE_DUE_SOON.ruleLabel) {
+    throw new Error('Rows must carry catalog category + ruleLabel');
+  }
+}
+
+docs {
+  The §22 Alert Center list — READ-ONLY over the store. The admin sees all
+  9, including the two cost-bearing rows (§114).
+}

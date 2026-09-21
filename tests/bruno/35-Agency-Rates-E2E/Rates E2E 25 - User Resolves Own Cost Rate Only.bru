@@ -1,0 +1,21 @@
+meta {
+  name: Rates E2E 25 - User Resolves Own Cost Rate Only
+  type: http
+  seq: 25
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/rates/resolve?userId={{userId}}&date=2026-06-15
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 403
+}
+
+docs {
+  §99/§104/§121 — a USER resolving ANOTHER user's cost rate gets 403: the
+  admin's rate is salary data. (Self-service resolution and the billing
+  side — which USERs may use — are covered by the integration matrix.)
+}

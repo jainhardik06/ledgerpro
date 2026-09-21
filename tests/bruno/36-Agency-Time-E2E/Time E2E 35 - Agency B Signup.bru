@@ -1,0 +1,29 @@
+meta {
+  name: Time E2E 34 - Agency B Signup
+  type: http
+  seq: 35
+}
+
+post {
+  url: {{BASE_URL}}/api/auth/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenantName": "E2E Time Agency B",
+    "username": "{{timeBUsername}}",
+    "password": "E2eTimeB#2026"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar('timeBUsername', 'e2e_time_b_' + suffix);
+}

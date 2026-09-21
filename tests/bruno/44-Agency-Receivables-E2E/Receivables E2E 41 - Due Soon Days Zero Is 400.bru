@@ -1,0 +1,20 @@
+meta {
+  name: Receivables E2E 41 - Due Soon Days Zero Is 400
+  type: http
+  seq: 41
+}
+
+get {
+  url: {{BASE_URL}}/api/agency/receivables?dueSoonDays=0
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  §90 — the window is configurable but bounded (integer 1..90); zero and
+  91+ are rejected rather than clamped.
+}
