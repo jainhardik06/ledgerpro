@@ -63,24 +63,23 @@ export function agencySettingsOf(
   tenant: (Pick<Tenant, 'agencySettings'> & { name?: string }) | null | undefined
 ): AgencySettings {
   const defaults = defaultAgencySettings();
-  const defaultAgencyName = tenant?.name?.trim() || defaults.general.agencyName || 'Money OS';
   if (!tenant?.agencySettings) {
-    return {
-      ...defaults,
-      general: {
-        ...defaults.general,
-        agencyName: defaultAgencyName,
-      },
-    };
+    return defaults;
   }
   const storedName = tenant.agencySettings.general?.agencyName?.trim();
   // Defensive merge: a stored partial (older write) still resolves complete.
+  const generalSettings: typeof defaults.general = {
+    ...defaults.general,
+    ...tenant.agencySettings.general,
+  };
+  if (storedName) {
+    generalSettings.agencyName = storedName;
+  } else {
+    delete generalSettings.agencyName;
+  }
+
   return {
-    general: {
-      ...defaults.general,
-      ...tenant.agencySettings.general,
-      agencyName: storedName || defaultAgencyName,
-    },
+    general: generalSettings,
     billing: { ...defaults.billing, ...tenant.agencySettings.billing },
     profitability: { ...defaults.profitability, ...tenant.agencySettings.profitability },
     tax: { ...defaults.tax, ...tenant.agencySettings.tax },

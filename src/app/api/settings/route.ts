@@ -9,10 +9,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    return NextResponse.json(
-      { error: 'Workspace operating mode is permanently set during creation and cannot be modified.' },
-      { status: 403 }
-    );
+    const { appMode } = await req.json();
+
+    if (!['Standard', 'Student_Club', 'Agency'].includes(appMode)) {
+      return NextResponse.json({ error: 'Invalid app mode' }, { status: 400 });
+    }
+
+    const success = await updateTenantAppMode(session.tenantId, appMode);
+    
+    if (success) {
+      await createLog(session.username, 'Update Settings', `Changed App Mode to ${appMode}`, session.tenantId);
+      return NextResponse.json({ success: true });
+    } else {
+      return NextResponse.json({ error: 'Failed to update tenant settings' }, { status: 500 });
+    }
   } catch (error) {
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
