@@ -248,39 +248,45 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
       };
     }, [isOpen]);
 
-    const emitChange = (val: string) => {
-      if (!isControlled) {
-        setUncontrolledValue(val);
-      }
+    const isEmittingRef = useRef(false);
 
-      // Update hidden select and trigger native change event
-      if (hiddenSelectRef.current) {
-        hiddenSelectRef.current.value = val;
-        const nativeEvent = new Event("change", { bubbles: true });
-        hiddenSelectRef.current.dispatchEvent(nativeEvent);
-      }
+    const emitChange = (val: string, fromNative = false) => {
+      if (isEmittingRef.current) return;
+      isEmittingRef.current = true;
+      try {
+        if (!isControlled) {
+          setUncontrolledValue(val);
+        }
 
-      // Synthetic React change event for callers
-      if (onChange) {
-        const syntheticEvent = {
-          target: {
-            value: val,
-            name: name || "",
-            id: selectId,
-          },
-          currentTarget: {
-            value: val,
-            name: name || "",
-            id: selectId,
-          },
-          bubbles: true,
-          cancelable: true,
-          defaultPrevented: false,
-          stopPropagation: () => {},
-          preventDefault: () => {},
-        } as unknown as React.ChangeEvent<HTMLSelectElement>;
+        // Update hidden select if this didn't originate from native change
+        if (!fromNative && hiddenSelectRef.current) {
+          hiddenSelectRef.current.value = val;
+        }
 
-        onChange(syntheticEvent);
+        // Synthetic React change event for callers
+        if (onChange) {
+          const syntheticEvent = {
+            target: {
+              value: val,
+              name: name || "",
+              id: selectId,
+            },
+            currentTarget: {
+              value: val,
+              name: name || "",
+              id: selectId,
+            },
+            bubbles: true,
+            cancelable: true,
+            defaultPrevented: false,
+            stopPropagation: () => {},
+            preventDefault: () => {},
+          } as unknown as React.ChangeEvent<HTMLSelectElement>;
+
+          onChange(syntheticEvent);
+        }
+      } finally {
+        isEmittingRef.current = false;
       }
     };
 
@@ -414,7 +420,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           id={selectId}
           name={name}
           value={currentValue}
-          onChange={(e) => emitChange(e.target.value)}
+          onChange={(e) => emitChange(e.target.value, true)}
           disabled={disabled}
           required={required}
           tabIndex={-1}

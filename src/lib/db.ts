@@ -4428,7 +4428,7 @@ export async function allocateInvoiceNumberForFiscalYear(
         {
           $inc: { seq: 1 },
           $set: { updatedAt: new Date() },
-          $setOnInsert: { tenantId, fiscalYear, prefix, seq: 0 },
+          $setOnInsert: { tenantId, fiscalYear, prefix, createdAt: new Date() },
         },
         { upsert: true, returnDocument: 'after' }
       );
@@ -4436,7 +4436,9 @@ export async function allocateInvoiceNumberForFiscalYear(
       if (doc && typeof doc.seq === 'number' && doc.seq >= 1) {
         return doc.seq;
       }
-    } catch (e) {}
+    } catch (e) {
+      logError('db:allocateInvoiceNumberForFiscalYear mongo error', e, { tenantId, fiscalYear });
+    }
   }
   const data = initLocalDb();
   const existing = data.invoiceSequences.find(s => s.tenantId === tenantId && s.fiscalYear === fiscalYear);
@@ -4470,7 +4472,7 @@ export async function allocateProjectCode(tenantId: string): Promise<number> {
         {
           $inc: { seq: 1 },
           $set: { updatedAt: new Date() },
-          $setOnInsert: { tenantId, seq: 0 },
+          $setOnInsert: { tenantId, createdAt: new Date() },
         },
         { upsert: true, returnDocument: 'after' }
       );
@@ -4478,7 +4480,9 @@ export async function allocateProjectCode(tenantId: string): Promise<number> {
       if (doc && typeof doc.seq === 'number' && doc.seq >= 1) {
         return doc.seq;
       }
-    } catch (e) {}
+    } catch (e) {
+      logError('db:allocateProjectCode mongo error', e, { tenantId });
+    }
   }
   const data = initLocalDb();
   const existing = data.projectSequences.find(s => s.tenantId === tenantId);
