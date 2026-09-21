@@ -1,8 +1,15 @@
 import { PostHog } from 'posthog-node';
 
 export default function PostHogClient() {
+  const apiKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
+  if (!apiKey) {
+    return new Proxy({} as PostHog, {
+      get: () => () => {},
+    });
+  }
+
   const posthogClient = new PostHog(
-    process.env.NEXT_PUBLIC_POSTHOG_KEY as string,
+    apiKey,
     {
       host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com',
       flushAt: 1,

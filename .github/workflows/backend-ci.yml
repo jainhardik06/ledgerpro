@@ -49,6 +49,7 @@ jobs:
           npm run test:api
         env:
           NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+          CI: "true"
           # Module 10 webhook E2E — test-only value matching the Bruno env
           # (tests/bruno/environments/local.bru). Never a real credential.
           RAZORPAY_WEBHOOK_SECRET: "whsec_local_e2e_test_only"

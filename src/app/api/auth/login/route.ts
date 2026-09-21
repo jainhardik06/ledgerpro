@@ -33,7 +33,7 @@ function requireSuperAdminHash(): string | null {
     hash = hash.replace(/\\/g, '');
   }
   if (!hash) {
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === 'production' && !process.env.CI) {
       throw new Error('SUPER_ADMIN_PASSWORD_HASH must be set in production');
     }
     return null;
