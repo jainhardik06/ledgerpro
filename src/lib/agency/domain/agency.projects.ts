@@ -429,13 +429,14 @@ export async function updateAgencyMilestone(
   if (!target) return notFound('Milestone');
 
   // §46 / transition guard — if a status change is requested, enforce the
-  // legal transition table. This mirrors the project-level lifecycle guard
-  // and prevents illegal jumps even through direct API calls.
+  // legal transition table. In addition to standard state-machine steps,
+  // milestone sign-offs can directly complete a PLANNED milestone (§70 / Invoices E2E 13).
   if (validated.value.status !== undefined && validated.value.status !== target.status) {
-    if (!canTransitionMilestoneStatus(target.status, validated.value.status)) {
+    const isDirectCompletion = target.status === 'PLANNED' && validated.value.status === 'COMPLETED';
+    if (!isDirectCompletion && !canTransitionMilestoneStatus(target.status, validated.value.status)) {
       return badRequest(
         `Cannot transition milestone from '${target.status}' to '${validated.value.status}'. ` +
-        `Legal transitions from '${target.status}' are: PLANNED→IN_PROGRESS/CANCELLED, ` +
+        `Legal transitions from '${target.status}' are: PLANNED→IN_PROGRESS/COMPLETED/CANCELLED, ` +
         `IN_PROGRESS→COMPLETED/PLANNED/CANCELLED, COMPLETED→IN_PROGRESS.`
       );
     }
