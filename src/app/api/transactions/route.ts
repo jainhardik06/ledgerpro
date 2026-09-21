@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
-import { createLog } from '@/lib/db';
+import { getTransactions, createTransaction, createLog } from '@/lib/db';
 import { logError } from '@/lib/logger';
 import { validateAmount, validateDateString, validateString } from '@/lib/validation';
 import PostHogClient from '@/lib/posthog-server';
-import { TransactionService } from '@/services/transactionService';
 
 export async function GET(req: NextRequest) {
   try {
@@ -14,10 +13,11 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const transactionService = new TransactionService(session.tenantId);
-    const transactions = await transactionService.getTransactions({
+    const transactions = await getTransactions(session.tenantId, {
       page: Number(searchParams.get('page') || 1),
       limit: Number(searchParams.get('limit') || 50),
+      clientId: searchParams.get('clientId') || undefined,
+      paymentId: searchParams.get('paymentId') || undefined,
     });
 
     return NextResponse.json({ success: true, transactions });
@@ -63,8 +63,8 @@ export async function POST(req: NextRequest) {
     const cleanNotes = validateString(notes, 'Notes', { max: 2000, required: false });
     if (cleanNotes instanceof NextResponse) return cleanNotes;
 
-    const transactionService = new TransactionService(session.tenantId);
-    const newTx = await transactionService.createTransaction({
+    const newTx = await createTransaction({
+      tenantId: session.tenantId,
       userId: session.userId,
       username: session.username,
       accountId: cleanAccountId,
