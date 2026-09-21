@@ -1,5 +1,6 @@
 import { MongoClient, ObjectId } from 'mongodb';
 import { randomUUID } from 'crypto';
+import { logError } from './logger';
 // Module 2 — agency client contract (client-safe; spec §16)
 import type {
   ClientPrimaryContact, ClientBillingProfile, ClientTaxProfile,
