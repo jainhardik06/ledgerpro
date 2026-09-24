@@ -122,7 +122,7 @@ export function PrimaryKpiRow({
         label="Contract Value"
         metric={contractedRevenue}
         displayBasis="Committed commercial value (not cash)"
-        definition="Total active commercial value associated with agency projects in the selected reporting scope. Definitions §1 — Revenue. This is a contract measure, NOT invoiced and NOT collected money."
+        definition="Total active commercial value associated with agency projects in the selected reporting scope. This reflects contracted project value."
         delta={deltas.contractedRevenue}
         pendingNote="Waiting for projects"
       />
@@ -130,7 +130,7 @@ export function PrimaryKpiRow({
         label="Invoiced"
         metric={billedRevenue}
         displayBasis="Invoices issued (not payments)"
-        definition="Total invoice value issued during the selected period. Definitions §2 — Billed. An invoice is money owed, not money received."
+        definition="Total invoice value issued during the selected period. Represents billed revenue owed by clients."
         delta={deltas.billedRevenue}
         pendingNote="Waiting for invoicing"
       />
@@ -138,7 +138,7 @@ export function PrimaryKpiRow({
         label="Collected"
         metric={collectedRevenue}
         displayBasis="Cash actually received"
-        definition="Payments successfully recorded/settled during the selected period. Definitions §3 — Collected. This is received cash, independent of contract value and invoiced amounts."
+        definition="Total payments settled during the selected period. Represents actual cash received."
         delta={deltas.collectedRevenue}
         pendingNote="Waiting for payment records"
       />
@@ -146,7 +146,7 @@ export function PrimaryKpiRow({
         label="Unbilled"
         metric={unbilledRevenue}
         displayBasis="Approved billable, not invoiced"
-        definition="Approved billable agency work that has not yet been invoiced. Definitions §7 — Unbilled. Strategically critical: profit on paper while cash waits."
+        definition="Approved billable hours and expenses that have not yet been invoiced to clients."
         delta={deltas.unbilledRevenue}
         pendingNote="Waiting for time tracking"
         tone="warning"

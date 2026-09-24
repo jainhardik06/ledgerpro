@@ -148,17 +148,17 @@ export async function recordManualPayment(
   if (!invoice) return notFound('Invoice');
   if (!invoiceAcceptsPayments(invoice.status)) {
     if (invoice.status === 'DRAFT') {
-      return conflict('Finalize the invoice before recording a payment — a draft carries no number (§74)');
+      return conflict('Finalize the invoice before recording a payment — drafts cannot receive payments');
     }
     if (invoice.status === 'PAID') {
-      return conflict('The invoice is already fully paid — overpayment is not supported in Phase 1 (§91)');
+      return conflict('The invoice is already fully paid — overpayment is not supported');
     }
     return conflict(`An invoice in state ${invoice.status} cannot receive payments`);
   }
 
-  // §127 — money is never converted: an explicit foreign currency is a 400.
+  // Money is never converted across currencies: an explicit foreign currency is a 400.
   if (v.currency !== undefined && v.currency !== invoice.currency) {
-    return badRequest(`The payment is denominated in ${v.currency} but the invoice is ${invoice.currency} — money is never converted (§127)`);
+    return badRequest(`The payment is denominated in ${v.currency} but the invoice is ${invoice.currency} — currencies are never converted`);
   }
 
   // 10D — gateway intake (§96): a gateway reference may be recorded exactly

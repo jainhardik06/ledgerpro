@@ -93,7 +93,7 @@ export function TeamPanel({
     if (!form.userId.trim()) { setFormError('Pick a user first.'); return; }
     const allocation = form.allocationPercent.trim();
     if (allocation !== '' && (Number(allocation) <= 0 || Number(allocation) > 100)) {
-      setFormError('Allocation must be between 1 and 100 (§35).');
+      setFormError('Allocation must be between 1 and 100.');
       return;
     }
     setBusy(true);
@@ -181,9 +181,8 @@ export function TeamPanel({
             </button>
           )}
         </div>
-        {/* §46 future metrics — honestly pending, never fake zeros */}
         <p className="mt-2 text-[11px] text-neutral-600">
-          Planned hours, actual hours, cost and utilization populate with Time Tracking (Phase 1).
+          Planned hours, actual hours, cost, and utilization will populate as team members track time.
         </p>
       </div>
 
@@ -193,7 +192,7 @@ export function TeamPanel({
         {pmName ? (
           <div className="mt-1.5 text-[13.5px] text-neutral-200">
             {pmName}
-            <span className="ml-2 text-[11.5px] text-neutral-500">accountable for coordination (§31)</span>
+            <span className="ml-2 text-[11.5px] text-neutral-500">Primary coordination lead</span>
           </div>
         ) : (
           <div className="mt-1.5 text-[13px] text-neutral-500">No project manager assigned.</div>
@@ -265,7 +264,7 @@ export function TeamPanel({
       {pastMembers.length > 0 && (
         <details className="rounded-xl border border-white/[0.06] bg-[#050505] p-4">
           <summary className="cursor-pointer text-[12px] font-medium text-neutral-400 hover:text-neutral-200 transition-colors">
-            Past members ({pastMembers.length}) — kept as history (§37)
+            Past members ({pastMembers.length}) — membership history
           </summary>
           <ul className="mt-3 space-y-2">
             {pastMembers.map(m => (
@@ -293,7 +292,7 @@ export function TeamPanel({
               <option value="">Select a user</option>
               {addableUsers.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
             </Select>
-            <p className="mt-1 text-[11px] text-neutral-600">Only users from your organization (§38). Active members are hidden — one membership per user (§40).</p>
+            <p className="mt-1 text-[11px] text-neutral-600">Select users from your organization. Each member can have one active assignment per project.</p>
           </div>
 
           <div>
@@ -311,7 +310,7 @@ export function TeamPanel({
             <datalist id="team-role-suggestions">
               {ROLE_SUGGESTIONS.map(r => <option key={r} value={r} />)}
             </datalist>
-            <p className="mt-1 text-[11px] text-neutral-600">A context label (§33) — it never grants permissions.</p>
+            <p className="mt-1 text-[11px] text-neutral-600">Role description for project context and reporting.</p>
           </div>
 
           <div>
@@ -326,7 +325,7 @@ export function TeamPanel({
               className={`${inputCls} w-full`}
               disabled={busy}
             />
-            <p className="mt-1 text-[11px] text-neutral-600">Approximate planned share of capacity (§34) — metadata only in Phase 1. Over-allocation across projects is recorded, not blocked (§35).</p>
+            <p className="mt-1 text-[11px] text-neutral-600">Approximate planned share of team capacity. Over-allocation across multiple projects is flagged for review.</p>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -339,7 +338,7 @@ export function TeamPanel({
               <DatePicker id="team-end" value={form.endDate} min={form.startDate} onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))} disabled={busy} />
             </div>
           </div>
-          <p className="text-[11px] text-neutral-600">Dates default to the project timeline (§43) — adjust freely.</p>
+          <p className="text-[11px] text-neutral-600">Dates default to the overall project timeline and can be customized as needed.</p>
 
           {formError && <p role="alert" className="text-[12.5px] text-red-400">{formError}</p>}
 

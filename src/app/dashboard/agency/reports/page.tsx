@@ -62,7 +62,7 @@ const UI_RULES: Record<ReportTab, UiRules> = {
     endpoint: '/api/agency/reports/portfolio',
     supports: new Set(['from', 'to', 'clientId', 'projectId', 'currency', 'status']),
     statuses: PROJECT_STATUSES,
-    windowHint: 'the date window selects PROJECTS by start date (§80) — it never re-slices the money inside them',
+    windowHint: 'the date window selects projects by start date across their complete lifecycle',
     title: 'Portfolio',
     description: 'Every project\'s money position — contract, revenue, billed, collected, cost, profit — with the weighted portfolio margin (Σprofit ÷ Σrevenue).',
   },
@@ -70,9 +70,9 @@ const UI_RULES: Record<ReportTab, UiRules> = {
     endpoint: '/api/agency/reports/project-profitability',
     supports: new Set(['from', 'to', 'clientId', 'projectId', 'currency', 'status']),
     statuses: PROJECT_STATUSES,
-    windowHint: 'the date window selects PROJECTS by start date (§80)',
+    windowHint: 'the date window selects projects by start date',
     title: 'Project profitability',
-    description: 'The cost split per project — labor, expenses and delivery cost against revenue — straight from the Module 13 engine.',
+    description: 'The cost split per project — labor, expenses and delivery cost against revenue.',
   },
   time: {
     endpoint: '/api/agency/reports/time',
@@ -317,7 +317,7 @@ export default function AgencyReportsPage() {
           { label: 'Revenue', value: summaryMoney('applicableRevenue', summaryCurrency) },
           { label: 'Delivery cost', value: summaryMoney('deliveryCost', summaryCurrency) },
           { label: 'Gross profit', value: summaryMoney('profit', summaryCurrency) },
-          { label: 'Weighted margin', value: summaryPct('weightedMarginPercent'), note: 'Σprofit ÷ Σrevenue (§29)' },
+          { label: 'Weighted margin', value: summaryPct('weightedMarginPercent'), note: 'Total profit ÷ Total revenue' },
         ];
       case 'project-profitability':
         return [
@@ -385,7 +385,7 @@ export default function AgencyReportsPage() {
         <div>
           <h1 className="text-[16px] font-semibold text-white tracking-tight">Reports</h1>
           <p className="text-[12.5px] text-neutral-500">
-            Every report reconciles with its source engine — the table, the CSV and the printed PDF are one snapshot (§41).
+            Every report reconciles directly with live ledger and project accounting records.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -464,14 +464,14 @@ export default function AgencyReportsPage() {
           </div>
         )}
         {rules.supportsBasis && (
-          <div className="flex p-0.5 bg-white/[0.02] border border-white/[0.05] rounded-md" role="group" aria-label="Time basis (§33)">
+          <div className="flex p-0.5 bg-white/[0.02] border border-white/[0.05] rounded-md" role="group" aria-label="Time basis">
             {(['FINANCIAL', 'OPERATIONAL'] as const).map(b => (
               <button
                 key={b}
                 onClick={() => { setBasis(b); setOffset(0); }}
                 className={`px-2.5 py-1 rounded text-[11.5px] font-medium transition-colors ${basis === b ? 'bg-white/[0.08] text-white' : 'text-neutral-500 hover:text-neutral-300'}`}
                 aria-pressed={basis === b}
-                title={b === 'FINANCIAL' ? 'APPROVED entries only — the financial truth' : 'All recorded time, drafts included (§33)'}
+                title={b === 'FINANCIAL' ? 'Approved entries only' : 'All recorded time, including drafts'}
               >
                 {b === 'FINANCIAL' ? 'Financial' : 'Operational'}
               </button>
@@ -497,7 +497,7 @@ export default function AgencyReportsPage() {
       {forbidden && !loading && (
         <div role="alert" className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
           <p className="text-[13px] text-neutral-200">
-            This report needs the agency profitability permission (§114 — cost and margin are salary economics).
+            This report requires agency profitability permissions to access cost and margin data.
           </p>
         </div>
       )}
@@ -526,7 +526,7 @@ export default function AgencyReportsPage() {
           )}
           {mixedCurrencies && (
             <div className="text-[11px] text-neutral-500 no-print">
-              Rows span multiple currencies — summary money is withheld (§127); each row keeps its own currency.
+              Rows span multiple currencies — summary totals are withheld; each row maintains its own currency.
             </div>
           )}
 

@@ -161,7 +161,7 @@ export function PaymentDrawer({ isOpen, onClose, onSaved, defaultInvoiceId }: Pa
           </button>
         </div>
         <p className="text-[12px] text-neutral-500">
-          Records money received against an invoice. The payment starts PENDING — confirm it to move the money into the ledger (§101).
+          Record payment received against an invoice. Payments are recorded as pending until confirmed to update account ledgers.
         </p>
 
         {error && (
@@ -186,7 +186,7 @@ export function PaymentDrawer({ isOpen, onClose, onSaved, defaultInvoiceId }: Pa
             ))}
           </Select>
           {invoices.length === 0 && (
-            <p className="mt-1.5 text-[11.5px] text-neutral-600">No payable invoices — finalize a draft first (a draft carries no number, §74).</p>
+            <p className="mt-1.5 text-[11.5px] text-neutral-600">No payable invoices found. Invoices must be finalized and issued before receiving payments.</p>
           )}
         </div>
 
@@ -205,7 +205,7 @@ export function PaymentDrawer({ isOpen, onClose, onSaved, defaultInvoiceId }: Pa
             />
           </div>
           <div>
-            <label htmlFor="payment-withholding" className={labelCls}>Withheld / TDS (§92)</label>
+            <label htmlFor="payment-withholding" className={labelCls}>Withheld / TDS</label>
             <input
               id="payment-withholding"
               type="number"
@@ -244,7 +244,7 @@ export function PaymentDrawer({ isOpen, onClose, onSaved, defaultInvoiceId }: Pa
         </div>
 
         <div>
-          <label htmlFor="payment-account" className={labelCls}>Account (§108)</label>
+          <label htmlFor="payment-account" className={labelCls}>Receiving Account</label>
           <Select
             id="payment-account"
             value={accountId}
@@ -291,11 +291,11 @@ export function PaymentDrawer({ isOpen, onClose, onSaved, defaultInvoiceId }: Pa
               <span className="tabular-nums text-neutral-200">{preview.balanceAfter.toLocaleString('en-IN')} remaining</span>
             </div>
             <div className="flex justify-between text-neutral-400">
-              <span>Cash into account (§92)</span>
+              <span>Net deposit amount</span>
               <span className="tabular-nums text-neutral-200">{preview.cash.amount.toLocaleString('en-IN')} {preview.cash.currency}</span>
             </div>
             {preview.overpay && (
-              <p className="text-amber-300">This exceeds the outstanding balance — confirmation will be rejected (§91).</p>
+              <p className="text-amber-300">This exceeds the outstanding balance for this invoice.</p>
             )}
           </div>
         )}

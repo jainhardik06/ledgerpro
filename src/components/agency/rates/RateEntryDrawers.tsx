@@ -98,7 +98,7 @@ export function RateEntryFormDrawer({ isOpen, onClose, onCreated, rateCardId, ca
         <div>
           <label htmlFor="rate-entry-name" className={labelCls}>Role / Service Name *</label>
           <input id="rate-entry-name" value={name} onChange={e => setName(e.target.value)} required maxLength={120} placeholder={isCost ? 'Senior Developer' : 'Design Sprint'} className={inputCls} />
-          <p className="mt-1.5 text-[11px] text-neutral-600">The entry is a service, never a person (§87).</p>
+          <p className="mt-1.5 text-[11px] text-neutral-600">Rate entries represent roles or service tiers rather than specific individuals.</p>
         </div>
         <div>
           <label htmlFor="rate-entry-role" className={labelCls}>Finer-grained role (optional)</label>
@@ -110,7 +110,7 @@ export function RateEntryFormDrawer({ isOpen, onClose, onCreated, rateCardId, ca
             <Select id="rate-entry-unit" value={unit} onChange={e => setUnit(e.target.value as RateUnit)} disabled={isCost} className={`${inputCls} ${isCost ? 'opacity-60' : ''}`}>
               {RATE_UNITS.map(u => <option key={u} value={u} disabled={isCost && u !== 'HOUR'}>{u}</option>)}
             </Select>
-            {isCost && <p className="mt-1.5 text-[11px] text-neutral-600">Cost rates are per hour (§73).</p>}
+            {isCost && <p className="mt-1.5 text-[11px] text-neutral-600">Cost rates are calculated per hour.</p>}
           </div>
           <div>
             <label htmlFor="rate-entry-amount" className={labelCls}>Amount ({currency}) *</label>
@@ -204,7 +204,7 @@ export function ChangeRateDrawer({ isOpen, onClose, onChanged, rateCardId, entry
             Current rate: <span className="text-white font-medium">{currency} {currentAmount.toLocaleString('en-IN')}</span>
           </p>
           <p className="mt-1.5 text-[11.5px] text-neutral-600">
-            History is never rewritten: the current version closes the day before your new date, and a new version begins (§122). Work already logged keeps its original rate.
+            Rate history is preserved: the current rate version closes the day before the effective date, and a new version begins. Previously logged work retains its original rate.
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

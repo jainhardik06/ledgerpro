@@ -361,7 +361,7 @@ export function WorkItemsPanel({
               <option value="">Unassigned</option>
               {users.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
             </Select>
-            <p className="mt-1 text-[11px] text-neutral-600">One primary assignee in Phase 1 — shared work becomes multiple work items.</p>
+            <p className="mt-1 text-[11px] text-neutral-600">Assign a primary owner for this work item.</p>
           </div>
           <div>
             <span className="block text-[12px] font-medium text-neutral-400 mb-1.5">Estimated Time <Opt /></span>

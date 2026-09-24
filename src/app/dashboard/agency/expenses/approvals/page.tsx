@@ -174,7 +174,7 @@ export default function ExpenseApprovalsPage() {
                         charge {r.clientChargeAmount ? inr(r.clientChargeAmount.amount) : '—'}{r.markupPercent !== undefined ? ` (+${r.markupPercent}%)` : ''}
                       </span>
                     : <span>internal — not billed</span>}
-                  {r.receiptReference && <span className="text-neutral-600 truncate max-w-xs" title="Receipt reference (§45)">🧾 {r.receiptReference}</span>}
+                  {r.receiptReference && <span className="text-neutral-600 truncate max-w-xs" title="Receipt reference">🧾 {r.receiptReference}</span>}
                   {r.notes && <span className="text-neutral-600 truncate max-w-xs">“{r.notes}”</span>}
                 </div>
               </div>

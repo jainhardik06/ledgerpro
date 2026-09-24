@@ -57,10 +57,6 @@ const MODEL_LABEL: Record<string, string> = {
 const WORK_ITEM_TABS = ['overview', 'team', 'work-items', 'milestones', 'expenses', 'billing', 'profitability', 'activity'] as const;
 type Tab = typeof WORK_ITEM_TABS[number];
 
-// §102 — reserved for later modules. Rendered as disabled tabs with an
-// honest label, never as empty content pretending to exist. (Module 9 gave
-// Billing its real surface; Module 13 gave Profitability its own.)
-const FUTURE_TABS = ['Time'] as const;
 
 interface SafeUser { id: string; username: string; role: string }
 
@@ -194,7 +190,7 @@ export default function ProjectWorkspacePage() {
       const ok = await confirmModal({
         title: action === 'cancel' ? 'Cancel Project' : 'Archive Project',
         message: action === 'cancel'
-          ? 'Are you sure you want to cancel this project? This cannot be undone in Phase 1.'
+          ? 'Are you sure you want to cancel this project? This action cannot be undone.'
           : 'Archived projects stay resolvable for their financial history.',
         confirmText: action === 'cancel' ? 'Cancel Project' : 'Archive Project',
         variant: action === 'cancel' ? 'danger' : 'warning',
@@ -364,8 +360,8 @@ export default function ProjectWorkspacePage() {
         {/* Financial summary (§65/§66) — PLANNED economics only */}
         <div className="mt-4 pt-4 border-t border-white/[0.05]">
           <div className="flex items-center justify-between gap-2 mb-2.5">
-            <span className="text-[11px] font-medium uppercase tracking-wider text-neutral-500">Planned economics (§66)</span>
-            <span className="text-[10.5px] text-neutral-600">Actuals arrive with Time Tracking · Billed/Collected with Invoicing</span>
+            <span className="text-[11px] font-medium uppercase tracking-wider text-neutral-500">Planned economics</span>
+            <span className="text-[10.5px] text-neutral-600">Actuals calculated from logged time and billing invoices</span>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
             {[
@@ -427,15 +423,6 @@ export default function ProjectWorkspacePage() {
             {label}
           </button>
         ))}
-        {FUTURE_TABS.map(label => (
-          <span
-            key={label}
-            title="Reserved — arriving with its module in Phase 1"
-            className="px-3 py-2 text-[13px] font-medium text-neutral-600 cursor-not-allowed select-none border-b-2 border-transparent"
-          >
-            {label} <span className="text-[10px] uppercase tracking-wider">· Phase 1</span>
-          </span>
-        ))}
       </div>
 
       {/* ---------- Overview ---------- */}
@@ -455,7 +442,7 @@ export default function ProjectWorkspacePage() {
           {project.billingModel === 'MILESTONE' && (
             <div className="rounded-xl border border-white/[0.06] bg-[#050505] p-4 text-[12.5px] text-neutral-400">
               {milestones.filter(m => m.status !== 'CANCELLED').length === 0
-                ? 'A milestone project needs at least one milestone before it can activate (§75).'
+                ? 'A milestone project requires at least one milestone before it can be activated.'
                 : `Milestone allocation: ${percentageSum}% of the contract across ${milestones.filter(m => m.status !== 'CANCELLED').length} milestone(s).`}
             </div>
           )}
@@ -585,7 +572,7 @@ export default function ProjectWorkspacePage() {
                 <p className="text-[11px] text-neutral-600">
                   Configured cost rates {r.configuredCostRates.configured}/{r.configuredCostRates.total} team members
                   {r.configuredBillingRates && <> · configured billing rates {r.configuredBillingRates.configured}/{r.configuredBillingRates.total} member roles</>}
-                  . Warnings never block work — they mark where future time entries would resolve to &ldquo;not configured&rdquo; instead of money (§96/§127).
+                  . Readiness warnings do not block progress; they highlight unassigned rate configurations.
                 </p>
               </div>
             );
@@ -635,7 +622,7 @@ export default function ProjectWorkspacePage() {
           <div className="rounded-xl border border-white/[0.06] overflow-hidden overflow-x-auto">
             {milestones.length === 0 ? (
               <p className="p-6 text-center text-[13px] text-neutral-500">
-                No milestones yet.{project.billingModel === 'MILESTONE' && ' At least one is required before this project can activate (§75).'}
+                No milestones yet.{project.billingModel === 'MILESTONE' && ' At least one milestone is required before this project can be activated.'}
               </p>
             ) : (
               <table className="w-full text-[13px]" aria-label="Milestones">
@@ -823,7 +810,7 @@ export default function ProjectWorkspacePage() {
               {formError && (
                 <p role="alert" className="text-[11.5px] text-red-400">{formError}</p>
               )}
-              <p className="text-[11px] text-neutral-600">Either an amount or a percentage — never both (§46). Percentages across milestones can never exceed 100%.</p>
+              <p className="text-[11px] text-neutral-600">Specify either a fixed amount or a percentage. The cumulative percentage across milestones cannot exceed 100%.</p>
             </div>
           )}
         </section>

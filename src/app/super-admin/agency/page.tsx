@@ -265,7 +265,7 @@ export default function AgencyAnalyticsPage() {
         {/* §80 activation funnel */}
         <div className="p-6 rounded-xl border border-white/[0.05] bg-[#0a0a0a]">
           <h2 className="text-[13px] font-medium text-white uppercase tracking-widest mb-1">Activation Funnel</h2>
-          <p className="text-[12px] text-neutral-500 mb-5">Active agency tenants reaching each Phase 1 milestone (§80 — adoption is measured by real financial behavior).</p>
+          <p className="text-[12px] text-neutral-500 mb-5">Active agency tenants reaching key operational milestones across tenant setup, project management, and billing.</p>
           <div className="space-y-4 max-w-2xl">
             {funnel.map(stage => (
               <div key={stage.label}>

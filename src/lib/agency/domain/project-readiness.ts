@@ -179,7 +179,7 @@ export async function computeProjectReadiness(
       key: 'projectActive',
       label: 'Project Active',
       ready: isActive,
-      detail: isActive ? 'Project is live for delivery' : `Status ${project.status} — time tracking targets ACTIVE projects (§126)`,
+      detail: isActive ? 'Project is live for delivery' : `Status ${project.status} — time tracking requires an active project`,
     },
     {
       key: 'workItems',
@@ -187,7 +187,7 @@ export async function computeProjectReadiness(
       ready: openWorkItems.length > 0,
       detail: openWorkItems.length > 0
         ? `${openWorkItems.length} open ${openWorkItems.length === 1 ? 'item' : 'items'} to log against`
-        : 'No open work items — create one before tracking time (§126)',
+        : 'No open work items — create one before tracking time',
     },
   ];
 

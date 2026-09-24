@@ -410,7 +410,7 @@ export function InvoiceWizard({
           {step === 1 && (
             <div className="space-y-4">
               <p className="text-[12.5px] text-neutral-500">
-                The client&apos;s billing profile supplies the currency and payment terms — the due date is only needed when you want to override them (§68).
+                The client&apos;s billing profile supplies the default currency and payment terms. You can set a custom due date if needed.
               </p>
               <label className="block space-y-1.5">
                 <span className="text-[11px] font-medium uppercase tracking-wider text-neutral-500">Client</span>
@@ -518,7 +518,7 @@ export function InvoiceWizard({
                 <p className="text-[12.5px] text-neutral-500">
                   {billable.unpricedTime && billable.unpricedTime.count > 0
                     ? 'No other billable items waiting.'
-                    : 'Nothing billable is waiting — approved time, billable expenses and completed milestones appear here (§70).'}
+                    : 'Nothing billable is waiting — approved time, billable expenses, and completed milestones will appear here.'}
                 </p>
               )}
               <div className="flex justify-end">
@@ -527,9 +527,9 @@ export function InvoiceWizard({
                 </button>
               </div>
 
-              {/* Free-form lines (§71) */}
+              {/* Free-form lines */}
               <section className="rounded-xl border border-white/[0.06] bg-[#050505] p-3 space-y-2">
-                <div className="text-[11px] font-medium uppercase tracking-wider text-neutral-500">Free-form line (§71 — a fixed fee is never fabricated time)</div>
+                <div className="text-[11px] font-medium uppercase tracking-wider text-neutral-500">Custom Line Item</div>
                 <div className="flex flex-wrap gap-2">
                   <Select value={manual.type} onChange={e => setManual(m => ({ ...m, type: e.target.value as InvoiceLineType }))} className={inputCls} aria-label="Line type">
                     <option value="MANUAL">Manual</option>
@@ -590,7 +590,7 @@ export function InvoiceWizard({
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-medium uppercase tracking-wider text-neutral-500">Tax lines (§76)</span>
+                  <span className="text-[11px] font-medium uppercase tracking-wider text-neutral-500">Tax Breakdown</span>
                   <div className="flex gap-1.5">
                     <button onClick={() => setTaxForm(f => ({ ...f, taxes: [...f.taxes, { type: 'CGST', name: 'CGST', code: '', rate: '9' }, { type: 'SGST', name: 'SGST', code: '', rate: '9' }] }))} className={btnGhost}>CGST + SGST</button>
                     <button onClick={() => setTaxForm(f => ({ ...f, taxes: [...f.taxes, { type: 'IGST', name: 'IGST', code: '', rate: '18' }] }))} className={btnGhost}>IGST 18%</button>
@@ -608,7 +608,7 @@ export function InvoiceWizard({
                     </button>
                   </div>
                 ))}
-                <p className="text-[11px] text-neutral-600">Only names and rates are sent — every amount is computed by the engine (§78), never typed.</p>
+                <p className="text-[11px] text-neutral-600">Tax amounts are calculated automatically based on the applied rates.</p>
               </div>
 
               <div className="flex items-center justify-between">
@@ -656,7 +656,7 @@ export function InvoiceWizard({
               ) : (
                 <div className="flex items-center justify-between">
                   <span className="text-[12.5px] text-emerald-300">
-                    Issued as <strong className="font-semibold">{invoice.invoiceNumber}</strong> — the billed items are locked INVOICED (§83).
+                    Issued as <strong className="font-semibold">{invoice.invoiceNumber}</strong> — the billed items are now marked as invoiced.
                   </span>
                   <button onClick={onClose} className={btnPrimary}>Done</button>
                 </div>

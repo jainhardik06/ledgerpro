@@ -183,7 +183,7 @@ export function validateExpenseCreate(
   const hasBillable = payload.billable !== undefined && payload.billable !== null;
   const billable = hasBillable ? validateBoolean(payload.billable, 'billable', errors) : undefined;
   if (!hasBillable) {
-    errors.push({ field: 'billable', message: 'Billable is required (§39 — never inferred)' });
+    errors.push({ field: 'billable', message: 'Billable status is required' });
   }
 
   const markupPercent = validateMarkup(payload.markupPercent, 'markupPercent', errors);
@@ -198,10 +198,10 @@ export function validateExpenseCreate(
 
   // Cross-field rules.
   if (expenseType !== undefined && billable !== undefined && !isConsistentBillability(expenseType, billable)) {
-    errors.push({ field: 'billable', message: 'An INTERNAL expense is never billable (§39)' });
+    errors.push({ field: 'billable', message: 'An internal expense cannot be marked billable' });
   }
   if (markupPercent !== undefined && markupPercent !== null && billable === false) {
-    errors.push({ field: 'markupPercent', message: 'Markup applies only to billable expenses (§43)' });
+    errors.push({ field: 'markupPercent', message: 'Markup applies only to billable expenses' });
   }
 
   if (errors.length > 0) return { ok: false, errors };

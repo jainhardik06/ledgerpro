@@ -131,7 +131,7 @@ export function ProjectProfitabilityPanel({ projectId }: { projectId: string }) 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         <div className="rounded-xl border border-white/[0.06] bg-[#050505] p-4 space-y-3">
           <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-neutral-500">
-            <Coins className="w-3.5 h-3.5" aria-hidden /> Profitability (§62–§65)
+            <Coins className="w-3.5 h-3.5" aria-hidden /> Profitability
           </div>
           <dl className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-[13px]">
             <div>
@@ -153,13 +153,13 @@ export function ProjectProfitabilityPanel({ projectId }: { projectId: string }) 
               </dd>
             </div>
             <div>
-              <dt className="text-neutral-500 text-[12px]">Margin (§82)</dt>
+              <dt className="text-neutral-500 text-[12px]">Gross Margin</dt>
               <dd className="mt-0.5 font-semibold text-neutral-100 tabular-nums">
                 {p.marginPercent === null ? <span className="text-neutral-500">N/A — no revenue yet</span> : `${p.marginPercent.toFixed(1)}%`}
               </dd>
             </div>
             <div className="col-span-2 pt-1 border-t border-white/[0.05]">
-              <dt className="text-neutral-500 text-[12px]">Contract value (§61)</dt>
+              <dt className="text-neutral-500 text-[12px]">Contract Value</dt>
               <dd className="mt-0.5 text-neutral-200 tabular-nums">{p.contractValue ? money(p.contractValue.amount, cur) : '—'}</dd>
             </div>
           </dl>
@@ -168,7 +168,7 @@ export function ProjectProfitabilityPanel({ projectId }: { projectId: string }) 
         {/* §66 — cash is a separate view: billed/collected never touch the margin above. */}
         <div className="rounded-xl border border-white/[0.06] bg-[#050505] p-4 space-y-3">
           <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-neutral-500">
-            <Wallet className="w-3.5 h-3.5" aria-hidden /> Cash view (§66 — never profit revenue)
+            <Wallet className="w-3.5 h-3.5" aria-hidden /> Cash & Invoicing
           </div>
           <dl className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-[13px]">
             <div>
@@ -184,19 +184,19 @@ export function ProjectProfitabilityPanel({ projectId }: { projectId: string }) 
               <dd className="mt-0.5 text-neutral-200 tabular-nums">{money(p.outstandingAmount.amount, cur)}</dd>
             </div>
             <div>
-              <dt className="text-neutral-500 text-[12px]">Unbilled work (§67)</dt>
+              <dt className="text-neutral-500 text-[12px]">Unbilled Work</dt>
               <dd className="mt-0.5 text-neutral-200 tabular-nums">{money(p.unbilledAmount.amount, cur)}</dd>
             </div>
           </dl>
           <p className="text-[11px] text-neutral-600">
-            Collecting cash changes nothing above — profitability and collection are separate questions (§66).
+            Collecting payments settles customer invoices. Margin and profitability reflect delivery cost versus earned revenue.
           </p>
         </div>
       </div>
 
       {/* §74 — three separate burns, never one generic percentage */}
       <div className="rounded-xl border border-white/[0.06] bg-[#050505] p-4 space-y-3">
-        <div className="text-[11px] font-medium uppercase tracking-wider text-neutral-500">Budget burn (§74)</div>
+        <div className="text-[11px] font-medium uppercase tracking-wider text-neutral-500">Budget Burn</div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <div className="text-[12px] text-neutral-500">Hours</div>
@@ -224,7 +224,7 @@ export function ProjectProfitabilityPanel({ projectId }: { projectId: string }) 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         <div className="rounded-xl border border-white/[0.06] overflow-hidden overflow-x-auto">
           <div className="px-4 py-2.5 border-b border-white/[0.06] text-[11px] font-medium uppercase tracking-wider text-neutral-500 flex items-center gap-2">
-            <Receipt className="w-3.5 h-3.5" aria-hidden /> Labor by member (§78)
+            <Receipt className="w-3.5 h-3.5" aria-hidden /> Labor by team member
           </div>
           {data.drillDown.labor.length === 0 ? (
             <p className="p-4 text-[13px] text-neutral-500">No approved time yet.</p>
@@ -242,7 +242,7 @@ export function ProjectProfitabilityPanel({ projectId }: { projectId: string }) 
                   <tr key={`${l.userId}-${i}`} className="border-b border-white/[0.04] last:border-0">
                     <td className="px-4 py-2 text-neutral-200">{l.userName || 'Former member'}</td>
                     <td className="px-4 py-2 text-neutral-400 tabular-nums">
-                      {l.hours}h × {l.rate ? money(l.rate.amount, cur) : 'unpriced (§96)'}
+                      {l.hours}h × {l.rate ? money(l.rate.amount, cur) : 'rate unassigned'}
                       <span className="text-neutral-600"> · {l.entryCount} entr{l.entryCount === 1 ? 'y' : 'ies'}</span>
                     </td>
                     <td className="px-4 py-2 text-right text-neutral-200 tabular-nums">{money(l.cost.amount, cur)}</td>
@@ -255,7 +255,7 @@ export function ProjectProfitabilityPanel({ projectId }: { projectId: string }) 
 
         <div className="rounded-xl border border-white/[0.06] overflow-hidden overflow-x-auto">
           <div className="px-4 py-2.5 border-b border-white/[0.06] text-[11px] font-medium uppercase tracking-wider text-neutral-500 flex items-center gap-2">
-            <Receipt className="w-3.5 h-3.5" aria-hidden /> Expenses by vendor (§78)
+            <Receipt className="w-3.5 h-3.5" aria-hidden /> Expenses by vendor
           </div>
           {data.drillDown.expenses.length === 0 ? (
             <p className="p-4 text-[13px] text-neutral-500">No approved expenses yet.</p>
@@ -285,14 +285,14 @@ export function ProjectProfitabilityPanel({ projectId }: { projectId: string }) 
       {/* §79 — explainability notes (deterministic, never speculation) */}
       {(p.notes.length > 0 || p.currencyMismatches > 0) && (
         <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.04] p-4 space-y-2">
-          <div className="text-[11px] font-medium uppercase tracking-wider text-amber-400/80">What these numbers exclude (§79)</div>
+          <div className="text-[11px] font-medium uppercase tracking-wider text-amber-400/80">Exclusions and Notes</div>
           <ul className="space-y-1">
             {p.notes.map((n, i) => (
               <li key={i} className="text-[12.5px] text-amber-100/80">{n}</li>
             ))}
             {p.currencyMismatches > 0 && (
               <li className="text-[12.5px] text-amber-100/80">
-                {p.currencyMismatches} source bucket{p.currencyMismatches === 1 ? '' : 's'} in another currency — excluded, never converted (§127).
+                {p.currencyMismatches} source item{p.currencyMismatches === 1 ? '' : 's'} in another currency — excluded from direct conversion.
               </li>
             )}
           </ul>

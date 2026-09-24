@@ -248,7 +248,7 @@ export async function updateTimeEntry(
   if (policy === 'LOCKED') {
     // §22 — INVOICED: financially locked. SUBMITTED: awaiting review.
     const reason = existing.billingStatus === 'INVOICED'
-      ? 'This entry is invoiced and financially locked (§22)'
+      ? 'This entry is invoiced and financially locked against modifications'
       : 'This entry is submitted and awaiting review — ask the approver to reject it first';
     return conflict(reason);
   }

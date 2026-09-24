@@ -272,7 +272,7 @@ export default function EditProjectPage() {
         key: 'projectActive',
         label: 'Project Active',
         ready: activeReady,
-        detail: activeReady ? 'Project is live for delivery' : `Status ${project.status} — targets ACTIVE projects (§126)`,
+        detail: activeReady ? 'Project is live for delivery' : `Status ${project.status} — must be active for delivery`,
         anchor: '#lifecycle-section',
         actionLabel: activeReady ? undefined : 'Activate Project',
       },
@@ -280,7 +280,7 @@ export default function EditProjectPage() {
         key: 'workItems',
         label: 'Work Items',
         ready: workItemsReady,
-        detail: workItemsReady ? `${openWorkItems.length} open item(s) to log against` : 'No open work items (§126)',
+        detail: workItemsReady ? `${openWorkItems.length} open item(s) to log against` : 'No open work items',
         anchor: '#work-section',
         actionLabel: workItemsReady ? 'View Work' : 'Add Work Item',
       },
@@ -596,7 +596,7 @@ export default function EditProjectPage() {
                     placeholder="Auto-generated e.g. PRJ-0001"
                     className={`${inputCls} ${project.code ? 'opacity-60 cursor-not-allowed bg-white/[0.02]' : ''}`}
                   />
-                  {project.code && <p className="mt-1 text-[11px] text-neutral-500">Project code is immutable once assigned (§38).</p>}
+                  {project.code && <p className="mt-1 text-[11px] text-neutral-500">Project code cannot be changed once assigned.</p>}
                 </div>
 
                 <div>
@@ -693,7 +693,7 @@ export default function EditProjectPage() {
                       </Link>
                     )}
                   </div>
-                  <p className="mt-1 text-[11px] text-neutral-500">A project stays anchored to its client (§80).</p>
+                  <p className="mt-1 text-[11px] text-neutral-500">Projects remain permanently linked to their designated client.</p>
                 </div>
 
                 <div>
@@ -727,7 +727,7 @@ export default function EditProjectPage() {
                     placeholder="INR"
                   />
                   {project.status !== 'DRAFT' ? (
-                    <p className="mt-1 text-[11px] text-neutral-500">Currency cannot change after project activation (§89).</p>
+                    <p className="mt-1 text-[11px] text-neutral-500">Currency cannot be changed once the project has been activated.</p>
                   ) : (
                     <p className="mt-1 text-[11px] text-neutral-500">3-letter code (e.g. INR, USD, EUR, GBP).</p>
                   )}
@@ -1180,7 +1180,7 @@ export default function EditProjectPage() {
                 <ProjectStatusBadge status={project.status} size="sm" />
               </div>
               <p className="text-[12.5px] text-neutral-400">
-                Time tracking targets ACTIVE projects (§126). Current status is <strong className="text-white">{project.status}</strong>.
+                Time tracking is available for active projects. Current status is <strong className="text-white">{project.status}</strong>.
               </p>
               {canManage && canTransitionProjectStatus(project.status, 'ACTIVE') && (
                 <div className="pt-2">
@@ -1269,7 +1269,7 @@ export default function EditProjectPage() {
 
             <div className="pt-2 border-t border-white/[0.05] text-[11px] text-neutral-500 leading-relaxed">
               <Info className="w-3.5 h-3.5 inline mr-1 text-neutral-400" />
-              Warnings never block creation or edits. They signal where future time entries would resolve to &ldquo;not configured&rdquo; instead of financial data (§96/§127).
+              Readiness warnings do not block creation or updates. They highlight areas where future time entries may lack full rate card configuration.
             </div>
           </div>
         </div>

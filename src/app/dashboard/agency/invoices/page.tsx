@@ -227,7 +227,7 @@ export default function InvoicesPage() {
                     <Link href={`/dashboard/agency/invoices/${r.id}`} className="text-white underline underline-offset-2 hover:text-neutral-300">
                       {r.invoiceNumber ?? draftLabel(r.id)}
                     </Link>
-                    {r.status === 'DRAFT' && <div className="text-[10.5px] text-neutral-600">no number until issued (§74)</div>}
+                    {r.status === 'DRAFT' && <div className="text-[10.5px] text-neutral-600">assigned upon issuance</div>}
                   </td>
                   <td className="px-4 py-3 text-neutral-400">
                     {clientNames[r.clientId] || 'Client'}
@@ -248,7 +248,7 @@ export default function InvoicesPage() {
                   </td>
                   <td className="px-4 py-3">
                     <span className={`inline-block px-2 py-0.5 rounded text-[11px] font-medium ${STATUS_STYLE[display]}`}>{display}</span>
-                    {display !== r.status && <div className="mt-0.5 text-[10.5px] text-neutral-600">stored: {r.status} (§80)</div>}
+                    {display !== r.status && <div className="mt-0.5 text-[10.5px] text-neutral-600">state: {r.status}</div>}
                   </td>
                   <td className="px-4 py-3 text-right whitespace-nowrap">
                     <Link

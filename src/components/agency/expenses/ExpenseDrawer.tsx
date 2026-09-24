@@ -295,7 +295,7 @@ export function ExpenseDrawer({ isOpen, onClose, onSaved, editing, defaultProjec
           </div>
 
           <div>
-            <span className={labelCls}>Type (§38) <Req satisfied={Boolean(expenseType)} /></span>
+            <span className={labelCls}>Type <Req satisfied={Boolean(expenseType)} /></span>
             <div className="space-y-1.5" role="radiogroup" aria-label="Expense type">
               {TYPE_OPTIONS.map(o => (
                 <button
@@ -317,7 +317,7 @@ export function ExpenseDrawer({ isOpen, onClose, onSaved, editing, defaultProjec
           </div>
 
           <div>
-            <span className={labelCls}>Billable? (§39) <Req satisfied={typeof billable === 'boolean'} /></span>
+            <span className={labelCls}>Billable? <Req satisfied={typeof billable === 'boolean'} /></span>
             <div className="flex gap-2" role="radiogroup" aria-label="Billable">
               {[true, false].map(v => (
                 <button
@@ -336,13 +336,13 @@ export function ExpenseDrawer({ isOpen, onClose, onSaved, editing, defaultProjec
               ))}
             </div>
             {expenseType === 'INTERNAL' && (
-              <p className="mt-1 text-[11.5px] text-neutral-600">An INTERNAL expense is never billable (§39).</p>
+              <p className="mt-1 text-[11.5px] text-neutral-600">Internal expenses cannot be billed to clients.</p>
             )}
           </div>
 
           {billable && (
             <div>
-              <label htmlFor="ex-markup" className={labelCls}>Markup % (§43) <Opt /></label>
+              <label htmlFor="ex-markup" className={labelCls}>Markup % <Opt /></label>
               <input
                 id="ex-markup" type="number" min={0} step="0.5" value={markupInput}
                 onChange={e => setMarkupInput(e.target.value)}
@@ -374,7 +374,7 @@ export function ExpenseDrawer({ isOpen, onClose, onSaved, editing, defaultProjec
               id="ex-receipt" type="text" value={receiptReference} maxLength={500}
               onChange={e => setReceiptReference(e.target.value)}
               disabled={locked}
-              className={inputCls} placeholder="Drive link, file name or note (§45)"
+              className={inputCls} placeholder="Receipt link, document reference, or notes"
             />
           </div>
 

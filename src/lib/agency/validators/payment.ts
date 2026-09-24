@@ -164,7 +164,7 @@ export function validatePaymentRecord(
   const errors: PaymentFieldError[] = [];
 
   const invoiceId = str(payload.invoiceId);
-  if (!invoiceId) errors.push({ field: 'invoiceId', message: 'A payment must reference its invoice (§89)' });
+  if (!invoiceId) errors.push({ field: 'invoiceId', message: 'A payment must reference its invoice' });
 
   const amount = num(payload.amount);
   if (amount === undefined || amount <= 0) {
@@ -186,7 +186,7 @@ export function validatePaymentRecord(
     } else if (withholdingAmount > MAX_AMOUNT) {
       errors.push({ field: 'withholdingAmount', message: 'Exceeds the sanity bound' });
     } else if (amount !== undefined && withholdingAmount > amount) {
-      errors.push({ field: 'withholdingAmount', message: 'Cannot exceed the payment amount (§92)' });
+      errors.push({ field: 'withholdingAmount', message: 'Cannot exceed the payment amount' });
     }
   }
 
@@ -194,7 +194,7 @@ export function validatePaymentRecord(
   // amount: an adjustment without a withheld amount has nothing to describe.
   const withholdingAdjustment = validateWithholdingAdjustment(payload.withholdingAdjustment, errors);
   if (withholdingAdjustment !== undefined && withholdingAmount === undefined) {
-    errors.push({ field: 'withholdingAdjustment', message: 'withholdingAdjustment requires withholdingAmount (§92) — the adjustment describes the withheld money' });
+    errors.push({ field: 'withholdingAdjustment', message: 'Withholding adjustment requires a withholding amount' });
   }
 
   const receivedAt = str(payload.receivedAt);

@@ -349,7 +349,7 @@ export function ProjectWizardDrawer({ isOpen, onClose, onCreated }: ProjectWizar
                     <button
                       type="button"
                       onClick={() => setClientDrawerOpen(true)}
-                      title="Create a new client without leaving the wizard (§95)"
+                      title="Create a new client without leaving the wizard"
                       className="shrink-0 inline-flex items-center gap-1 px-2.5 rounded border border-white/[0.08] text-[12px] text-neutral-300 hover:bg-white/[0.04] transition-colors"
                     >
                       <Plus className="w-3.5 h-3.5" aria-hidden /> New
@@ -469,7 +469,7 @@ export function ProjectWizardDrawer({ isOpen, onClose, onCreated }: ProjectWizar
                   if (rows.length === 0) return null;
                   return (
                     <div className="rounded-lg border border-white/[0.06] bg-white/[0.01] p-3 space-y-1.5">
-                      <div className="text-[11px] font-medium uppercase tracking-wider text-neutral-500">Planned economics (§66)</div>
+                      <div className="text-[11px] font-medium uppercase tracking-wider text-neutral-500">Planned Economics</div>
                       {rows.map(r => (
                         <div key={r.label} className="flex items-center justify-between text-[12.5px]">
                           <span className="text-neutral-400">{r.label}</span>
@@ -568,7 +568,7 @@ export function ProjectWizardDrawer({ isOpen, onClose, onCreated }: ProjectWizar
                       </div>
                     ))}
                   </div>
-                  <p className="mt-1.5 text-[11px] text-neutral-600">Allocation is metadata only in Phase 1 — it never drives scheduling.</p>
+                  <p className="mt-1.5 text-[11px] text-neutral-600">Allocation represents planned team capacity for this project.</p>
                 </div>
               </div>
             )}
@@ -605,11 +605,11 @@ export function ProjectWizardDrawer({ isOpen, onClose, onCreated }: ProjectWizar
                     <ul className="mt-2 space-y-1 list-disc list-inside text-[12px] text-neutral-300">
                       {warnings.map(w => <li key={w}>{w}</li>)}
                     </ul>
-                    <p className="mt-2 text-[11.5px] text-neutral-500">These are advisory — drafts are allowed to be incomplete (§74).</p>
+                    <p className="mt-2 text-[11.5px] text-neutral-500">These notices are advisory — draft projects can be saved and updated at any time.</p>
                   </div>
                 )}
 
-                <p className="text-[12px] text-neutral-500">Saving creates this project as a <span className="text-neutral-300 font-medium">DRAFT</span>. Activation is a separate gated step (§75).</p>
+                <p className="text-[12px] text-neutral-500">Saving creates this project as a <span className="text-neutral-300 font-medium">DRAFT</span>. You can activate the project when ready for delivery.</p>
 
                 {apiError && <p role="alert" className="text-[12.5px] text-red-400">{apiError}</p>}
               </div>

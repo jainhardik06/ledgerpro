@@ -303,7 +303,7 @@ export default function ExpensesPage() {
                       {r.billable && r.markupPercent !== undefined && <span className="ml-1 text-[11px] text-neutral-600">+{r.markupPercent}%</span>}
                     </td>
                     <td className="px-4 py-3 text-right text-white tabular-nums whitespace-nowrap">
-                      {r.amount ? inr(r.amount.amount) : <span className="text-neutral-600" title="Cost visible to admins only (§99)">—</span>}
+                      {r.amount ? inr(r.amount.amount) : <span className="text-neutral-600" title="Cost visible to administrators only">—</span>}
                     </td>
                     <td className="px-4 py-3 text-right tabular-nums whitespace-nowrap">
                       {r.billable
@@ -313,7 +313,7 @@ export default function ExpensesPage() {
                     <td className="px-4 py-3">
                       <span className={`inline-block px-2 py-0.5 rounded text-[11px] font-medium ${STATUS_STYLE[r.status]}`}>{r.status}</span>
                       {r.billingStatus === 'INVOICED' && <span className="ml-1 inline-block px-2 py-0.5 rounded text-[11px] font-medium text-violet-300 bg-violet-400/10">INVOICED</span>}
-                      {r.transactionId && <div className="mt-0.5 text-[10.5px] text-neutral-600" title="Linked ledger transaction (§41)">ledger ✓</div>}
+                      {r.transactionId && <div className="mt-0.5 text-[10.5px] text-neutral-600" title="Linked ledger transaction">ledger ✓</div>}
                       {r.rejectionReason && <div className="mt-1 text-[11.5px] text-red-400/80">Rejected: {r.rejectionReason}</div>}
                     </td>
                     <td className="px-4 py-3 text-right whitespace-nowrap">

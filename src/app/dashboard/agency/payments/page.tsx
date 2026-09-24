@@ -136,17 +136,17 @@ export default function PaymentsPage() {
     if (verb === 'reverse') {
       const ok = await confirmModal({
         title: 'Reverse Payment',
-        message: 'Reverse this payment? A compensating transaction returns the cash and the invoice balance goes back up (§103).',
+        message: 'Reverse this payment? A compensating ledger transaction will return the cash and restore the invoice balance.',
         confirmText: 'Reverse Payment',
         variant: 'danger',
       });
       if (!ok) return;
     }
-    // §108 — a confirmed payment must enter a tracked account; when the
+    // Confirmed payment must enter a tracked account; when the
     // payment never named one, pick it here.
     if (verb === 'confirm' && !payment.accountId) {
       if (accounts.filter(a => a.id).length === 0) {
-        setNotice({ kind: 'error', text: 'No accounts exist yet — create one first (Accounts page): a confirmed payment must enter a tracked account (§108).' });
+        setNotice({ kind: 'error', text: 'No accounts exist yet — please create one on the Accounts page first. Confirmed payments must be deposited into a tracked account.' });
         return;
       }
       setConfirmAccount(accounts.filter(a => a.id)[0]!.id!);
@@ -175,8 +175,8 @@ export default function PaymentsPage() {
         text: verb === 'confirm'
           ? `Payment confirmed — ₹${payload.invoice?.amountDue?.amount ?? 0} still due, invoice ${payload.invoice?.status ?? ''}.`
           : verb === 'fail'
-            ? 'Payment marked FAILED — record a NEW payment when the money arrives (§102).'
-            : 'Payment reversed — the cash was returned and the invoice balance recomputed (§103).',
+            ? 'Payment marked as failed. Record a new payment when funds are received.'
+            : 'Payment reversed — cash was returned to ledger and invoice balance was recomputed.',
       });
       load();
     } catch {
@@ -287,7 +287,7 @@ export default function PaymentsPage() {
                   </td>
                   <td className="px-4 py-2.5">
                     <span className={`text-[11px] font-medium px-2 py-0.5 rounded ${STATUS_STYLE[p.status]}`}>{p.status}</span>
-                    {p.status === 'REVERSED' && <div className="text-[10px] text-neutral-600 mt-0.5">kept in history (§103)</div>}
+                    {p.status === 'REVERSED' && <div className="text-[10px] text-neutral-600 mt-0.5">recorded in audit history</div>}
                   </td>
                   {canManage && (
                     <td className="px-4 py-2.5 text-right whitespace-nowrap">
@@ -296,7 +296,7 @@ export default function PaymentsPage() {
                           <button
                             onClick={() => void action(p, 'confirm')}
                             disabled={busyId === p.id}
-                            title="Create the ledger transaction + recompute the invoice (§114)"
+                            title="Post ledger transaction and update invoice balance"
                             className="inline-flex items-center gap-1 px-2 py-1 rounded bg-white text-black text-[11px] font-semibold hover:bg-neutral-200 disabled:opacity-50 transition-colors"
                           >
                             <Check className="w-3 h-3" aria-hidden /> Confirm
@@ -304,7 +304,7 @@ export default function PaymentsPage() {
                           <button
                             onClick={() => void action(p, 'fail')}
                             disabled={busyId === p.id}
-                            title="Mark FAILED — a new payment record is created when the money arrives (§102)"
+                            title="Mark failed — record a new payment when funds arrive"
                             className="ml-1.5 inline-flex items-center gap-1 px-2 py-1 rounded border border-white/[0.08] text-[11px] text-neutral-400 hover:text-white disabled:opacity-50 transition-colors"
                           >
                             <X className="w-3 h-3" aria-hidden /> Fail
@@ -315,7 +315,7 @@ export default function PaymentsPage() {
                         <button
                           onClick={() => void action(p, 'reverse')}
                           disabled={busyId === p.id}
-                          title="Compensating transaction returns the cash; the payment stays in history (§103)"
+                          title="Post compensating transaction and restore invoice balance"
                           className="inline-flex items-center gap-1 px-2 py-1 rounded border border-white/[0.08] text-[11px] text-neutral-400 hover:text-red-400 hover:border-red-400/30 disabled:opacity-50 transition-colors"
                         >
                           <Undo2 className="w-3 h-3" aria-hidden /> Reverse
@@ -337,14 +337,14 @@ export default function PaymentsPage() {
         defaultInvoiceId={drawerInvoice}
       />
 
-      {/* §108 — the account picker for confirming an account-less payment. */}
+      {/* Account picker for confirming an account-less payment. */}
       {confirming && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-label="Choose account">
           <div className="absolute inset-0 bg-black/70" onClick={() => setConfirming(null)} />
           <div className="relative w-full max-w-sm rounded-xl border border-white/[0.08] bg-[#0a0a0a] p-5 space-y-4">
             <h2 className="text-[14px] font-semibold text-white">Confirm payment — {inr(confirming.amount.amount)}</h2>
             <p className="text-[12.5px] text-neutral-400">
-              A confirmed payment must enter a tracked account (§108). Which account received this money?
+              Confirmed payments must be deposited into a tracked account. Which account received this payment?
             </p>
             <Select
               value={confirmAccount}

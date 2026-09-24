@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
     }
     // §89 — billing prices a service, not a person: role is REQUIRED there.
     if (wantsBilling && (role == null || role === '')) {
-      return NextResponse.json({ error: 'role is required for billing rate resolution (§89)' }, { status: 400 });
+      return NextResponse.json({ error: 'role is required for billing rate resolution' }, { status: 400 });
     }
 
     // §99 — cost rates are salary data. Cost readers resolve anyone; a plain

@@ -97,13 +97,13 @@ export function AssignCostRateDrawer({ isOpen, onClose, onAssigned, rateCardId, 
               <option key={e.id} value={e.id}>{e.name} — {e.currency} {e.amount.toLocaleString('en-IN')}/hr</option>
             ))}
           </Select>
-          <p className="mt-1.5 text-[11px] text-neutral-600">The assignment pins the exact rate line, so logged time stays financially stable when rates change (§131).</p>
+          <p className="mt-1.5 text-[11px] text-neutral-600">The assignment locks this specific rate line so existing logged time remains consistent when rates change.</p>
         </div>
         <div>
           <label htmlFor="assign-from" className={labelCls}>Effective From *</label>
           <DatePicker id="assign-from" value={effectiveFrom} onChange={e => setEffectiveFrom(e.target.value)} required />
           <p className="mt-1.5 text-[11px] text-neutral-600">
-            A user can&apos;t hold two cost rates on the same day — an existing open-ended assignment is closed the day before this one starts (§77/§79).
+            A team member cannot have overlapping cost rates on the same date. Any prior active assignment will automatically close before the new rate begins.
           </p>
         </div>
 

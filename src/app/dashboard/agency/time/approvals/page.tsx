@@ -278,7 +278,7 @@ export default function TimeApprovalsPage() {
                   {r.costRateSnapshot && r.calculatedCost && <span className="tabular-nums">cost ₹{r.calculatedCost.amount.toLocaleString('en-IN')}</span>}
                   {r.billable && r.calculatedBillableAmount && <span className="tabular-nums">bill ₹{r.calculatedBillableAmount.amount.toLocaleString('en-IN')}</span>}
                   {r.financialStatus === 'RATE_CONFIGURATION_REQUIRED' && (
-                    <span className="text-amber-300" title="Tracked, but rates are not configured — approval proceeds, financial recognition stays blocked (§24)">
+                    <span className="text-amber-300" title="Tracked, but rates are not configured — approval proceeds while financial recognition awaits rate configuration">
                       rate setup required
                     </span>
                   )}
@@ -360,7 +360,7 @@ export default function TimeApprovalsPage() {
           <div className="relative w-full max-w-sm rounded-xl border border-white/[0.08] bg-[#0a0a0a] p-5">
             <h2 className="text-[14px] font-semibold text-white">Reject {selected.size} entr{selected.size === 1 ? 'y' : 'ies'}</h2>
             <p className="mt-1 text-[12px] text-neutral-500">
-              Every selected author will see this reason and can edit and resubmit (§20).
+              Every selected author will see this reason and can edit and resubmit their entry.
             </p>
             <label htmlFor="bulk-reject-reason" className="block mt-3 text-[11px] font-medium uppercase tracking-wider text-neutral-500 mb-1.5">Reason (required)</label>
             <textarea

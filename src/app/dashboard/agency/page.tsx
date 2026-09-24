@@ -321,7 +321,7 @@ export default function AgencyCommandCenterPage() {
           <div className="min-w-0">
             <p className="text-[13px] font-medium text-neutral-200">{pendingAction}</p>
             <p className="mt-0.5 text-[12px] text-neutral-500">
-              Arriving with its module in Phase 1 — the destination does not exist yet.
+              This action is currently being processed. You can also access this feature from the main navigation.
             </p>
           </div>
           <button

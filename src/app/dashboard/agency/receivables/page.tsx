@@ -258,7 +258,7 @@ export default function ReceivablesPage() {
             </div>
             {data.mixedCurrencies && (
               <div className="mt-2 text-[11px] text-neutral-500">
-                Open invoices span multiple currencies — aggregate amounts are withheld (§127); each row keeps its own currency.
+                Open invoices span multiple currencies — totals are displayed per invoice currency.
               </div>
             )}
           </div>
@@ -414,7 +414,7 @@ export default function ReceivablesPage() {
                         <td className="px-4 py-3 text-right text-white tabular-nums whitespace-nowrap font-medium">{formatMoney(r.due)}</td>
                         <td className="px-4 py-3 text-neutral-400 whitespace-nowrap">
                           {formatDate(r.dueDate)}
-                          {r.status !== r.displayStatus && <div className="text-[10.5px] text-neutral-600">stored: {r.status} (§80)</div>}
+                          {r.status !== r.displayStatus && <div className="text-[10.5px] text-neutral-600">state: {r.status}</div>}
                         </td>
                         <td className="px-4 py-3 text-right tabular-nums whitespace-nowrap">
                           {r.ageDays > 0

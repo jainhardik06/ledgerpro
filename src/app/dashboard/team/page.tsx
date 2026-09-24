@@ -203,7 +203,7 @@ export default function TeamPage() {
                    {isAgency && user?.role === 'TENANT_ADMIN' && (
                      <button
                        onClick={(e) => { e.stopPropagation(); setCostRateMember({ id: member.id, username: member.username }); }}
-                       title="Cost rate (Module 6 §88)"
+                       title="Configure member cost rate"
                        className="p-1.5 mr-1 hover:bg-white/[0.1] rounded text-neutral-400 hover:text-white transition-colors"
                      >
                        <Tags className="w-4 h-4" />

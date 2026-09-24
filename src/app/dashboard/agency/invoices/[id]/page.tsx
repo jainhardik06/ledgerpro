@@ -165,7 +165,7 @@ export default function InvoiceDetailPage() {
         text: action === 'finalize'
           ? `Issued as ${body.invoice.invoiceNumber} — the billed items are locked INVOICED.`
           : action === 'send'
-            ? 'Send recorded — the audit trail now shows this delivery (§81).'
+            ? 'Invoice marked as sent and recorded in the audit trail.'
             : 'Invoice voided — the billed items are back to unbilled.',
       });
       load();
@@ -225,7 +225,7 @@ export default function InvoiceDetailPage() {
         setNotice({ kind: 'error', text: body.error || 'That link could not be cancelled.' });
         return;
       }
-      setNotice({ kind: 'info', text: 'Payment link cancelled (§55 — cancelled at the gateway first, then here).' });
+      setNotice({ kind: 'info', text: 'Payment link cancelled.' });
       load();
     } catch {
       setNotice({ kind: 'error', text: 'Network error — please try again.' });

@@ -264,9 +264,8 @@ export async function createRateEntry(
   let { unit, billingType, billable } = v;
   let { role, serviceType } = v;
   if (card.type === 'COST') {
-    // §73 — cost rates are hourly in Phase 1.
     if (unit !== undefined && unit !== 'HOUR') {
-      return badRequest('Cost rates use the HOUR unit in Phase 1 (§73)');
+      return badRequest('Cost rates must use the HOUR unit');
     }
     unit = 'HOUR';
     billingType = 'HOURLY';
@@ -349,7 +348,7 @@ export async function updateRateEntry(
     const newAmount = payload.amount as number;
     if (openVersion) {
       if (newFrom <= openVersion.effectiveFrom) {
-        return badRequest('Rates change forward in time — the new effective date must be after the current version\'s start (§122)');
+        return badRequest('Rates change forward in time — the new effective date must be after the current version\'s start');
       }
       // §79 — inclusive close the day before the new version begins.
       await closeRateEntryVersion(openVersion.id, tenantId, dayBefore(newFrom));
@@ -382,7 +381,7 @@ export async function updateRateEntry(
     }
   }
   if (v.unit !== undefined && v.unit !== entry.unit) {
-    if (card.type === 'COST') return badRequest('Cost rates use the HOUR unit in Phase 1 (§73)');
+    if (card.type === 'COST') return badRequest('Cost rates must use the HOUR unit');
     metadata.unit = v.unit;
   }
   if (v.billingType !== undefined && v.billingType !== entry.billingType) metadata.billingType = v.billingType;
@@ -433,10 +432,10 @@ export async function assignUserCostRate(
   const card = await getRateCardById(rateCardId, tenantId);
   if (!card) return notFound('Rate card');
   if (card.type !== 'COST') {
-    return badRequest('Only COST rate cards can be assigned to users (§93)');
+    return badRequest('Only cost rate cards can be assigned to users');
   }
   if (card.status === 'ARCHIVED') {
-    return badRequest('Rate card is archived — it cannot receive new assignments (§76)');
+    return badRequest('Rate card is archived — it cannot receive new assignments');
   }
   // §131 — the assignment pins the ENTRY; it must live on the SAME card.
   const entry = await getRateCardEntryById(rateCardEntryId, rateCardId, tenantId);
@@ -451,8 +450,8 @@ export async function assignUserCostRate(
     if (a.effectiveTo == null && effectiveFrom > a.effectiveFrom) {
       toClose.push(a); // open-ended, replaced forward (§79)
     } else {
-      // A closed range is history — §77 rejects the overlap outright.
-      return conflict(`This assignment overlaps an existing one (${a.effectiveFrom} → ${a.effectiveTo ?? 'open'}) — a user cannot have two cost rates on the same day (§77)`);
+      // A closed range is history — rejects the overlap outright.
+      return conflict(`This assignment overlaps an existing one (${a.effectiveFrom} → ${a.effectiveTo ?? 'open'}) — a user cannot have two cost rates on the same day`);
     }
   }
   for (const a of toClose) {
@@ -505,7 +504,7 @@ export async function updateUserCostRate(
   for (const a of existing) {
     if (a.id === assignmentId) continue;
     if (rangesOverlap(a, newRange)) {
-      return conflict(`That change overlaps another assignment (${a.effectiveFrom} → ${a.effectiveTo ?? 'open'}) (§77)`);
+      return conflict(`That change overlaps another assignment (${a.effectiveFrom} → ${a.effectiveTo ?? 'open'})`);
     }
   }
 

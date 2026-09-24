@@ -89,11 +89,11 @@ export function ProjectBillingPanel({ project, canManage }: { project: Project; 
       {canManage && billable && (
         <div className="rounded-xl border border-white/[0.06] bg-[#050505] p-4 flex flex-wrap items-center justify-between gap-3">
           <div className="text-[12.5px] text-neutral-400">
-            <span className="text-neutral-500">Waiting to be billed (§70): </span>
+            <span className="text-neutral-500">Unbilled items: </span>
             <strong className="text-neutral-200">{waitingCount} item{waitingCount === 1 ? '' : 's'}</strong>
             {waitingValue !== null && waitingCount !== null && waitingCount > 0 && <span> · {inr(waitingValue)}</span>}
             {billable.unvaluableMilestones > 0 && (
-              <span className="text-amber-400/90"> · {billable.unvaluableMilestones} milestone{billable.unvaluableMilestones > 1 ? 's' : ''} cannot be valued (§97)</span>
+              <span className="text-amber-400/90"> · {billable.unvaluableMilestones} milestone{billable.unvaluableMilestones > 1 ? 's' : ''} require contract value</span>
             )}
           </div>
           <Link

@@ -295,7 +295,7 @@ export default function MyTimePage() {
                       <span className={`inline-block px-2 py-0.5 rounded text-[11px] font-medium ${STATUS_STYLE[r.approvalStatus]}`}>{r.approvalStatus}</span>
                       {r.billingStatus === 'INVOICED' && <span className="ml-1 inline-block px-2 py-0.5 rounded text-[11px] font-medium text-violet-300 bg-violet-400/10">INVOICED</span>}
                       {r.financialStatus === 'RATE_CONFIGURATION_REQUIRED' && (
-                        <span className="ml-1 inline-block px-2 py-0.5 rounded text-[11px] font-medium text-amber-300 bg-amber-400/10" title="Tracked, but rates are not configured — no financial recognition yet (§24)">
+                        <span className="ml-1 inline-block px-2 py-0.5 rounded text-[11px] font-medium text-amber-300 bg-amber-400/10" title="Tracked, but rates are not configured — awaiting rate configuration for financial recognition">
                           Rate setup required
                         </span>
                       )}

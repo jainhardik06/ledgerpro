@@ -143,7 +143,7 @@ export function TimeEntryDrawer({ isOpen, onClose, onSaved, editing }: Props) {
           {locked && (
             <p className="text-[12px] text-amber-400/90 rounded-lg border border-amber-400/20 bg-amber-400/5 px-3 py-2">
               {editing?.billingStatus === 'INVOICED'
-                ? 'This entry is invoiced and financially locked (§22).'
+                ? 'This entry has been invoiced and is financially locked against modifications.'
                 : 'This entry is awaiting review — only notes can be saved here.'}
             </p>
           )}

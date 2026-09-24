@@ -173,12 +173,12 @@ export function UserCostRateDrawer({ isOpen, onClose, user }: UserCostRateDrawer
             </div>
           ) : (
             <div className="text-[13px] text-amber-400">
-              No cost rate configured — this member&apos;s future time would carry UNKNOWN cost (§96), never zero.
+              No cost rate configured — this member&apos;s tracked time will be marked as unassigned cost.
             </div>
           )}
         </div>
 
-        {/* New assignment (§88): card → rate line → effective date. */}
+        {/* New assignment: card → rate line → effective date. */}
         <form onSubmit={e => { e.preventDefault(); void handleAssign(); }} className="space-y-4">
           <div className="text-[11px] font-medium uppercase tracking-wider text-neutral-500">Assign new cost rate</div>
           <div>
@@ -199,13 +199,13 @@ export function UserCostRateDrawer({ isOpen, onClose, user }: UserCostRateDrawer
                 <option key={e.id} value={e.id}>{e.name} — {e.currency} {e.amount.toLocaleString('en-IN')}/hr</option>
               ))}
             </Select>
-            <p className="mt-1.5 text-[11px] text-neutral-600">The assignment pins the exact rate line, so logged time stays financially stable when rates change (§131).</p>
+            <p className="mt-1.5 text-[11px] text-neutral-600">The assignment pins the exact rate line, ensuring logged time stays financially accurate over time.</p>
           </div>
           <div>
             <label htmlFor="ucr-from" className={labelCls}>Effective From *</label>
             <DatePicker id="ucr-from" value={effectiveFrom} onChange={e => setEffectiveFrom(e.target.value)} required />
             <p className="mt-1.5 text-[11px] text-neutral-600">
-              A member can&apos;t hold two cost rates on the same day — an existing open-ended assignment is closed the day before this one starts (§77/§79).
+              A member cannot hold multiple cost rates on the same day — any existing open-ended assignment will automatically conclude the day before the new rate begins.
             </p>
           </div>
           <div className="flex items-center justify-end gap-2 pt-1">

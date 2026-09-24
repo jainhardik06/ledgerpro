@@ -149,7 +149,7 @@ export function ProjectExpensesPanel({ projectId }: Props) {
                       {r.billable && r.markupPercent !== undefined && <span className="ml-1 text-[11px] text-neutral-600">+{r.markupPercent}%</span>}
                     </td>
                     <td className="px-4 py-2.5 text-right text-white tabular-nums whitespace-nowrap">
-                      {r.amount ? inr(r.amount.amount) : <span className="text-neutral-600" title="Cost visible to admins only (§99)">—</span>}
+                      {r.amount ? inr(r.amount.amount) : <span className="text-neutral-600" title="Cost visible to administrators only">—</span>}
                     </td>
                     <td className="px-4 py-2.5 text-right tabular-nums whitespace-nowrap">
                       {r.billable

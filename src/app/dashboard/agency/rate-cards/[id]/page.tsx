@@ -193,7 +193,7 @@ export default function RateCardDetailPage() {
       <div className="p-6 max-w-md mx-auto text-center">
         <Tags className="w-8 h-8 mx-auto text-neutral-700" aria-hidden />
         <h1 className="mt-4 text-[16px] font-semibold text-white">Cost rates are restricted</h1>
-        <p className="mt-2 text-[13px] text-neutral-500">Cost rates are salary data — only workspace admins can view them (§99).</p>
+        <p className="mt-2 text-[13px] text-neutral-500">Cost rates contain sensitive financial data — only workspace administrators can view them.</p>
         <Link href="/dashboard/agency/rate-cards" className="mt-4 inline-block text-[13px] text-neutral-300 underline underline-offset-4">Back to rate cards</Link>
       </div>
     );
@@ -243,7 +243,7 @@ export default function RateCardDetailPage() {
               <p className="mt-1.5 text-[11.5px] text-neutral-600 max-w-xl">
                 {card.type === 'COST'
                   ? 'Internal labor economics — what an hour of your team costs you. Assigned to team members; never client-facing.'
-                  : 'Client-facing pricing — what the client pays per service. The client buys a role, never a person (§89).'}
+                  : 'Client-facing pricing — billable rates per service role.'}
               </p>
             </div>
             {canManage && (
@@ -268,7 +268,7 @@ export default function RateCardDetailPage() {
             )}
           </div>
           {card.status === 'ARCHIVED' && (
-            <p className="text-[12px] text-neutral-500">This card is archived — no new rates or assignments; history keeps reading it (§76).</p>
+            <p className="text-[12px] text-neutral-500">This card is archived — existing historical records will continue referencing its rates.</p>
           )}
 
           {/* Entries + version history (§85/§87/§122) */}
@@ -347,7 +347,7 @@ export default function RateCardDetailPage() {
                                   ))}
                                 </ul>
                               )}
-                              <p className="mt-2 text-[11px] text-neutral-600">Rates change by closing the old version the day before a new one begins — history is never rewritten (§122).</p>
+                              <p className="mt-2 text-[11px] text-neutral-600">Rate updates close the prior version when the new version takes effect, preserving past financial history.</p>
                             </div>
                           </td>
                         </tr>
@@ -365,7 +365,7 @@ export default function RateCardDetailPage() {
               <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 border-b border-white/[0.06]">
                 <div>
                   <h2 className="text-[13.5px] font-semibold text-white">Team members on this card</h2>
-                  <p className="text-[11.5px] text-neutral-500">Cost assignments resolve a person&apos;s cost rate on any date (§88)</p>
+                  <p className="text-[11.5px] text-neutral-500">Cost assignments define member cost rates across effective date ranges.</p>
                 </div>
                 {canManage && card.status === 'ACTIVE' && (
                   <button
@@ -378,7 +378,7 @@ export default function RateCardDetailPage() {
               </div>
               {(detail.assignments?.length ?? 0) === 0 ? (
                 <p className="px-4 py-6 text-center text-[12.5px] text-neutral-500">
-                  Nobody is assigned yet. A team member&apos;s cost rate resolves only via an assignment — without one, their cost is honestly &ldquo;not configured&rdquo; (§96).
+                  Nobody is assigned yet. A team member&apos;s cost rate resolves via an assignment. Without one, their cost is tracked as unassigned.
                 </p>
               ) : (
                 <table className="w-full text-[13px]" aria-label="Cost assignments">

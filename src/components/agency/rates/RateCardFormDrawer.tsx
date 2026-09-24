@@ -67,7 +67,7 @@ export function RateCardFormDrawer({ isOpen, onClose, onCreated }: RateCardFormD
       return;
     }
     if (scope === 'CLIENT' && !clientId) {
-      setError('A client-scoped card needs its client (§91).');
+      setError('A client-scoped rate card requires a client to be selected.');
       return;
     }
     setSaving(true);
@@ -123,7 +123,7 @@ export function RateCardFormDrawer({ isOpen, onClose, onCreated }: RateCardFormD
               </button>
             ))}
           </div>
-          <p className="mt-1.5 text-[11px] text-neutral-600">Two economic truths, never merged — a card is one or the other (§56).</p>
+          <p className="mt-1.5 text-[11px] text-neutral-600">Define either internal labor costs or external client billing rates.</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -146,7 +146,7 @@ export function RateCardFormDrawer({ isOpen, onClose, onCreated }: RateCardFormD
               <option value="">Select a client</option>
               {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </Select>
-            <p className="mt-1.5 text-[11px] text-neutral-600">This card prices only the selected client (§91).</p>
+            <p className="mt-1.5 text-[11px] text-neutral-600">This rate card applies specifically to the selected client.</p>
           </div>
         )}
 

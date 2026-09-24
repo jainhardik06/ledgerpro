@@ -141,7 +141,7 @@ export default function PortfolioProfitabilityPage() {
         <div>
           <h1 className="text-[18px] font-semibold text-white tracking-tight">Profitability</h1>
           <p className="mt-1 text-[12.5px] text-neutral-500">
-            One engine, every report — margins, costs, burns and unbilled work always agree with the project pages (§70).
+            Unified reporting — margins, costs, burns and unbilled work consistently aligned across all projects.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -171,7 +171,7 @@ export default function PortfolioProfitabilityPage() {
         </div>
       </div>
       <p className="-mt-3 text-[11px] text-neutral-600">
-        The date window selects which PROJECTS (by start date) — it never re-slices the money inside them (§80).
+        The date filter selects projects by start date across their full lifecycle.
       </p>
 
       {/* Portfolio totals (§81) — null money on mixed currencies is honest, never converted (§127) */}
@@ -189,7 +189,7 @@ export default function PortfolioProfitabilityPage() {
             <div key={label} className="rounded-xl border border-white/[0.06] bg-[#050505] p-3">
               <div className="text-[11px] font-medium uppercase tracking-wider text-neutral-500 truncate">{label}</div>
               <div className="mt-1 text-[14px] font-semibold tabular-nums text-neutral-200">
-                {value ?? <span className="text-amber-400/80 text-[12px] font-medium" title="Projects in this view mix currencies (§127)">mixed currencies</span>}
+                {value ?? <span className="text-amber-400/80 text-[12px] font-medium" title="Projects in this view use multiple distinct currencies">mixed currencies</span>}
               </div>
               {mixed && <div className="text-[10px] text-neutral-600">never converted</div>}
             </div>
