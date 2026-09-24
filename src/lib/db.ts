@@ -2242,7 +2242,7 @@ function mapProjectMemberDoc(m: Record<string, unknown>): ProjectMember {
 
 function mapWorkItemDoc(w: Record<string, unknown>): WorkItem {
   return {
-    id: (w._id as ObjectId).toString(),
+    id: w._id ? (w._id as ObjectId).toString() : ((w.id as string) ?? ''),
     tenantId: w.tenantId as string,
     projectId: w.projectId as string,
     name: w.name as string,
@@ -2259,7 +2259,7 @@ function mapWorkItemDoc(w: Record<string, unknown>): WorkItem {
 
 function mapProjectMilestoneDoc(m: Record<string, unknown>): ProjectMilestone {
   return {
-    id: (m._id as ObjectId).toString(),
+    id: m._id ? (m._id as ObjectId).toString() : ((m.id as string) ?? ''),
     tenantId: m.tenantId as string,
     projectId: m.projectId as string,
     name: m.name as string,
@@ -2700,7 +2700,8 @@ export async function getProjectWorkItems(projectId: string, tenantId: string): 
   return data.workItems
     .filter(w => w.tenantId === tenantId && w.projectId === projectId)
     .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)
-      || new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      || new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+    .map(w => mapWorkItemDoc(w as unknown as Record<string, unknown>));
 }
 
 function workItemMongoSort(sort: WorkItemSort | undefined): Record<string, 1 | -1> {
@@ -2777,40 +2778,25 @@ export async function listWorkItems(
     } catch (e) {}
   }
   const data = initLocalDb();
-  const lower = q.toLowerCase();
-  const assigneeIds = new Set(
-    q
-      ? data.users
-        .filter(u => u.tenantId === tenantId && u.username.toLowerCase().includes(lower))
-        .map(u => (u._id as unknown as string).toString())
-      : []
-  );
-  const matchesFilter = (w: WorkItem) => Object.entries(baseFilter).every(([key, value]) => {
-    if (value && typeof value === 'object' && !Array.isArray(value)) {
-      if ('$or' in (value as Record<string, unknown>)) {
-        const clauses = (value as { $or: unknown[] }).$or;
-        return clauses.some(clause => {
-          const [[k, v]] = Object.entries(clause as Record<string, unknown>);
-          if (k === 'assignedTo' && v && typeof v === 'object' && '$in' in (v as Record<string, unknown>)) {
-            return (v as { $in: string[] }).$in.includes(w.assignedTo ?? '');
-          }
-          const rx = (v as { $regex?: string }).$regex;
-          if (rx) return String((w as unknown as Record<string, unknown>)[k] ?? '').toLowerCase().includes(rx.toLowerCase());
-          return false;
-        });
-      }
-      if ('$in' in (value as Record<string, unknown>)) {
-        // Missing fields read as '' so the unassigned $in ([null, '']) matches
-        // both an absent field and an explicit empty string.
-        const v = (w as unknown as Record<string, unknown>)[key] ?? '';
-        return (value as { $in: unknown[] }).$in.includes(v);
-      }
-    }
-    return (w as unknown as Record<string, unknown>)[key] === value;
-  });
-  return sortWorkItemsLocally(data.workItems.filter(w =>
-    w.tenantId === tenantId && w.projectId === projectId && matchesFilter(w)
-  ), options.sort);
+  let items = data.workItems.filter(w => w.tenantId === tenantId && w.projectId === projectId);
+  if (filters.status) items = items.filter(w => w.status === filters.status);
+  if (filters.assignedTo) items = items.filter(w => w.assignedTo === filters.assignedTo);
+  if (filters.unassigned) items = items.filter(w => !w.assignedTo);
+  if (q) {
+    const lower = q.toLowerCase();
+    const assigneeIds = new Set(
+      data.users
+        .filter(u => u.tenantId === tenantId && u.username?.toLowerCase().includes(lower))
+        .map(u => u.id || (u._id ? (u._id as unknown as string).toString() : ''))
+        .filter(Boolean)
+    );
+    items = items.filter(w =>
+      w.name?.toLowerCase().includes(lower) ||
+      w.description?.toLowerCase().includes(lower) ||
+      (w.assignedTo && assigneeIds.has(w.assignedTo))
+    );
+  }
+  return sortWorkItemsLocally(items, options.sort).map(w => mapWorkItemDoc(w as unknown as Record<string, unknown>));
 }
 
 /**
@@ -2832,7 +2818,8 @@ export async function getWorkItemById(
     } catch (e) {}
   }
   const data = initLocalDb();
-  return data.workItems.find(w => w.id === itemId && w.tenantId === tenantId && w.projectId === projectId) ?? null;
+  const w = data.workItems.find(w => w.id === itemId && w.tenantId === tenantId && w.projectId === projectId);
+  return w ? mapWorkItemDoc(w as unknown as Record<string, unknown>) : null;
 }
 
 export interface WorkItemCreateInput {
@@ -2905,7 +2892,13 @@ export async function updateWorkItem(
   const data = initLocalDb();
   const idx = data.workItems.findIndex(w => w.id === itemId && w.tenantId === tenantId && w.projectId === projectId);
   if (idx >= 0) {
-    data.workItems[idx] = { ...data.workItems[idx], ...stamped } as WorkItem;
+    const updated = { ...data.workItems[idx], ...stamped };
+    for (const key of Object.keys(updated)) {
+      if ((updated as Record<string, unknown>)[key] === null) {
+        delete (updated as Record<string, unknown>)[key];
+      }
+    }
+    data.workItems[idx] = updated as WorkItem;
     writeLocalDb(data);
     return true;
   }
@@ -2928,7 +2921,8 @@ export async function getProjectMilestones(projectId: string, tenantId: string):
   const data = initLocalDb();
   return data.projectMilestones
     .filter(m => m.tenantId === tenantId && m.projectId === projectId)
-    .sort((a, b) => a.sequence - b.sequence);
+    .sort((a, b) => a.sequence - b.sequence)
+    .map(m => mapProjectMilestoneDoc(m as unknown as Record<string, unknown>));
 }
 
 export interface ProjectMilestoneCreateInput {
@@ -2959,6 +2953,7 @@ export async function createProjectMilestone(
     ...(input.percentage !== undefined && { percentage: input.percentage }),
     ...(input.dueDate !== undefined && { dueDate: input.dueDate }),
     status: input.status ?? 'PLANNED',
+    billingStatus: 'UNBILLED',
     createdAt: now,
     updatedAt: now,
   };
@@ -2970,7 +2965,7 @@ export async function createProjectMilestone(
   }
   const data = initLocalDb();
   const id = randomUUID();
-  const localMilestone: ProjectMilestone = { id, ...newMilestone } as unknown as ProjectMilestone;
+  const localMilestone: ProjectMilestone = mapProjectMilestoneDoc({ id, ...newMilestone });
   data.projectMilestones.push(localMilestone);
   writeLocalDb(data);
   return localMilestone;
@@ -3015,7 +3010,13 @@ export async function updateProjectMilestone(
   const data = initLocalDb();
   const idx = data.projectMilestones.findIndex(m => m.id === milestoneId && m.tenantId === tenantId && m.projectId === projectId);
   if (idx >= 0) {
-    data.projectMilestones[idx] = { ...data.projectMilestones[idx], ...stamped } as ProjectMilestone;
+    const updated = { ...data.projectMilestones[idx], ...stamped };
+    for (const key of Object.keys(updated)) {
+      if ((updated as Record<string, unknown>)[key] === null) {
+        delete (updated as Record<string, unknown>)[key];
+      }
+    }
+    data.projectMilestones[idx] = updated as ProjectMilestone;
     writeLocalDb(data);
     return true;
   }
@@ -3582,7 +3583,7 @@ export interface TimeEntryFilters {
 
 function mapTimeEntryDoc(e: Record<string, unknown>): TimeEntry {
   return {
-    id: (e._id as ObjectId).toString(),
+    id: e._id ? (e._id as ObjectId).toString() : ((e.id as string) ?? ''),
     tenantId: e.tenantId as string,
     projectId: e.projectId as string,
     workItemId: (e.workItemId as string | null | undefined) ?? undefined,
@@ -3667,7 +3668,8 @@ export async function getTimeEntries(
       && (filters.dateTo === undefined || e.date <= filters.dateTo))
     .sort((a, b) => (a.date !== b.date ? (a.date > b.date ? -1 : 1)
       : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
-    .slice(normalized.skip, normalized.skip + normalized.limit);
+    .slice(normalized.skip, normalized.skip + normalized.limit)
+    .map(e => mapTimeEntryDoc(e as unknown as Record<string, unknown>));
 }
 
 /** §113 — a missing entry and another tenant's entry are IDENTICAL here (null). */
@@ -3680,7 +3682,8 @@ export async function getTimeEntryById(id: string, tenantId: string): Promise<Ti
     } catch (e) {}
   }
   const data = initLocalDb();
-  return data.timeEntries.find(e => e.id === id && e.tenantId === tenantId) ?? null;
+  const entry = data.timeEntries.find(e => e.id === id && e.tenantId === tenantId);
+  return entry ? mapTimeEntryDoc(entry as unknown as Record<string, unknown>) : null;
 }
 
 export interface TimeEntryCreateInput {
@@ -3764,7 +3767,13 @@ export async function updateTimeEntry(
   const data = initLocalDb();
   const idx = data.timeEntries.findIndex(e => e.id === id && e.tenantId === tenantId);
   if (idx >= 0) {
-    data.timeEntries[idx] = { ...data.timeEntries[idx], ...stamped } as TimeEntry;
+    const updated = { ...data.timeEntries[idx], ...stamped };
+    for (const key of Object.keys(updated)) {
+      if ((updated as Record<string, unknown>)[key] === null) {
+        delete (updated as Record<string, unknown>)[key];
+      }
+    }
+    data.timeEntries[idx] = updated as TimeEntry;
     writeLocalDb(data);
     return true;
   }
@@ -4699,7 +4708,8 @@ export async function getProjectMilestoneById(
     } catch (e) {}
   }
   const data = initLocalDb();
-  return data.projectMilestones.find(m => m.id === milestoneId && m.tenantId === tenantId) ?? null;
+  const milestone = data.projectMilestones.find(m => m.id === milestoneId && m.tenantId === tenantId);
+  return milestone ? mapProjectMilestoneDoc(milestone as unknown as Record<string, unknown>) : null;
 }
 
 // ---- MODULE 10: PAYMENTS (spec §88–§96, §104, §116) ----
