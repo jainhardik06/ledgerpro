@@ -35,7 +35,7 @@ export interface ClientFormValues {
   primaryContact?: { name?: string; email?: string; phone?: string; role?: string };
   billingProfile?: { email?: string; address?: string; city?: string; state?: string; postalCode?: string; country?: string; currency?: string };
   taxProfile?: { country?: string; registrationType?: string; registrationNumber?: string; placeOfSupply?: string };
-  commercialDefaults?: { billingModel?: string; paymentTerms?: string; currency?: string };
+  commercialDefaults?: { billingModel?: string; paymentTerms?: string; customPaymentTermsDays?: number; currency?: string };
   [key: string]: unknown;
 }
 
@@ -101,6 +101,9 @@ export function ClientFormDrawer({ isOpen, onClose, editing, onSave, onSaved }: 
   const [placeOfSupply, setPlaceOfSupply] = useState(editing?.taxProfile?.placeOfSupply ?? '');
   const [billingModel, setBillingModel] = useState(editing?.commercialDefaults?.billingModel ?? '');
   const [paymentTerms, setPaymentTerms] = useState(editing?.commercialDefaults?.paymentTerms ?? '');
+  const [customPaymentTermsDays, setCustomPaymentTermsDays] = useState<string>(
+    editing?.commercialDefaults?.customPaymentTermsDays ? String(editing.commercialDefaults.customPaymentTermsDays) : ''
+  );
   const [status, setStatus] = useState<ClientStatus>(editing?.status ?? DEFAULT_CLIENT_STATUS);
 
   /**
@@ -172,6 +175,7 @@ export function ClientFormDrawer({ isOpen, onClose, editing, onSave, onSaved }: 
       values.commercialDefaults = {
         ...(billingModel ? { billingModel } : {}),
         ...(paymentTerms ? { paymentTerms } : {}),
+        ...(paymentTerms === 'CUSTOM' && customPaymentTermsDays.trim() ? { customPaymentTermsDays: parseInt(customPaymentTermsDays.trim(), 10) } : {}),
         ...(currency.trim() ? { currency: currency.trim().toUpperCase() } : {}),
       };
     }
@@ -331,6 +335,21 @@ export function ClientFormDrawer({ isOpen, onClose, editing, onSave, onSaved }: 
                   <option value="CUSTOM">Custom</option>
                 </Select>
               </div>
+              {paymentTerms === 'CUSTOM' && (
+                <div>
+                  <label htmlFor="custom-payment-terms-days" className={labelCls}>Custom Days</label>
+                  <input
+                    id="custom-payment-terms-days"
+                    type="number"
+                    min={1}
+                    max={365}
+                    value={customPaymentTermsDays}
+                    onChange={e => setCustomPaymentTermsDays(e.target.value)}
+                    placeholder="e.g. 30"
+                    className={inputCls}
+                  />
+                </div>
+              )}
             </div>
             <p className="text-[11px] text-neutral-600">Defaults applied to future projects and invoices for this client.</p>
           </Section>

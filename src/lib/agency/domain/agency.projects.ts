@@ -170,11 +170,25 @@ export async function createAgencyProject(
   // + 409), so Bruno suites and any integration that pins a code are unaffected.
   // Generated codes come from the atomic per-tenant sequence, so they are unique
   // by construction and need no clash check.
-  if (!input.code) {
-    input = { ...input, code: formatProjectCode(await allocateProjectCode(tenantId)) };
+  let project: Project | undefined;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (!input.code || attempt > 0) {
+      input = { ...input, code: formatProjectCode(await allocateProjectCode(tenantId)) };
+    }
+    try {
+      project = await createProjectRepo(tenantId, input as ProjectCreateInput);
+      break;
+    } catch (err: unknown) {
+      if ((err as { code?: number })?.code === 11000 && attempt < 2) {
+        continue;
+      }
+      return { ok: false, status: 409, error: `Project code "${input.code}" is already in use` };
+    }
   }
 
-  const project = await createProjectRepo(tenantId, input as ProjectCreateInput);
+  if (!project) {
+    return { ok: false, status: 500, error: 'Failed to create project.' };
+  }
 
   for (const member of memberInputs) {
     await createProjectMember(tenantId, project.id, member);

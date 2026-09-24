@@ -73,3 +73,57 @@ export async function downloadInvoiceAsPdf(
     element.style.maxWidth = originalMaxWidth;
   }
 }
+
+/**
+ * Multi-Page Financial Report PDF Generator & Downloader
+ *
+ * Scans for `.report-page` sheets inside the container and captures each
+ * as an exact, unclipped A4 vector/raster page in jsPDF.
+ * If `.report-page` elements are not found, falls back cleanly to continuous capture.
+ */
+export async function downloadReportAsPdf(
+  element: HTMLElement,
+  filename: string
+): Promise<void> {
+  const pages = element.querySelectorAll<HTMLElement>('.report-page');
+  const a4WidthMm = 210;
+  const a4HeightMm = 297;
+
+  if (pages.length > 0) {
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+      compress: true,
+    });
+
+    for (let i = 0; i < pages.length; i++) {
+      const pageEl = pages[i];
+      const canvas = await html2canvas(pageEl, {
+        scale: 2, // 2x sharp Retina capture
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        windowWidth: 1024,
+      });
+
+      const imgData = canvas.toDataURL('image/png', 0.95);
+      const canvasWidthPx = canvas.width;
+      const canvasHeightPx = canvas.height;
+      const imgHeightMm = (canvasHeightPx * a4WidthMm) / canvasWidthPx;
+
+      if (i > 0) {
+        pdf.addPage();
+      }
+
+      // If page matches A4 ratio, fill exactly; otherwise scale to fit A4 page
+      const renderHeight = Math.min(imgHeightMm, a4HeightMm);
+      pdf.addImage(imgData, 'PNG', 0, 0, a4WidthMm, renderHeight, undefined, 'FAST');
+    }
+
+    const cleanFilename = filename.endsWith('.pdf') ? filename : `${filename}.pdf`;
+    pdf.save(cleanFilename);
+  } else {
+    await downloadInvoiceAsPdf(element, filename);
+  }
+}

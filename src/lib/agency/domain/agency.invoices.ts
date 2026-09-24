@@ -399,10 +399,12 @@ export async function createInvoiceDraft(
   // §68 step 5 (Module 17 §14): the due-date fallback ladder is
   //   explicit payload > client commercial terms > AGENCY default terms
   //   (settings billing.paymentTermsDays) > the issue date itself.
-  const defaultTermsDays = tenant?.agencySettings?.billing?.paymentTermsDays;
+  const defaultTermsDays = tenant?.agencySettings?.billing?.paymentTermsDays ?? 30;
+  const clientTerms = client.commercialDefaults?.paymentTerms;
+  const clientCustomDays = (client.commercialDefaults as unknown as { customPaymentTermsDays?: number })?.customPaymentTermsDays;
   const dueDate = v.dueDate
-    ?? (client.commercialDefaults?.paymentTerms
-      ? dueDateFromTerms(v.issueDate, client.commercialDefaults.paymentTerms)
+    ?? (clientTerms
+      ? dueDateFromTerms(v.issueDate, clientTerms, clientCustomDays ?? defaultTermsDays)
       : defaultTermsDays !== undefined
         ? dueDateFromTerms(v.issueDate, 'CUSTOM', defaultTermsDays)
         : v.issueDate);
@@ -897,7 +899,7 @@ export async function finalizeInvoice(
   // the agency or client later edits its tax information.
   const supplier: AgencyBillingProfile | undefined = tenant?.billingProfile ?? undefined;
   const numberPrefix = supplier?.invoicePrefix?.trim() || INVOICE_NUMBER_PREFIX;
-  const invoiceNumber = await allocateInvoiceNumber(tenantId, fy, numberPrefix);
+  let invoiceNumber = await allocateInvoiceNumber(tenantId, fy, numberPrefix);
 
   const snapshot: InvoiceComplianceSnapshot = {
     capturedAt: new Date(),
@@ -947,21 +949,42 @@ export async function finalizeInvoice(
   };
 
   // Step 5 — finalize: SENT + number + FY + final money + the frozen
-  // compliance snapshot, in one write.
-  const finalized = await updateInvoiceRepo(invoiceId, tenantId, {
-    status: 'SENT',
-    invoiceNumber,
-    fiscalYear: fy,
-    eInvoice,
-    complianceSnapshot: snapshot,
-    subtotal: calc.subtotal,
-    discount: calc.discount,
-    taxLines: calc.taxLines,
-    taxTotal: calc.taxTotal,
-    total: calc.total,
-    amountDue: calc.amountDue,
-  });
-  if (!finalized) return notFound('Invoice');
+  // compliance snapshot, in one write. Try with allocated number; if duplicate key collision occurs, retry.
+  let finalized = false;
+  let finalInvoiceNumber = invoiceNumber;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (attempt > 0) {
+      finalInvoiceNumber = await allocateInvoiceNumber(tenantId, fy, numberPrefix);
+      snapshot.numbering = { invoiceNumber: finalInvoiceNumber, fiscalYear: fy };
+    }
+    try {
+      finalized = await updateInvoiceRepo(invoiceId, tenantId, {
+        status: 'SENT',
+        invoiceNumber: finalInvoiceNumber,
+        fiscalYear: fy,
+        eInvoice,
+        complianceSnapshot: snapshot,
+        subtotal: calc.subtotal,
+        discount: calc.discount,
+        taxLines: calc.taxLines,
+        taxTotal: calc.taxTotal,
+        total: calc.total,
+        amountDue: calc.amountDue,
+      });
+      if (finalized) break;
+    } catch (err: unknown) {
+      if ((err as { code?: number })?.code === 11000 && attempt < 2) {
+        continue;
+      }
+      return { ok: false, status: 409, error: 'Invoice number conflict during finalization. Please try again.' };
+    }
+  }
+  if (!finalized) {
+    const checkExisting = await getInvoiceById(invoiceId, tenantId);
+    if (!checkExisting) return notFound('Invoice');
+    return { ok: false, status: 500, error: 'Failed to update invoice status during finalization.' };
+  }
+  invoiceNumber = finalInvoiceNumber;
 
   // Step 6 — mark every source INVOICED; compensate on failure.
   const stamped: Array<{ type: SourceLineType; source: TimeEntry | Expense | ProjectMilestone }> = [];

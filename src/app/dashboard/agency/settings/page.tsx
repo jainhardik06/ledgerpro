@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import {
   RefreshCw, Building2, Receipt, TrendingUp, Landmark, CreditCard, Save, Plus, Trash2,
   Tag, CheckCircle2, AlertCircle, Info, ShieldCheck, Sparkles, ExternalLink,
-  Search, Key, Check,
+  Search, Key, Check, BookOpen, ArrowRight, HelpCircle,
 } from 'lucide-react';
 import { useDashboardContext } from '@/components/dashboard/DashboardProvider';
 import { tenantHasCapability } from '@/lib/agency/types/vertical';
@@ -16,6 +17,7 @@ import {
 } from '@/lib/agency/types/agency-settings';
 import { Select } from '@/components/ui/Select';
 import { confirmModal } from '@/components/ui/Dialog';
+import { LogoUploadZone } from '@/components/dashboard/LogoUploadZone';
 
 /**
  * Agency Settings (Module 17 §53/17.16) — Redesigned with modular tabbed navigation,
@@ -155,7 +157,7 @@ function SaveBtn({ busy, disabled, onClick, label = 'Save Changes' }: {
 }
 
 export default function AgencySettingsPage() {
-  const { tenant, user, loading: sessionLoading } = useDashboardContext();
+  const { tenant, user, loading: sessionLoading, refreshContext } = useDashboardContext();
   const allowed = tenantHasCapability(tenant, 'AGENCY_DASHBOARD');
   const canManage = user?.role === 'TENANT_ADMIN' || user?.role === 'SUPER_ADMIN';
 
@@ -167,6 +169,16 @@ export default function AgencySettingsPage() {
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<{ kind: 'info' | 'error'; text: string } | null>(null);
   const [testResult, setTestResult] = useState<string | null>(null);
+
+  // Sync tab from URL if present (e.g. ?tab=payment)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search).get('tab') as SettingsTab | null;
+      if (p && TABS.some(t => t.id === p)) {
+        setActiveTab(p);
+      }
+    }
+  }, []);
 
   // Project Types
   const [newProjectType, setNewProjectType] = useState('');
@@ -506,7 +518,15 @@ export default function AgencySettingsPage() {
                 key={tab.id}
                 role="tab"
                 aria-selected={active}
-                onClick={() => { setActiveTab(tab.id); setNotice(null); }}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  setNotice(null);
+                  if (typeof window !== 'undefined') {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('tab', tab.id);
+                    window.history.replaceState(null, '', url.toString());
+                  }
+                }}
                 className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-[13px] font-medium transition-all shrink-0 ${
                   active
                     ? 'bg-white text-black shadow-sm font-semibold'
@@ -560,18 +580,40 @@ export default function AgencySettingsPage() {
                   <span className="block text-[11px] text-neutral-500">Displayed on issued invoices, client statements, and rate cards.</span>
                 </label>
 
-                <label className="block space-y-1">
-                  <span className="text-[12px] font-medium text-neutral-300">Logo Image URL</span>
-                  <input
-                    type="url"
-                    value={form.logoUrl}
+                <div className="space-y-1.5 pt-1">
+                  <span className="text-[12px] font-medium text-neutral-300">Visual Brand Mark</span>
+                  <LogoUploadZone
+                    currentLogoUrl={form.logoUrl}
+                    agencyName={form.agencyName || tenant?.name}
                     disabled={!canManage}
-                    onChange={e => set('logoUrl', e.target.value)}
-                    placeholder="https://cdn.example.com/logo.png"
-                    className={INPUT}
+                    onLogoUpdated={async (url) => {
+                      set('logoUrl', url);
+                      await refreshContext();
+                    }}
+                    onLogoRemoved={async () => {
+                      set('logoUrl', '');
+                      await save('general', { ...sectionBody('general'), logoUrl: '' });
+                      await refreshContext();
+                    }}
                   />
-                  <span className="block text-[11px] text-neutral-500">Secure https URL for invoice headers and PDF export rendering.</span>
-                </label>
+                </div>
+
+                <details className="group pt-1">
+                  <summary className="text-[11px] text-neutral-400 hover:text-neutral-200 cursor-pointer select-none transition-colors">
+                    Or specify a custom CDN URL manually…
+                  </summary>
+                  <div className="pt-2">
+                    <input
+                      type="url"
+                      value={form.logoUrl}
+                      disabled={!canManage}
+                      onChange={e => set('logoUrl', e.target.value)}
+                      placeholder="https://cdn.example.com/logo.png"
+                      className={INPUT}
+                    />
+                    <span className="block text-[11px] text-neutral-500 mt-1">Direct HTTPS asset link for external CDNs or custom reverse proxies.</span>
+                  </div>
+                </details>
               </div>
             </div>
 
@@ -1162,7 +1204,14 @@ export default function AgencySettingsPage() {
                   <p className="text-[12px] text-neutral-400">Collect online payments with automated invoice reconciliation</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Link
+                  href="/dashboard/agency/settings/payment-gateway/guide"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold bg-sky-500/10 text-sky-400 border border-sky-500/30 hover:bg-sky-500/20 hover:border-sky-500/50 transition-colors shadow-sm"
+                >
+                  <BookOpen className="w-3.5 h-3.5" />
+                  Integration & Webhook Guide
+                </Link>
                 <button
                   type="button"
                   disabled={!canManage}
@@ -1188,6 +1237,25 @@ export default function AgencySettingsPage() {
                   Disabled
                 </button>
               </div>
+            </div>
+
+            {/* Helpful Guide Callout Banner */}
+            <div className="rounded-xl border border-sky-500/20 bg-sky-500/[0.04] p-3.5 flex items-start justify-between gap-3 flex-wrap sm:flex-nowrap">
+              <div className="flex items-start gap-2.5">
+                <Info className="w-4 h-4 text-sky-400 mt-0.5 shrink-0" />
+                <div className="space-y-0.5">
+                  <div className="text-[12.5px] font-medium text-sky-200">First time configuring Razorpay or Webhooks?</div>
+                  <p className="text-[11.5px] text-neutral-400 leading-relaxed">
+                    Learn how to generate your Key ID & Secret, find the exact webhook URL to enter, generate a secure webhook secret, and select the required payment events.
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="/dashboard/agency/settings/payment-gateway/guide"
+                className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold bg-sky-500 text-black hover:bg-sky-400 transition-colors shadow-sm"
+              >
+                View Setup Guide <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1229,7 +1297,12 @@ export default function AgencySettingsPage() {
                   placeholder={settings?.payment.hasWebhookSecret ? '•••••••••••• (saved — leave blank to keep)' : 'Not set'}
                   className={INPUT}
                 />
-                <span className="block text-[11px] text-neutral-500">Validates digital signatures of incoming payment settlement webhooks.</span>
+                <span className="block text-[11px] text-neutral-500">
+                  Validates incoming payment webhooks from <code className="text-sky-400 font-mono">/api/webhooks/razorpay</code>.{' '}
+                  <Link href="/dashboard/agency/settings/payment-gateway/guide" className="text-sky-400 hover:underline">
+                    View webhook guide &rarr;
+                  </Link>
+                </span>
               </label>
             </div>
 

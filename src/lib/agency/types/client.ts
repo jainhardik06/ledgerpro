@@ -114,6 +114,7 @@ export interface ClientTaxProfile {
 export interface ClientCommercialDefaults {
   billingModel?: BillingModel;
   paymentTerms?: PaymentTerms;
+  customPaymentTermsDays?: number;
   currency?: string;
 }
 

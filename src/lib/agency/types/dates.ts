@@ -173,10 +173,9 @@ const TERM_DAYS: Partial<Record<PaymentTerms, number>> = {
   DUE_ON_RECEIPT: 0, NET_7: 7, NET_15: 15, NET_30: 30, NET_45: 45, NET_60: 60,
 };
 
-/** Due date from an issue date and payment terms. CUSTOM requires explicit days. */
+/** Due date from an issue date and payment terms. CUSTOM defaults to 30 days if not explicitly specified. */
 export function dueDateFromTerms(issueDate: BusinessDate, terms: PaymentTerms, customDays?: number): BusinessDate {
-  const days = terms === 'CUSTOM' ? customDays : TERM_DAYS[terms];
-  if (days === undefined) throw new Error(`[Date] CUSTOM terms require explicit days`);
+  const days = terms === 'CUSTOM' ? (customDays ?? 30) : (TERM_DAYS[terms] ?? 30);
   return addDays(issueDate, days);
 }
 

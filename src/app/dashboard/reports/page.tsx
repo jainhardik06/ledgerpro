@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   RefreshCw, 
   Download, 
@@ -18,7 +18,16 @@ import {
   ArrowDownRight,
   TrendingDown,
   Layers,
-  Search
+  Search,
+  Eye,
+  Printer,
+  Loader2,
+  Check,
+  Sparkles,
+  FileSpreadsheet,
+  ShieldCheck,
+  Clock,
+  AlertCircle
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -36,9 +45,21 @@ import {
 import { captureEvent } from '@/lib/posthog';
 import { Select } from '@/components/ui/Select';
 import { DatePicker } from '@/components/ui/DatePicker';
+import { useDashboardContext } from '@/components/dashboard/DashboardProvider';
+import { ReportDocument, type ReportDocumentProps } from '@/components/dashboard/reports/ReportDocument';
+import { ReportPreviewModal } from '@/components/dashboard/reports/ReportPreviewModal';
+import { downloadReportAsPdf } from '@/lib/agency/utils/pdfDownload';
+import { getAgencyLogo } from '@/lib/agency/utils/logo';
 
 export default function ReportsPage() {
+  const { tenant, user } = useDashboardContext();
   const [loading, setLoading] = useState(true);
+  
+  // PDF Download and Preview states
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [downloadedPdf, setDownloadedPdf] = useState(false);
+  const [pdfNotice, setPdfNotice] = useState<{ kind: 'info' | 'error'; text: string } | null>(null);
   
   // Real datasets from MongoDB / LocalDb
   const [transactions, setTransactions] = useState<any[]>([]);
@@ -448,7 +469,66 @@ export default function ReportsPage() {
     return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
   };
 
-  // Exporters
+  // Executive Telemetry & Runway Computations
+  const activeDaysCount = Math.max(1, cashFlowTimeline.length);
+  const avgDailyExpense = metrics.expenses / activeDaysCount;
+  const avgDailyIncome = metrics.income / activeDaysCount;
+  const monthlyBurn = avgDailyExpense * 30;
+  const runwayMonths = monthlyBurn > 0 ? (metrics.balance / monthlyBurn).toFixed(1) : '∞';
+  const topSpendCategory = spendingBreakdown[0];
+  const topClient = clientIntelligence[0];
+  const hasConcentrationRisk = Boolean(topClient && topClient.contributionRatio > 40);
+
+  // Exporters & Document Metadata
+  const filterMetadata = useMemo(() => {
+    const rangeLabels: Record<string, string> = {
+      '7d': 'Last 7 Days',
+      '30d': 'Last 30 Days',
+      '90d': 'Last 90 Days',
+      '12m': 'Last 12 Months',
+      custom: 'Custom Range',
+    };
+    const period = getPeriodRange(dateRange, customStart, customEnd);
+    const formatDate = (d: Date) => d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
+    const acc = accounts.find(a => a.id === filterAccount);
+    const cat = categories.find(c => c.id === filterCategory);
+    const cl = clients.find(c => c.id === filterClient);
+    const tm = team.find(u => u.id === filterTeam);
+
+    return {
+      dateRangeLabel: rangeLabels[dateRange] || 'Last 30 Days',
+      startDateStr: formatDate(period.start),
+      endDateStr: formatDate(period.end),
+      accountName: acc ? acc.name : 'All Accounts',
+      categoryName: cat ? cat.name : (filterCategory === 'all' ? 'All Categories' : filterCategory),
+      clientName: cl ? cl.name : 'All Clients',
+      teamMemberName: tm ? tm.username : 'All Team',
+      compareEnabled,
+    };
+  }, [dateRange, customStart, customEnd, filterAccount, filterCategory, filterClient, filterTeam, compareEnabled, accounts, categories, clients, team]);
+
+  const reportFilename = useMemo(() => {
+    const dateStr = new Date().toISOString().split('T')[0];
+    const tenantSlug = (tenant?.name || 'Money_OS').replace(/[^a-zA-Z0-9_-]/g, '_');
+    return `Financial_Intelligence_Report_${tenantSlug}_${dateRange}_${dateStr}.pdf`;
+  }, [tenant?.name, dateRange]);
+
+  const documentProps = useMemo<ReportDocumentProps>(() => ({
+    metrics,
+    cashFlowTimeline,
+    spendingBreakdown,
+    budgetIntelligence,
+    clientIntelligence,
+    teamIntelligence,
+    recurringIntelligence,
+    auditIntelligence,
+    filterMetadata,
+    tenantName: tenant?.name || 'Money OS Workspace',
+    userName: user?.username || user?.email || 'System Administrator',
+    logoUrl: getAgencyLogo(tenant?.agencySettings, tenant),
+  }), [metrics, cashFlowTimeline, spendingBreakdown, budgetIntelligence, clientIntelligence, teamIntelligence, recurringIntelligence, auditIntelligence, filterMetadata, tenant?.name, tenant?.agencySettings, tenant?.logoUrl, user?.username, user?.email]);
+
   const handleExportCSV = () => {
     captureEvent('REPORT_EXPORTED', { format: 'CSV', tab: activeTab, rowCount: filteredCurrent.length });
     const headers = ['Date', 'Description', 'Category', 'Account', 'Client', 'Type', 'Amount (INR)'];
@@ -475,6 +555,26 @@ export default function ReportsPage() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleDownloadPDF = async () => {
+    const element = document.getElementById('page-report-document');
+    if (!element || downloadingPdf) return;
+
+    captureEvent('REPORT_EXPORTED', { format: 'PDF', tab: activeTab, directDownload: true });
+    setDownloadingPdf(true);
+    setPdfNotice(null);
+
+    try {
+      await downloadReportAsPdf(element, reportFilename);
+      setDownloadedPdf(true);
+      setTimeout(() => setDownloadedPdf(false), 3000);
+    } catch (err) {
+      console.error('Failed to download report PDF:', err);
+      setPdfNotice({ kind: 'error', text: 'Failed to generate PDF document. Please try again or use Print Summary.' });
+    } finally {
+      setDownloadingPdf(false);
+    }
   };
 
   const handlePrintPDF = () => {
@@ -549,24 +649,86 @@ export default function ReportsPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.05] pb-5 no-print">
         <div>
-          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-white mb-1">Financial Intelligence Center</h1>
-          <p className="text-[12px] sm:text-[13px] text-neutral-400">Advanced aggregations, comparisons, and audit-level insight logs.</p>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-white">Financial Intelligence Center</h1>
+            <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              Audit Ready
+            </span>
+          </div>
+          <p className="text-[12px] sm:text-[13px] text-neutral-400 mt-0.5">
+            Advanced aggregations, executive cashflow modeling, and high-fidelity PDF reporting.
+          </p>
         </div>
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 flex-wrap sm:flex-nowrap">
+          {/* Preview Modal Trigger */}
           <button 
-            onClick={handlePrintPDF} 
-            className="h-9 px-3 border border-white/[0.1] text-white rounded-md text-[13px] font-medium hover:bg-white/[0.05] flex items-center justify-center flex-1 sm:flex-none gap-2 transition-colors"
+            onClick={() => setPreviewOpen(true)} 
+            className="h-9 px-3 rounded-lg border border-white/[0.12] text-neutral-300 hover:text-white hover:bg-white/[0.05] text-[12.5px] font-medium flex items-center gap-1.5 transition-colors"
+            title="Preview executive 3-page document before downloading"
           >
-            <FileText className="w-4 h-4 shrink-0" /> <span className="hidden sm:inline">Print PDF Summary</span>
+            <Eye className="w-3.5 h-3.5 text-neutral-400" /> <span className="hidden sm:inline">Preview</span>
           </button>
+
+          {/* Direct Multi-Page PDF Download */}
+          <button 
+            onClick={handleDownloadPDF} 
+            disabled={downloadingPdf}
+            className="h-9 px-3.5 rounded-lg border border-emerald-500/30 bg-emerald-500/[0.08] text-emerald-300 hover:bg-emerald-500/[0.15] hover:border-emerald-500/50 text-[12.5px] font-medium flex items-center gap-1.5 transition-colors shadow-sm disabled:opacity-60"
+            title="Download multi-page executive PDF directly"
+          >
+            {downloadingPdf ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-400" />
+                <span>Generating PDF...</span>
+              </>
+            ) : downloadedPdf ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Downloaded!</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Download PDF</span>
+              </>
+            )}
+          </button>
+
+          {/* Export CSV */}
           <button 
             onClick={handleExportCSV} 
-            className="h-9 px-3 bg-white text-black rounded-md text-[13px] font-semibold hover:bg-neutral-200 flex items-center justify-center flex-1 sm:flex-none gap-2 transition-colors"
+            className="h-9 px-3 bg-white text-black rounded-lg text-[12.5px] font-semibold hover:bg-neutral-200 flex items-center gap-1.5 transition-colors"
+            title="Export filtered records as CSV"
           >
-            <Download className="w-4 h-4 shrink-0" /> Export CSV
+            <FileSpreadsheet className="w-3.5 h-3.5 shrink-0" /> <span className="hidden sm:inline">Export</span> CSV
           </button>
         </div>
       </div>
+
+      {/* PDF Status / Error Notice */}
+      {pdfNotice && (
+        <div 
+          role="status" 
+          className={`p-3.5 rounded-xl border flex items-center justify-between gap-3 text-[13px] no-print ${
+            pdfNotice.kind === 'error' 
+              ? 'bg-rose-500/[0.08] border-rose-500/30 text-rose-300' 
+              : 'bg-emerald-500/[0.08] border-emerald-500/30 text-emerald-300'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{pdfNotice.text}</span>
+          </div>
+          <button 
+            onClick={() => setPdfNotice(null)} 
+            className="text-[12px] opacity-75 hover:opacity-100 transition-opacity"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
 
       {/* Advanced Filter and Comparison Row */}
       <div className="p-4 bg-white/[0.02] border border-white/[0.05] rounded-xl grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3 no-print">
@@ -771,6 +933,104 @@ export default function ReportsPage() {
             </div>
 
           </div>
+
+          {/* Executive Telemetry & Runway Strip */}
+          <div className="p-4 rounded-xl border border-white/[0.08] bg-[#0c0c0c] flex flex-col md:flex-row md:items-center justify-between gap-4 text-[12.5px] print-card">
+            <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                  <Clock className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-neutral-500 block text-[10px] uppercase font-bold tracking-wider">Treasury Runway</span>
+                  <div className="flex items-baseline gap-1 mt-0.5">
+                    <span className="text-white font-bold tabular-nums text-[13.5px]">{runwayMonths} Months</span>
+                    <span className="text-neutral-500 text-[11px]">(@ {formatCurrency(monthlyBurn)}/mo)</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="h-8 w-px bg-white/[0.08] hidden sm:block" />
+
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
+                  <TrendingUp className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-neutral-500 block text-[10px] uppercase font-bold tracking-wider">Daily Velocities</span>
+                  <div className="flex items-baseline gap-1 mt-0.5">
+                    <span className="text-emerald-400 font-semibold font-mono">+{formatCurrency(avgDailyIncome)}</span>
+                    <span className="text-neutral-500 text-[11px]">in</span>
+                    <span className="text-neutral-600 mx-0.5">/</span>
+                    <span className="text-neutral-300 font-semibold font-mono">-{formatCurrency(avgDailyExpense)}</span>
+                    <span className="text-neutral-500 text-[11px]">out</span>
+                  </div>
+                </div>
+              </div>
+
+              {topSpendCategory && (
+                <>
+                  <div className="h-8 w-px bg-white/[0.08] hidden sm:block" />
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                      <AlertTriangle className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="text-neutral-500 block text-[10px] uppercase font-bold tracking-wider">Top Expenditure Driver</span>
+                      <div className="flex items-baseline gap-1 mt-0.5">
+                        <span className="text-white font-semibold">{topSpendCategory.name}</span>
+                        <span className="text-neutral-400 text-[11px]">({topSpendCategory.percentage.toFixed(1)}% of total outflows)</span>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 no-print">
+              <button
+                onClick={() => setPreviewOpen(true)}
+                className="px-3 py-1.5 rounded-lg border border-white/[0.1] text-neutral-300 hover:text-white hover:bg-white/[0.05] text-[12px] font-medium flex items-center gap-1.5 transition-colors"
+                title="Preview full executive report"
+              >
+                <Eye className="w-3.5 h-3.5 text-neutral-400" /> Preview PDF
+              </button>
+              <button
+                onClick={handleDownloadPDF}
+                disabled={downloadingPdf}
+                className="px-3.5 py-1.5 rounded-lg bg-white text-black hover:bg-neutral-200 text-[12px] font-semibold flex items-center gap-1.5 transition-colors disabled:opacity-60"
+                title="Download 3-page executive audit report"
+              >
+                {downloadingPdf ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Generating...</span>
+                  </>
+                ) : downloadedPdf ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Downloaded!</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Download PDF</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Revenue Concentration Advisory Notice (if applicable) */}
+          {hasConcentrationRisk && topClient && (
+            <div className="p-3.5 rounded-xl border border-amber-500/25 bg-amber-500/[0.06] text-amber-200 flex items-start gap-2.5 text-[12.5px] no-print">
+              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                <strong className="text-white font-semibold">Revenue Concentration Advisory: </strong>
+                Client <span className="font-bold underline text-amber-300">{topClient.name}</span> contributes {topClient.contributionRatio.toFixed(1)}% of your total workspace inflows ({formatCurrency(topClient.totalRevenue)}). Diversification across more client accounts is recommended for stability.
+              </div>
+            </div>
+          )}
 
           {/* Section 2: Cash Flow Timeline Chart */}
           <div className="p-5 rounded-xl border border-white/[0.05] bg-[#0a0a0a] print-card">
@@ -1022,35 +1282,100 @@ export default function ReportsPage() {
 
           <div className="space-y-4">
             
-            <div className="flex items-center justify-between p-4 bg-white/[0.01] border border-white/[0.03] rounded-xl">
+            {/* Executive Intelligence PDF Report */}
+            <div className="p-4 bg-white/[0.02] border border-white/[0.06] rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-[13px] font-semibold text-white">Executive Financial Intelligence PDF</span>
+                  <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
+                    3-Page Audit Document
+                  </span>
+                </div>
+                <span className="text-[11px] text-neutral-400 block max-w-md">
+                  Audit-grade vector PDF comprising macro KPIs, liquidity projections, budget variance analysis, client revenue share, and formal sign-off certification blocks.
+                </span>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button 
+                  onClick={() => setPreviewOpen(true)} 
+                  className="h-9 px-3 border border-white/[0.12] text-neutral-300 hover:text-white hover:bg-white/[0.05] rounded-lg text-[12px] font-medium flex items-center gap-1.5 transition-colors"
+                >
+                  <Eye className="w-3.5 h-3.5 text-neutral-400" /> Preview
+                </button>
+                <button 
+                  onClick={handleDownloadPDF} 
+                  disabled={downloadingPdf}
+                  className="h-9 px-4 bg-white text-black font-semibold rounded-lg text-[12px] hover:bg-neutral-200 transition-colors flex items-center gap-1.5 disabled:opacity-60"
+                >
+                  {downloadingPdf ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Generating...</span>
+                    </>
+                  ) : downloadedPdf ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Downloaded!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Download PDF</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Raw Transaction CSV */}
+            <div className="p-4 bg-white/[0.01] border border-white/[0.03] rounded-xl flex items-center justify-between gap-4">
               <div>
-                <span className="text-[13px] font-semibold text-white block">Raw Transaction CSV</span>
-                <span className="text-[11px] text-neutral-500 block">Extracts {filteredCurrent.length} matching rows in CSV format.</span>
+                <span className="text-[13px] font-semibold text-white block">Raw Transaction Ledger (CSV)</span>
+                <span className="text-[11px] text-neutral-500 block">Extracts {filteredCurrent.length} matching rows with categories, accounts, and clients in CSV format.</span>
               </div>
               <button 
                 onClick={handleExportCSV} 
-                className="h-9 px-4 bg-white text-black font-semibold rounded text-[12px] hover:bg-neutral-200 transition-colors"
+                className="h-9 px-4 border border-white/[0.1] text-white font-semibold rounded-lg text-[12px] hover:bg-white/[0.05] transition-colors shrink-0 flex items-center gap-1.5"
               >
-                Download CSV
+                <FileSpreadsheet className="w-3.5 h-3.5 text-neutral-400" /> Download CSV
               </button>
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-white/[0.01] border border-white/[0.03] rounded-xl">
+            {/* Traditional Print Dialog */}
+            <div className="p-4 bg-white/[0.01] border border-white/[0.03] rounded-xl flex items-center justify-between gap-4">
               <div>
-                <span className="text-[13px] font-semibold text-white block">Intelligence Summary Sheet</span>
-                <span className="text-[11px] text-neutral-500 block">Generates clean printable layouts suitable for physical signatures or PDF files.</span>
+                <span className="text-[13px] font-semibold text-white block">System Print Summary</span>
+                <span className="text-[11px] text-neutral-500 block">Opens browser print dialog for immediate physical printer dispatch.</span>
               </div>
               <button 
                 onClick={handlePrintPDF} 
-                className="h-9 px-4 border border-white/[0.1] text-white font-semibold rounded text-[12px] hover:bg-white/[0.05] transition-colors"
+                className="h-9 px-4 border border-white/[0.1] text-neutral-300 font-semibold rounded-lg text-[12px] hover:text-white hover:bg-white/[0.05] transition-colors shrink-0 flex items-center gap-1.5"
               >
-                Print Summary
+                <Printer className="w-3.5 h-3.5 text-neutral-400" /> Print Dialog
               </button>
             </div>
 
           </div>
         </div>
       )}
+
+      {/* ── HIGH RESOLUTION REPORT DOCUMENT (OFF-SCREEN FOR CRISP MULTI-PAGE PDF GENERATION) ── */}
+      <div
+        id="page-report-document"
+        className="fixed -left-[9999px] top-0 pointer-events-none print:static print:left-auto print:block print:m-0 print:p-0"
+        aria-hidden="true"
+      >
+        <ReportDocument {...documentProps} />
+      </div>
+
+      {/* ── INTERACTIVE ON-SCREEN EXECUTIVE REPORT PREVIEW MODAL ── */}
+      <ReportPreviewModal
+        isOpen={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        documentProps={documentProps}
+        filename={reportFilename}
+        onExportCsv={handleExportCSV}
+      />
 
     </div>
   );

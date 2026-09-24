@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { ArrowUpRight, TrendingDown, Target, Building2 } from 'lucide-react';
 import { getSessionUser } from '@/lib/auth';
-import { connectDb, initLocalDb } from '@/lib/db';
+import { connectDb, initLocalDb, getTenantById } from '@/lib/db';
+import { tenantHasCapability } from '@/lib/agency/types/vertical';
 import { redirect } from 'next/navigation';
 
 export default async function GrowthDashboard() {
@@ -10,6 +11,12 @@ export default async function GrowthDashboard() {
     redirect('/login');
   }
   const tenantId = session.tenantId;
+
+  // Agency workspaces use the Agency Command Center and Profitability surfaces
+  const tenant = await getTenantById(tenantId);
+  if (tenantHasCapability(tenant, 'AGENCY_DASHBOARD')) {
+    redirect('/dashboard/agency');
+  }
 
   // Fetch real data for the tenant
   const { db } = await connectDb();

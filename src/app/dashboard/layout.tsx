@@ -13,6 +13,7 @@ import { BrandMark } from '@/components/ui/BrandMark';
 import { BroadcastBanner } from '@/components/dashboard/BroadcastBanner';
 import { usePwaInstall } from '@/hooks/usePwaInstall';
 import { tenantHasCapability } from '@/lib/agency/types/vertical';
+import { getAgencyLogo } from '@/lib/agency/utils/logo';
 
 import { Menu, X, Download, ChevronRight } from 'lucide-react';
 
@@ -27,6 +28,12 @@ function Sidebar({ isMobile, isOpen, onClose }: { isMobile?: boolean; isOpen?: b
   // Agency Command Center; other verticals are untouched. Capability check,
   // not a raw appMode comparison (Step 0.5 boundary).
   const isAgency = tenantHasCapability(tenant, 'AGENCY_DASHBOARD');
+  const agencyLogoUrl = getAgencyLogo(tenant?.agencySettings, tenant);
+  const [logoError, setLogoError] = useState(false);
+
+  React.useEffect(() => {
+    setLogoError(false);
+  }, [agencyLogoUrl]);
 
   const navItems = [
     isAgency
@@ -106,7 +113,7 @@ function Sidebar({ isMobile, isOpen, onClose }: { isMobile?: boolean; isOpen?: b
 
   const adminItems = [
     { name: 'Team Workspace', path: '/dashboard/team', icon: Shield },
-    { name: 'Growth Metrics', path: '/dashboard/growth', icon: TrendingUp },
+    ...(!isAgency ? [{ name: 'Growth Metrics', path: '/dashboard/growth', icon: TrendingUp }] : []),
     { name: 'Audit Log', path: '/dashboard/audit', icon: FileText },
     { name: 'Settings', path: isAgency ? '/dashboard/agency/settings' : '/dashboard/settings', icon: Settings },
   ];
@@ -116,8 +123,21 @@ function Sidebar({ isMobile, isOpen, onClose }: { isMobile?: boolean; isOpen?: b
       {/* Brand & Workspace Header */}
       <div className="h-14 flex items-center justify-between px-4 border-b border-white/[0.05] shrink-0">
         <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity min-w-0">
-          <div className="w-7 h-7 rounded bg-white flex items-center justify-center shrink-0">
-             <BrandMark size={15} variant="monochrome" className="text-black" />
+          <div className="w-7 h-7 rounded bg-white/[0.08] border border-white/[0.1] overflow-hidden flex items-center justify-center shrink-0">
+            {agencyLogoUrl && !logoError ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={agencyLogoUrl}
+                alt={tenant?.name || 'Agency Logo'}
+                className="w-full h-full object-cover"
+                crossOrigin="anonymous"
+                onError={() => setLogoError(true)}
+              />
+            ) : (
+              <div className="w-full h-full bg-white flex items-center justify-center">
+                <BrandMark size={15} variant="monochrome" className="text-black" />
+              </div>
+            )}
           </div>
           <div className="flex flex-col flex-1 min-w-0">
             <span className="text-[13px] font-semibold text-white tracking-tight truncate">{tenant?.name || 'Workspace'}</span>

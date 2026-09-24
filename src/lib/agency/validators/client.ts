@@ -97,7 +97,7 @@ export interface ClientCreatePayload {
     taxTreatment?: unknown; taxIdentifiers?: unknown; state?: unknown;
   };
   commercialDefaults?: {
-    billingModel?: unknown; paymentTerms?: unknown; currency?: unknown;
+    billingModel?: unknown; paymentTerms?: unknown; customPaymentTermsDays?: unknown; currency?: unknown;
   };
   status?: unknown;
 }
@@ -169,7 +169,7 @@ export function validateClientTaxProfile(tp: ClientCreatePayload['taxProfile']):
  */
 export function validateClientCommercialDefaults(cd: ClientCreatePayload['commercialDefaults']): {
   ok: true;
-  value?: { billingModel?: BillingModel; paymentTerms?: PaymentTerms; currency?: string };
+  value?: { billingModel?: BillingModel; paymentTerms?: PaymentTerms; customPaymentTermsDays?: number; currency?: string };
 } | { ok: false; errors: ClientFieldError[] } {
   if (!cd || typeof cd !== 'object') return { ok: true };
   const errors: ClientFieldError[] = [];
@@ -181,11 +181,22 @@ export function validateClientCommercialDefaults(cd: ClientCreatePayload['commer
   const cdCurrency = currency(cd.currency, 'Default currency');
   if (!cdCurrency.ok) errors.push({ field: 'commercialDefaults.currency', message: cdCurrency.error! });
 
+  let customDays: number | undefined;
+  if (cd.customPaymentTermsDays !== undefined && cd.customPaymentTermsDays !== null && cd.customPaymentTermsDays !== '') {
+    const num = Number(cd.customPaymentTermsDays);
+    if (!Number.isInteger(num) || num < 1 || num > 365) {
+      errors.push({ field: 'commercialDefaults.customPaymentTermsDays', message: 'Custom payment terms days must be an integer between 1 and 365' });
+    } else {
+      customDays = num;
+    }
+  }
+
   if (errors.length > 0) return { ok: false, errors };
 
   const value = {
     ...(cdModel.value !== undefined && { billingModel: cdModel.value }),
     ...(cdTerms.value !== undefined && { paymentTerms: cdTerms.value }),
+    ...(customDays !== undefined && { customPaymentTermsDays: customDays }),
     ...(cdCurrency.value !== undefined && { currency: cdCurrency.value }),
   };
   return { ok: true, ...(Object.keys(value).length > 0 && { value }) };
@@ -209,7 +220,7 @@ export function validateClientCreate(payload: ClientCreatePayload): {
     primaryContact?: { name?: string; email?: string; phone?: string; role?: string };
     billingProfile?: { email?: string; address?: string; city?: string; state?: string; postalCode?: string; country?: string; currency?: string };
     taxProfile?: { country?: string; registrationType?: string; registrationNumber?: string; placeOfSupply?: string };
-    commercialDefaults?: { billingModel?: BillingModel; paymentTerms?: PaymentTerms; currency?: string };
+    commercialDefaults?: { billingModel?: BillingModel; paymentTerms?: PaymentTerms; customPaymentTermsDays?: number; currency?: string };
     status?: ClientStatus;
   };
 } | { ok: false; errors: ClientFieldError[] } {

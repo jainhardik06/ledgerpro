@@ -156,6 +156,7 @@ export interface Tenant {
    * the Agency vertical. Consumers fall back to defaultAgencySettings().
    */
   agencySettings?: AgencySettings;
+  logoUrl?: string;
   createdAt: Date;
 }
 
@@ -605,9 +606,23 @@ export async function connectDb() {
       await db.collection('projects').createIndex({ tenantId: 1, clientId: 1 });
       // Module 3 (spec §110) — timeline and ownership filters
       await db.collection('projects').createIndex({ tenantId: 1, startDate: 1 });
-      await db.collection('projects').createIndex({ tenantId: 1, projectManagerId: 1 });
-      // §111 — project-code uniqueness probe: tenantId + normalizedCode
-      await db.collection('projects').createIndex({ tenantId: 1, normalizedCode: 1 });
+      // §111 — project-code uniqueness: tenantId + normalizedCode
+      try {
+        await db.collection('projects').createIndex(
+          { tenantId: 1, normalizedCode: 1 },
+          {
+            unique: true,
+            partialFilterExpression: { normalizedCode: { $exists: true } },
+            name: 'agency_project_tenant_code_unique',
+          }
+        );
+      } catch (e) {}
+      try {
+        await db.collection('project_sequences').createIndex(
+          { tenantId: 1 },
+          { unique: true, name: 'agency_project_sequence_tenant_unique' }
+        );
+      } catch (e) {}
       // Module 3 — sub-entity lookups are always project + tenant scoped
       await db.collection('project_members').createIndex({ tenantId: 1, projectId: 1 });
       await db.collection('project_members').createIndex({ tenantId: 1, userId: 1 });
@@ -2331,7 +2346,12 @@ export async function createProject(tenantId: string, input: ProjectCreateInput)
     try {
       const result = await db.collection('projects').insertOne(newProject);
       return mapProjectDoc({ ...newProject, _id: result.insertedId });
-    } catch (e) {}
+    } catch (e: unknown) {
+      if ((e as { code?: number })?.code === 11000 || (e as Error)?.message?.includes('duplicate key') || (e as Error)?.name === 'MongoServerError') {
+        throw e;
+      }
+      logError('db:createProject mongo error', e, { tenantId });
+    }
   }
   const data = initLocalDb();
   const id = randomUUID();
@@ -4049,7 +4069,7 @@ function mapInvoiceDoc(i: Record<string, unknown>): Invoice {
       : 'OTHER' as const,
   }));
   return {
-    id: (i._id as ObjectId).toString(),
+    id: (i._id ? i._id.toString() : (i.id as string)) || '',
     tenantId: i.tenantId as string,
     clientId: i.clientId as string,
     projectId: (i.projectId as string | null | undefined) ?? undefined,
@@ -4082,7 +4102,7 @@ function mapInvoiceDoc(i: Record<string, unknown>): Invoice {
 
 function mapInvoiceLineDoc(l: Record<string, unknown>): InvoiceLine {
   return {
-    id: (l._id as ObjectId).toString(),
+    id: (l._id ? l._id.toString() : (l.id as string)) || '',
     tenantId: l.tenantId as string,
     invoiceId: l.invoiceId as string,
     type: (l.type as InvoiceLineType | undefined) ?? 'MANUAL',
@@ -4260,7 +4280,12 @@ export async function updateInvoice(
           tenantId,
         }, { $set: stamped });
       return result.matchedCount > 0;
-    } catch (e) {}
+    } catch (e: unknown) {
+      if ((e as { code?: number })?.code === 11000 || (e as Error)?.message?.includes('duplicate key') || (e as Error)?.name === 'MongoServerError') {
+        throw e;
+      }
+      logError('db:updateInvoice mongo error', e, { id: trimmed, tenantId });
+    }
   }
   const data = initLocalDb();
   const idx = data.invoices.findIndex(i => (i.id === trimmed || (i as any)._id === trimmed) && i.tenantId === tenantId);
@@ -4424,6 +4449,38 @@ export async function allocateInvoiceNumberForFiscalYear(
   const { db } = await connectDb();
   if (db) {
     try {
+      // Find highest existing invoice number for this tenant & fiscal year to prevent sequence lag
+      const existingInvoices = await db.collection('invoices')
+        .find(
+          { tenantId, fiscalYear, invoiceNumber: { $exists: true, $type: 'string' } },
+          { projection: { invoiceNumber: 1 } }
+        )
+        .toArray();
+
+      let maxExistingSeq = 0;
+      for (const inv of existingInvoices) {
+        if (typeof inv.invoiceNumber === 'string') {
+          const match = inv.invoiceNumber.match(/(\d+)$/);
+          if (match) {
+            const num = parseInt(match[1], 10);
+            if (!isNaN(num) && num > maxExistingSeq) {
+              maxExistingSeq = num;
+            }
+          }
+        }
+      }
+
+      if (maxExistingSeq > 0) {
+        await db.collection('invoice_sequences').updateOne(
+          { tenantId, fiscalYear },
+          {
+            $max: { seq: maxExistingSeq },
+            $setOnInsert: { tenantId, fiscalYear, prefix, createdAt: new Date() },
+          },
+          { upsert: true }
+        );
+      }
+
       const result = await db.collection('invoice_sequences').findOneAndUpdate(
         { tenantId, fiscalYear },
         {
@@ -4442,18 +4499,32 @@ export async function allocateInvoiceNumberForFiscalYear(
     }
   }
   const data = initLocalDb();
+  let localMaxSeq = 0;
+  for (const inv of data.invoices) {
+    if (inv.tenantId === tenantId && (inv as any).fiscalYear === fiscalYear && inv.invoiceNumber) {
+      const match = inv.invoiceNumber.match(/(\d+)$/);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (!isNaN(num) && num > localMaxSeq) localMaxSeq = num;
+      }
+    }
+  }
   const existing = data.invoiceSequences.find(s => s.tenantId === tenantId && s.fiscalYear === fiscalYear);
   if (existing) {
+    if (localMaxSeq > existing.seq) {
+      existing.seq = localMaxSeq;
+    }
     existing.seq += 1;
     existing.updatedAt = new Date();
     writeLocalDb(data);
     return existing.seq;
   }
+  const startSeq = Math.max(localMaxSeq, 0) + 1;
   data.invoiceSequences.push({
-    tenantId, fiscalYear, prefix, seq: 1, updatedAt: new Date(),
+    tenantId, fiscalYear, prefix, seq: startSeq, updatedAt: new Date(),
   });
   writeLocalDb(data);
-  return 1;
+  return startSeq;
 }
 
 /**
@@ -4468,6 +4539,38 @@ export async function allocateProjectCode(tenantId: string): Promise<number> {
   const { db } = await connectDb();
   if (db) {
     try {
+      // Find highest existing project code for this tenant to prevent sequence lag/duplication
+      const existingProjects = await db.collection('projects')
+        .find(
+          { tenantId, code: { $exists: true, $type: 'string' } },
+          { projection: { code: 1 } }
+        )
+        .toArray();
+
+      let maxExistingSeq = 0;
+      for (const p of existingProjects) {
+        if (typeof p.code === 'string') {
+          const match = p.code.match(/(\d+)$/);
+          if (match) {
+            const num = parseInt(match[1], 10);
+            if (!isNaN(num) && num > maxExistingSeq) {
+              maxExistingSeq = num;
+            }
+          }
+        }
+      }
+
+      if (maxExistingSeq > 0) {
+        await db.collection('project_sequences').updateOne(
+          { tenantId },
+          {
+            $max: { seq: maxExistingSeq },
+            $setOnInsert: { tenantId, createdAt: new Date() },
+          },
+          { upsert: true }
+        );
+      }
+
       const result = await db.collection('project_sequences').findOneAndUpdate(
         { tenantId },
         {
@@ -4486,16 +4589,30 @@ export async function allocateProjectCode(tenantId: string): Promise<number> {
     }
   }
   const data = initLocalDb();
+  let localMaxSeq = 0;
+  for (const p of data.projects) {
+    if (p.tenantId === tenantId && p.code) {
+      const match = p.code.match(/(\d+)$/);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (!isNaN(num) && num > localMaxSeq) localMaxSeq = num;
+      }
+    }
+  }
   const existing = data.projectSequences.find(s => s.tenantId === tenantId);
   if (existing) {
+    if (localMaxSeq > existing.seq) {
+      existing.seq = localMaxSeq;
+    }
     existing.seq += 1;
     existing.updatedAt = new Date();
     writeLocalDb(data);
     return existing.seq;
   }
-  data.projectSequences.push({ tenantId, seq: 1, updatedAt: new Date() });
+  const startSeq = Math.max(localMaxSeq, 0) + 1;
+  data.projectSequences.push({ tenantId, seq: startSeq, updatedAt: new Date() });
   writeLocalDb(data);
-  return 1;
+  return startSeq;
 }
 
 /**

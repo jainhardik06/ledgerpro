@@ -21,7 +21,7 @@
  */
 import { createHmac, timingSafeEqual } from 'crypto';
 import type { DomainResult } from './agency.clients';
-import { makeMoney, type Money } from '../types/money';
+import { makeMoney, toMinorUnits, fromMinorUnits, type Money } from '../types/money';
 import { trackNamedOperation } from '../analytics/observability';
 import type {
   PaymentGateway, GatewayLinkRequest, GatewayLinkResult,
@@ -211,12 +211,14 @@ async function createRazorpayLink(
         Authorization: `Basic ${auth}`,
       },
       body: JSON.stringify({
-        // Money.amount is already minor units (paise) — §127, never converted.
-        amount: request.amount.amount,
+        // Razorpay API expects amount in minor units (paise for INR).
+        // e.g. ₹59,000 => 5,900,000 paise.
+        amount: toMinorUnits(request.amount.amount),
         currency: request.amount.currency,
-        // §113 — reference_id carries the INVOICE id so a captured payment can
-        // be resolved to its invoice through the gateway's own record.
-        reference_id: request.invoiceId,
+        // §113 — Razorpay requires reference_id to be unique per payment link (≤ 40 chars).
+        // If an invoice has multiple links generated (e.g. renewal or re-generation),
+        // suffixing a timestamp ensures Razorpay does not reject with 400 'reference_id already exists'.
+        reference_id: `${request.invoiceId.slice(0, 24)}_${Date.now().toString(36)}`,
         description: request.description
           ?? (request.invoiceNumber ? `Invoice ${request.invoiceNumber}` : 'Invoice payment'),
         // Module 12 §35 — the link's expiry (Razorpay: unix seconds).
@@ -230,13 +232,20 @@ async function createRazorpayLink(
           },
         }),
         notify: { sms: false, email: request.customerEmail !== undefined },
+        notes: {
+          invoiceId: request.invoiceId,
+          ...(request.invoiceNumber ? { invoiceNumber: request.invoiceNumber } : {}),
+        },
       }),
     });
     const body = await res.json().catch(() => ({})) as Record<string, unknown>;
     if (!res.ok || typeof body.id !== 'string' || typeof body.short_url !== 'string') {
+      const razorpayErr = typeof body.error === 'object' && body.error !== null
+        ? String((body.error as Record<string, unknown>).description ?? (body.error as Record<string, unknown>).message ?? '')
+        : '';
       return {
         ok: false, status: 502,
-        error: `Razorpay rejected the payment link request (${res.status})`,
+        error: razorpayErr ? `Razorpay: ${razorpayErr}` : `Razorpay rejected the payment link request (${res.status})`,
       };
     }
     return {
@@ -270,7 +279,7 @@ async function fetchRazorpayPayment(
     if (!res.ok || typeof body.id !== 'string') {
       return { ok: false, status: res.status === 404 ? 404 : 502, error: 'Razorpay payment not found' };
     }
-    const amount = typeof body.amount === 'number' ? body.amount : 0;
+    const rawMinorAmount = typeof body.amount === 'number' ? body.amount : 0;
     const currency = typeof body.currency === 'string' ? body.currency : 'INR';
     const capturedAt = typeof body.created_at === 'number'
       ? new Date(body.created_at * 1000).toISOString()
@@ -284,8 +293,8 @@ async function fetchRazorpayPayment(
       data: {
         gatewayPaymentId: body.id,
         status: typeof body.status === 'string' ? body.status : 'unknown',
-        // Reported for comparison only — §127, never converted into ours.
-        amount: makeMoney(amount, currency as Money['currency']),
+        // Convert Razorpay minor units (paise) back to Money major units (rupees)
+        amount: makeMoney(fromMinorUnits(rawMinorAmount), currency as Money['currency']),
         ...(capturedAt !== undefined && { capturedAt }),
         ...(referenceId !== undefined && { referenceId }),
       },

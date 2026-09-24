@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import {
   ArrowLeft, Briefcase, Check, Pause, Play, Square, X, Archive, Plus, TriangleAlert,
-  ChevronRight, Receipt, RotateCcw,
+  ChevronRight, Receipt, RotateCcw, Pencil, ExternalLink,
 } from 'lucide-react';
 import { useDashboardContext } from '@/components/dashboard/DashboardProvider';
 import { tenantHasCapability } from '@/lib/agency/types/vertical';
@@ -326,6 +326,12 @@ export default function ProjectWorkspacePage() {
           {/* Lifecycle (§41) — only legal transitions, admin only */}
           {canManage && (
             <div className="flex flex-wrap items-center gap-2">
+              <Link
+                href={`/dashboard/agency/projects/${project.id}/edit`}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded border border-white/[0.12] text-[12.5px] font-medium text-neutral-200 hover:text-white hover:bg-white/[0.04] hover:border-white/20 transition-colors"
+              >
+                <Pencil className="w-3.5 h-3.5" aria-hidden /> Edit Project
+              </Link>
               {canTransitionProjectStatus(project.status, 'ACTIVE') && (
                 <button onClick={() => void handleLifecycle('activate')} disabled={busy} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-white text-black text-[12.5px] font-semibold hover:bg-neutral-200 disabled:opacity-50 transition-colors">
                   <Play className="w-3.5 h-3.5" aria-hidden /> {project.status === 'COMPLETED' ? 'Reopen' : project.status === 'ON_HOLD' ? 'Resume' : 'Activate'}
@@ -462,7 +468,17 @@ export default function ProjectWorkspacePage() {
             return (
               <div className="rounded-xl border border-white/[0.06] bg-[#050505] p-4 space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="text-[11px] font-medium uppercase tracking-wider text-neutral-500">Financial readiness</div>
+                  <div className="flex items-center gap-2.5">
+                    <div className="text-[11px] font-medium uppercase tracking-wider text-neutral-500">Financial readiness</div>
+                    {canManage && (
+                      <Link
+                        href={`/dashboard/agency/projects/${project.id}/edit`}
+                        className="text-[11px] text-neutral-400 hover:text-white underline underline-offset-2 flex items-center gap-0.5"
+                      >
+                        Edit configurations <ChevronRight className="w-3 h-3" />
+                      </Link>
+                    )}
+                  </div>
                   <div className="flex items-center gap-1.5">
                     {r.rateReady && (
                       <span className="text-[10.5px] font-semibold text-emerald-400 border border-emerald-500/25 bg-emerald-500/[0.06] px-2 py-0.5 rounded-full">RATE READY</span>
@@ -473,20 +489,96 @@ export default function ProjectWorkspacePage() {
                     {r.readyForTracking && (
                       <span className="text-[10.5px] font-semibold text-violet-400 border border-violet-500/25 bg-violet-500/[0.06] px-2 py-0.5 rounded-full">READY FOR TRACKING</span>
                     )}
-                    <span className={`text-[11px] ${readyCount === r.checks.length ? 'text-neutral-500' : 'text-amber-400'}`}>
+                    <span className={`text-[11px] font-medium ${readyCount === r.checks.length ? 'text-emerald-400' : 'text-amber-400'}`}>
                       {readyCount}/{r.checks.length} checks
                     </span>
                   </div>
                 </div>
-                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5">
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
                   {r.checks.map(c => (
-                    <li key={c.key} className="flex items-start gap-2 text-[12.5px]">
-                      {c.ready
-                        ? <Check className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" aria-hidden />
-                        : <TriangleAlert className="w-3.5 h-3.5 text-amber-400 mt-0.5 shrink-0" aria-hidden />}
-                      <span className={c.ready ? 'text-neutral-300' : 'text-neutral-200'}>
-                        <span className="text-neutral-500">{c.label}: </span>{c.detail}
-                      </span>
+                    <li key={c.key} className="flex items-start justify-between gap-2 text-[12.5px] py-1 border-b border-white/[0.02] sm:border-none">
+                      <div className="flex items-start gap-2 min-w-0">
+                        {c.ready
+                          ? <Check className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" aria-hidden />
+                          : <TriangleAlert className="w-3.5 h-3.5 text-amber-400 mt-0.5 shrink-0" aria-hidden />}
+                        <span className={c.ready ? 'text-neutral-300' : 'text-neutral-200'}>
+                          <span className="text-neutral-500">{c.label}: </span>{c.detail}
+                        </span>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        {c.key === 'client' && project.clientId && (
+                          <Link href={`/dashboard/agency/clients/${project.clientId}`} className="text-[11px] text-neutral-400 hover:text-white underline underline-offset-2 inline-flex items-center gap-0.5">
+                            View client <ChevronRight className="w-2.5 h-2.5" />
+                          </Link>
+                        )}
+                        {c.key === 'billingModel' && canManage && (
+                          <Link href={`/dashboard/agency/projects/${project.id}/edit#commercial`} className="text-[11px] text-neutral-400 hover:text-white underline underline-offset-2 inline-flex items-center gap-0.5">
+                            Edit model <ChevronRight className="w-2.5 h-2.5" />
+                          </Link>
+                        )}
+                        {(c.key === 'revenueBudget' || c.key === 'costBudget' || c.key === 'plannedHours') && canManage && (
+                          <Link
+                            href={`/dashboard/agency/projects/${project.id}/edit#financial`}
+                            className={`text-[11px] underline underline-offset-2 inline-flex items-center gap-0.5 ${
+                              c.ready ? 'text-neutral-400 hover:text-neutral-200' : 'text-amber-300 hover:text-amber-200 font-medium'
+                            }`}
+                          >
+                            {c.ready ? 'Edit' : 'Configure'} <ChevronRight className="w-2.5 h-2.5" />
+                          </Link>
+                        )}
+                        {c.key === 'team' && (
+                          <button
+                            onClick={() => setTab('team')}
+                            className={`text-[11px] underline underline-offset-2 inline-flex items-center gap-0.5 ${
+                              c.ready ? 'text-neutral-400 hover:text-neutral-200' : 'text-amber-300 hover:text-amber-200 font-medium'
+                            }`}
+                          >
+                            {c.ready ? 'Team tab' : 'Add team'} <ChevronRight className="w-2.5 h-2.5" />
+                          </button>
+                        )}
+                        {c.key === 'costRates' && (
+                          <Link
+                            href="/dashboard/agency/rate-cards"
+                            className={`text-[11px] underline underline-offset-2 inline-flex items-center gap-0.5 ${
+                              c.ready ? 'text-neutral-400 hover:text-neutral-200' : 'text-amber-300 hover:text-amber-200 font-medium'
+                            }`}
+                          >
+                            Rate cards <ChevronRight className="w-2.5 h-2.5" />
+                          </Link>
+                        )}
+                        {c.key === 'billingRates' && project.billingModel === 'TIME_AND_MATERIALS' && (
+                          <Link
+                            href="/dashboard/agency/rate-cards"
+                            className={`text-[11px] underline underline-offset-2 inline-flex items-center gap-0.5 ${
+                              c.ready ? 'text-neutral-400 hover:text-neutral-200' : 'text-amber-300 hover:text-amber-200 font-medium'
+                            }`}
+                          >
+                            Rate cards <ChevronRight className="w-2.5 h-2.5" />
+                          </Link>
+                        )}
+                        {c.key === 'projectActive' && !c.ready && canManage && canTransitionProjectStatus(project.status, 'ACTIVE') && (
+                          <button
+                            onClick={() => void handleLifecycle('activate')}
+                            disabled={busy}
+                            className="text-[11px] text-emerald-400 hover:text-emerald-300 font-medium underline underline-offset-2 inline-flex items-center gap-0.5"
+                          >
+                            Activate now <ChevronRight className="w-2.5 h-2.5" />
+                          </button>
+                        )}
+                        {c.key === 'workItems' && (
+                          <button
+                            onClick={() => {
+                              setTab('work-items');
+                              if (canManage) setWorkDrawerOpen(true);
+                            }}
+                            className={`text-[11px] underline underline-offset-2 inline-flex items-center gap-0.5 ${
+                              c.ready ? 'text-neutral-400 hover:text-neutral-200' : 'text-amber-300 hover:text-amber-200 font-medium'
+                            }`}
+                          >
+                            {c.ready ? 'Work tab' : 'Add work'} <ChevronRight className="w-2.5 h-2.5" />
+                          </button>
+                        )}
+                      </div>
                     </li>
                   ))}
                 </ul>

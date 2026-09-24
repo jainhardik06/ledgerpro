@@ -223,6 +223,7 @@ export default function AgencyProjectsPage() {
                 <th scope="col" className="px-4 py-3 font-medium">Budget (planned)</th>
                 <th scope="col" className="px-4 py-3 font-medium">Margin (planned)</th>
                 <th scope="col" className="px-4 py-3 font-medium">Owner</th>
+                {canManage && <th scope="col" className="px-4 py-3 font-medium text-right">Actions</th>}
               </tr>
             </thead>
             <tbody>
@@ -259,6 +260,16 @@ export default function AgencyProjectsPage() {
                   <td className="px-4 py-3 text-neutral-300">
                     {p.projectManagerId ? (managerLabels[p.projectManagerId] || <span className="text-neutral-600">—</span>) : <span className="text-neutral-600">—</span>}
                   </td>
+                  {canManage && (
+                    <td className="px-4 py-3 text-right">
+                      <Link
+                        href={`/dashboard/agency/projects/${p.id}/edit`}
+                        className="inline-flex items-center gap-1 text-[12px] text-neutral-400 hover:text-white underline underline-offset-2"
+                      >
+                        Edit
+                      </Link>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

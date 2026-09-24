@@ -6,6 +6,7 @@ import type { Invoice, InvoiceLine, InvoiceLineType, InvoiceStatus } from '@/lib
 import { draftLabel } from '@/lib/agency/types/invoice';
 import { Select } from '@/components/ui/Select';
 import { DatePicker } from '@/components/ui/DatePicker';
+import { dueDateFromTerms, type PaymentTerms } from '@/lib/agency/types/dates';
 
 /**
  * Invoice drawer/wizard (Module 9 §67/§68) — the ONE draft-composition
@@ -151,6 +152,20 @@ export function InvoiceWizard({
       .then(res => (res.ok ? res.json() : Promise.reject(new Error('failed'))))
       .then(body => setProjects((body.projects || []).map((p: { id: string; name: string; clientId: string }) => ({ id: p.id, name: p.name, clientId: p.clientId }))))
       .catch(() => setProjects([]));
+
+    fetch(`/api/agency/clients/${form.clientId}`)
+      .then(res => (res.ok ? res.json() : null))
+      .then(body => {
+        if (body?.client?.commercialDefaults?.paymentTerms) {
+          const terms = body.client.commercialDefaults.paymentTerms as PaymentTerms;
+          const customDays = body.client.commercialDefaults.customPaymentTermsDays;
+          setForm(f => ({
+            ...f,
+            dueDate: f.dueDate || dueDateFromTerms(f.issueDate, terms, customDays),
+          }));
+        }
+      })
+      .catch(() => {});
   }, [isOpen, form.clientId]);
 
   /** Editing an existing draft: load it and jump to the Items step. */

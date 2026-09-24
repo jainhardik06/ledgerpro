@@ -323,183 +323,100 @@ export default function InvoiceDetailPage() {
           </div>
         </div>
 
-      {notice && (
-        <div
-          role="status"
-          className={`flex items-start justify-between gap-3 rounded-xl border p-4 ${
-            notice.kind === 'error' ? 'border-red-500/25 bg-red-500/[0.06]' : 'border-white/[0.08] bg-white/[0.02]'
-          }`}
-        >
-          <p className={`text-[13px] ${notice.kind === 'error' ? 'text-red-300' : 'text-neutral-300'}`}>{notice.text}</p>
-          <button onClick={() => setNotice(null)} aria-label="Dismiss" className="shrink-0 text-[12px] text-neutral-500 hover:text-white transition-colors">Dismiss</button>
-        </div>
-      )}
-
-      {/* Main Responsive Grid: 8 Cols Left (Doc + Items), 4 Cols Right (Actions + Financials) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start w-full">
-        {/* Left Column: Document Header, Line Items, Collections, History */}
-        <div className="lg:col-span-8 space-y-6 min-w-0">
-          {/* Header Card */}
-          <div className="rounded-2xl border border-white/[0.08] bg-[#050505] p-6 space-y-4">
-            <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-white/[0.06] pb-4">
-              <div>
-                <span className="text-[11px] font-medium uppercase tracking-wider text-neutral-500">Invoice Number</span>
-                <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-0.5">{label}</h1>
-              </div>
-              <div className="text-right">
-                <span className="text-[11px] font-medium uppercase tracking-wider text-neutral-500">Total Amount</span>
-                <div className="text-xl sm:text-2xl font-bold text-white tabular-nums mt-0.5">{inr(invoice.total.amount)}</div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-[12.5px]">
-              <div>
-                <span className="text-neutral-500 block text-[11px] uppercase tracking-wider">Client</span>
-                <span className="text-neutral-200 font-medium truncate block mt-0.5">{clientName || 'Client'}</span>
-              </div>
-              <div>
-                <span className="text-neutral-500 block text-[11px] uppercase tracking-wider">Project</span>
-                <span className="text-neutral-200 font-medium truncate block mt-0.5">{projectName || 'Non-project'}</span>
-              </div>
-              <div>
-                <span className="text-neutral-500 block text-[11px] uppercase tracking-wider">Issue Date</span>
-                <span className="text-neutral-200 font-medium block mt-0.5">{formatDate(invoice.issueDate)}</span>
-              </div>
-              <div>
-                <span className="text-neutral-500 block text-[11px] uppercase tracking-wider">Due Date</span>
-                <span className={`font-medium block mt-0.5 ${display === 'OVERDUE' ? 'text-red-300 font-semibold' : 'text-neutral-200'}`}>{formatDate(invoice.dueDate)}</span>
-              </div>
-            </div>
-
-            {(invoice.notes || invoice.terms) && (
-              <div className="pt-3 border-t border-white/[0.05] space-y-1.5 text-[12.5px]">
-                {invoice.notes && <p className="text-neutral-400"><span className="text-neutral-500 font-medium">Notes: </span>{invoice.notes}</p>}
-                {invoice.terms && <p className="text-neutral-400"><span className="text-neutral-500 font-medium">Terms: </span>{invoice.terms}</p>}
-              </div>
-            )}
+        {notice && (
+          <div
+            role="status"
+            className={`flex items-start justify-between gap-3 rounded-xl border p-4 ${notice.kind === 'error' ? 'border-red-500/25 bg-red-500/[0.06]' : 'border-white/[0.08] bg-white/[0.02]'
+              }`}
+          >
+            <p className={`text-[13px] ${notice.kind === 'error' ? 'text-red-300' : 'text-neutral-300'}`}>{notice.text}</p>
+            <button onClick={() => setNotice(null)} aria-label="Dismiss" className="shrink-0 text-[12px] text-neutral-500 hover:text-white transition-colors">Dismiss</button>
           </div>
+        )}
 
-          {/* Line Items Table */}
-          <div className="rounded-2xl border border-white/[0.08] bg-[#050505] overflow-hidden">
-            <div className="px-5 py-4 border-b border-white/[0.06] flex items-center justify-between">
-              <span className="text-[12px] font-semibold uppercase tracking-wider text-neutral-400">
-                Billed Items ({lines.length})
-              </span>
-              <span className="text-[12px] text-neutral-500">Currency: <strong className="text-neutral-300">{invoice.currency}</strong></span>
-            </div>
-            {lines.length === 0 ? (
-              <p className="p-8 text-center text-[13px] text-neutral-500">This draft invoice has no line items yet.</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-[13px]" aria-label="Invoice lines">
-                  <thead>
-                    <tr className="border-b border-white/[0.06] text-left text-[11px] uppercase tracking-wider text-neutral-500 bg-white/[0.01]">
-                      <th scope="col" className="px-5 py-3 font-medium">Type</th>
-                      <th scope="col" className="px-5 py-3 font-medium">Description</th>
-                      <th scope="col" className="px-5 py-3 font-medium text-right">Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {lines.map(l => (
-                      <tr key={l.id} className="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.01] transition-colors">
-                        <td className="px-5 py-3.5 whitespace-nowrap">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-white/[0.05] text-neutral-300">
-                            {l.type === 'MILESTONE' ? 'Milestone' : l.type === 'TIME' ? 'Time Log' : l.type === 'EXPENSE' ? 'Expense' : l.type}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3.5 text-neutral-200">
-                          <div className="font-medium text-white">{l.description}</div>
-                          {l.quantity !== undefined && l.unitPrice && (
-                            <div className="text-[11.5px] text-neutral-500 mt-0.5">{l.quantity} × {inr(l.unitPrice.amount)}</div>
-                          )}
-                          {l.metadata?.durationMinutes !== undefined && (
-                            <div className="text-[11.5px] text-neutral-500 mt-0.5">{minutesLabel(Number(l.metadata.durationMinutes))}</div>
-                          )}
-                        </td>
-                        <td className="px-5 py-3.5 text-right font-medium text-white tabular-nums whitespace-nowrap">
-                          {inr(l.amount.amount)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+        {/* Main Responsive Grid: 8 Cols Left (Doc + Items), 4 Cols Right (Actions + Financials) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start w-full">
+          {/* Left Column: Document Header, Line Items, Collections, History */}
+          <div className="lg:col-span-8 space-y-6 min-w-0">
+            {/* Header Card */}
+            <div className="rounded-2xl border border-white/[0.08] bg-[#050505] p-6 space-y-4">
+              <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-white/[0.06] pb-4">
+                <div>
+                  <span className="text-[11px] font-medium uppercase tracking-wider text-neutral-500">Invoice Number</span>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-0.5">{label}</h1>
+                </div>
+                <div className="text-right">
+                  <span className="text-[11px] font-medium uppercase tracking-wider text-neutral-500">Total Amount</span>
+                  <div className="text-xl sm:text-2xl font-bold text-white tabular-nums mt-0.5">{inr(invoice.total.amount)}</div>
+                </div>
               </div>
-            )}
-          </div>
 
-          {/* Payment Links (§34/§53) */}
-          {(paymentLinks.length > 0 || (canManage && invoice.amountDue.amount > 0
-            && (invoice.status === 'SENT' || invoice.status === 'PARTIALLY_PAID' || invoice.status === 'OVERDUE'))) && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-[12.5px]">
+                <div>
+                  <span className="text-neutral-500 block text-[11px] uppercase tracking-wider">Client</span>
+                  <span className="text-neutral-200 font-medium truncate block mt-0.5">{clientName || 'Client'}</span>
+                </div>
+                <div>
+                  <span className="text-neutral-500 block text-[11px] uppercase tracking-wider">Project</span>
+                  <span className="text-neutral-200 font-medium truncate block mt-0.5">{projectName || 'Non-project'}</span>
+                </div>
+                <div>
+                  <span className="text-neutral-500 block text-[11px] uppercase tracking-wider">Issue Date</span>
+                  <span className="text-neutral-200 font-medium block mt-0.5">{formatDate(invoice.issueDate)}</span>
+                </div>
+                <div>
+                  <span className="text-neutral-500 block text-[11px] uppercase tracking-wider">Due Date</span>
+                  <span className={`font-medium block mt-0.5 ${display === 'OVERDUE' ? 'text-red-300 font-semibold' : 'text-neutral-200'}`}>{formatDate(invoice.dueDate)}</span>
+                </div>
+              </div>
+
+              {(invoice.notes || invoice.terms) && (
+                <div className="pt-3 border-t border-white/[0.05] space-y-1.5 text-[12.5px]">
+                  {invoice.notes && <p className="text-neutral-400"><span className="text-neutral-500 font-medium">Notes: </span>{invoice.notes}</p>}
+                  {invoice.terms && <p className="text-neutral-400"><span className="text-neutral-500 font-medium">Terms: </span>{invoice.terms}</p>}
+                </div>
+              )}
+            </div>
+
+            {/* Line Items Table */}
             <div className="rounded-2xl border border-white/[0.08] bg-[#050505] overflow-hidden">
               <div className="px-5 py-4 border-b border-white/[0.06] flex items-center justify-between">
                 <span className="text-[12px] font-semibold uppercase tracking-wider text-neutral-400">
-                  Online Payment Links ({paymentLinks.length})
+                  Billed Items ({lines.length})
                 </span>
-                {canManage && invoice.amountDue.amount > 0 && (
-                  <button
-                    onClick={() => void createPaymentLink()}
-                    disabled={busy || linkBusy}
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border border-white/[0.1] text-[12px] text-neutral-200 hover:bg-white/[0.05] transition-colors"
-                  >
-                    <CreditCard className="w-3.5 h-3.5" aria-hidden /> New link
-                  </button>
-                )}
+                <span className="text-[12px] text-neutral-500">Currency: <strong className="text-neutral-300">{invoice.currency}</strong></span>
               </div>
-              {paymentLinks.length === 0 ? (
-                <p className="p-6 text-center text-[13px] text-neutral-500">
-                  No online-collection links yet. Click “Collect online” to generate an instant payment link for this invoice.
-                </p>
+              {lines.length === 0 ? (
+                <p className="p-8 text-center text-[13px] text-neutral-500">This draft invoice has no line items yet.</p>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full text-[13px]" aria-label="Invoice payment links">
+                  <table className="w-full text-[13px]" aria-label="Invoice lines">
                     <thead>
-                      <tr className="border-b border-white/[0.06] text-left text-[11px] uppercase tracking-wider text-neutral-500">
-                        <th scope="col" className="px-5 py-2.5 font-medium">Created</th>
-                        <th scope="col" className="px-5 py-2.5 font-medium">Gateway Ref</th>
-                        <th scope="col" className="px-5 py-2.5 font-medium text-right">Amount</th>
-                        <th scope="col" className="px-5 py-2.5 font-medium">Status</th>
-                        <th scope="col" className="px-5 py-2.5 font-medium text-right">Actions</th>
+                      <tr className="border-b border-white/[0.06] text-left text-[11px] uppercase tracking-wider text-neutral-500 bg-white/[0.01]">
+                        <th scope="col" className="px-5 py-3 font-medium">Type</th>
+                        <th scope="col" className="px-5 py-3 font-medium">Description</th>
+                        <th scope="col" className="px-5 py-3 font-medium text-right">Amount</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {paymentLinks.map(l => (
-                        <tr key={l.id} className="border-b border-white/[0.04] last:border-0">
-                          <td className="px-5 py-3 text-neutral-400 whitespace-nowrap">{formatDate(l.createdAt)}</td>
-                          <td className="px-5 py-3 font-mono text-[11.5px] text-neutral-400">
-                            {l.providerLinkId || 'Payment Link'}
-                            {l.expiresAt && (
-                              <div className="text-[10.5px] text-neutral-500">expires {formatDate(l.expiresAt)}</div>
+                      {lines.map(l => (
+                        <tr key={l.id} className="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.01] transition-colors">
+                          <td className="px-5 py-3.5 whitespace-nowrap">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-white/[0.05] text-neutral-300">
+                              {l.type === 'MILESTONE' ? 'Milestone' : l.type === 'TIME' ? 'Time Log' : l.type === 'EXPENSE' ? 'Expense' : l.type}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3.5 text-neutral-200">
+                            <div className="font-medium text-white">{l.description}</div>
+                            {l.quantity !== undefined && l.unitPrice && (
+                              <div className="text-[11.5px] text-neutral-500 mt-0.5">{l.quantity} × {inr(l.unitPrice.amount)}</div>
+                            )}
+                            {l.metadata?.durationMinutes !== undefined && (
+                              <div className="text-[11.5px] text-neutral-500 mt-0.5">{minutesLabel(Number(l.metadata.durationMinutes))}</div>
                             )}
                           </td>
-                          <td className="px-5 py-3 text-right text-neutral-200 tabular-nums whitespace-nowrap font-medium">{inr(l.amount.amount)}</td>
-                          <td className="px-5 py-3">
-                            <span className={`text-[11px] font-medium px-2 py-0.5 rounded ${
-                              l.status === 'PAID' ? 'text-emerald-300 bg-emerald-400/10'
-                                : l.status === 'CREATED' ? 'text-sky-300 bg-sky-400/10'
-                                  : l.status === 'CANCELLED' ? 'text-neutral-500 bg-white/[0.03] line-through'
-                                    : 'text-neutral-500 bg-white/[0.03]'
-                            }`}>{l.status}</span>
-                          </td>
-                          <td className="px-5 py-3 text-right whitespace-nowrap">
-                            {l.shortUrl && (
-                              <button
-                                onClick={() => void copyShortUrl(l.shortUrl!)}
-                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[12px] text-neutral-300 hover:bg-white/[0.05] transition-colors"
-                                title="Copy checkout URL"
-                              >
-                                <Copy className="w-3.5 h-3.5" aria-hidden /> Copy link
-                              </button>
-                            )}
-                            {canManage && l.status === 'CREATED' && (
-                              <button
-                                onClick={() => void cancelPaymentLinkAction(l.id)}
-                                disabled={linkBusy}
-                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[12px] text-neutral-400 hover:text-red-400 hover:bg-white/[0.05] disabled:opacity-50 transition-colors ml-1"
-                                title="Cancel at gateway"
-                              >
-                                <X className="w-3.5 h-3.5" aria-hidden /> Cancel
-                              </button>
-                            )}
+                          <td className="px-5 py-3.5 text-right font-medium text-white tabular-nums whitespace-nowrap">
+                            {inr(l.amount.amount)}
                           </td>
                         </tr>
                       ))}
@@ -508,207 +425,287 @@ export default function InvoiceDetailPage() {
                 </div>
               )}
             </div>
-          )}
 
-          {/* Payment History (§104/§116) */}
-          {payments.length > 0 && (
-            <div className="rounded-2xl border border-white/[0.08] bg-[#050505] overflow-hidden">
-              <div className="px-5 py-4 border-b border-white/[0.06] text-[12px] font-semibold uppercase tracking-wider text-neutral-400">
-                Payment History ({payments.length})
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-[13px]" aria-label="Invoice payments">
-                  <thead>
-                    <tr className="border-b border-white/[0.06] text-left text-[11px] uppercase tracking-wider text-neutral-500">
-                      <th scope="col" className="px-5 py-2.5 font-medium">Received</th>
-                      <th scope="col" className="px-5 py-2.5 font-medium">Method</th>
-                      <th scope="col" className="px-5 py-2.5 font-medium text-right">Amount</th>
-                      <th scope="col" className="px-5 py-2.5 font-medium text-right">Withheld</th>
-                      <th scope="col" className="px-5 py-2.5 font-medium">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {payments.map(p => (
-                      <tr key={p.id} className="border-b border-white/[0.04] last:border-0">
-                        <td className="px-5 py-3 text-neutral-400 whitespace-nowrap">{formatDate(p.receivedAt)}</td>
-                        <td className="px-5 py-3 text-neutral-300 font-medium">{p.method}</td>
-                        <td className="px-5 py-3 text-right text-emerald-400 tabular-nums whitespace-nowrap font-medium">{inr(p.amount.amount)}</td>
-                        <td className="px-5 py-3 text-right text-neutral-500 tabular-nums whitespace-nowrap">
-                          {p.withholdingAmount && p.withholdingAmount.amount > 0 ? inr(p.withholdingAmount.amount) : '—'}
-                        </td>
-                        <td className="px-5 py-3">
-                          <span className={`text-[11px] font-medium px-2 py-0.5 rounded ${
-                            p.status === 'CONFIRMED' ? 'text-emerald-300 bg-emerald-400/10'
-                              : p.status === 'PENDING' ? 'text-amber-300 bg-amber-400/10'
-                                : p.status === 'REVERSED' ? 'text-red-300 bg-red-400/10'
-                                  : 'text-neutral-500 bg-white/[0.03]'
-                          }`}>{p.status}</span>
-                        </td>
+            {/* Payment Links (§34/§53) */}
+            {(paymentLinks.length > 0 || (canManage && invoice.amountDue.amount > 0
+              && (invoice.status === 'SENT' || invoice.status === 'PARTIALLY_PAID' || invoice.status === 'OVERDUE'))) && (
+                <div className="rounded-2xl border border-white/[0.08] bg-[#050505] overflow-hidden">
+                  <div className="px-5 py-4 border-b border-white/[0.06] flex items-center justify-between">
+                    <span className="text-[12px] font-semibold uppercase tracking-wider text-neutral-400">
+                      Online Payment Links ({paymentLinks.length})
+                    </span>
+                    {canManage && invoice.amountDue.amount > 0 && (
+                      <button
+                        onClick={() => void createPaymentLink()}
+                        disabled={busy || linkBusy}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border border-white/[0.1] text-[12px] text-neutral-200 hover:bg-white/[0.05] transition-colors"
+                      >
+                        <CreditCard className="w-3.5 h-3.5" aria-hidden /> New link
+                      </button>
+                    )}
+                  </div>
+                  {paymentLinks.length === 0 ? (
+                    <p className="p-6 text-center text-[13px] text-neutral-500">
+                      No online-collection links yet. Click “Collect online” to generate an instant payment link for this invoice.
+                    </p>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-[13px]" aria-label="Invoice payment links">
+                        <thead>
+                          <tr className="border-b border-white/[0.06] text-left text-[11px] uppercase tracking-wider text-neutral-500">
+                            <th scope="col" className="px-5 py-2.5 font-medium">Created</th>
+                            <th scope="col" className="px-5 py-2.5 font-medium">Gateway Ref</th>
+                            <th scope="col" className="px-5 py-2.5 font-medium text-right">Amount</th>
+                            <th scope="col" className="px-5 py-2.5 font-medium">Status</th>
+                            <th scope="col" className="px-5 py-2.5 font-medium text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {paymentLinks.map(l => (
+                            <tr key={l.id} className="border-b border-white/[0.04] last:border-0">
+                              <td className="px-5 py-3 text-neutral-400 whitespace-nowrap">{formatDate(l.createdAt)}</td>
+                              <td className="px-5 py-3 font-mono text-[11.5px] text-neutral-400">
+                                {l.providerLinkId || 'Payment Link'}
+                                {l.expiresAt && (
+                                  <div className="text-[10.5px] text-neutral-500">expires {formatDate(l.expiresAt)}</div>
+                                )}
+                              </td>
+                              <td className="px-5 py-3 text-right text-neutral-200 tabular-nums whitespace-nowrap font-medium">{inr(l.amount.amount)}</td>
+                              <td className="px-5 py-3">
+                                <span className={`text-[11px] font-medium px-2 py-0.5 rounded ${l.status === 'PAID' ? 'text-emerald-300 bg-emerald-400/10'
+                                    : l.status === 'CREATED' ? 'text-sky-300 bg-sky-400/10'
+                                      : l.status === 'CANCELLED' ? 'text-neutral-500 bg-white/[0.03] line-through'
+                                        : 'text-neutral-500 bg-white/[0.03]'
+                                  }`}>{l.status}</span>
+                              </td>
+                              <td className="px-5 py-3 text-right whitespace-nowrap">
+                                {l.shortUrl && (
+                                  <button
+                                    onClick={() => void copyShortUrl(l.shortUrl!)}
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[12px] text-neutral-300 hover:bg-white/[0.05] transition-colors"
+                                    title="Copy checkout URL"
+                                  >
+                                    <Copy className="w-3.5 h-3.5" aria-hidden /> Copy link
+                                  </button>
+                                )}
+                                {canManage && l.status === 'CREATED' && (
+                                  <button
+                                    onClick={() => void cancelPaymentLinkAction(l.id)}
+                                    disabled={linkBusy}
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[12px] text-neutral-400 hover:text-red-400 hover:bg-white/[0.05] disabled:opacity-50 transition-colors ml-1"
+                                    title="Cancel at gateway"
+                                  >
+                                    <X className="w-3.5 h-3.5" aria-hidden /> Cancel
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
+            {/* Payment History (§104/§116) */}
+            {payments.length > 0 && (
+              <div className="rounded-2xl border border-white/[0.08] bg-[#050505] overflow-hidden">
+                <div className="px-5 py-4 border-b border-white/[0.06] text-[12px] font-semibold uppercase tracking-wider text-neutral-400">
+                  Payment History ({payments.length})
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-[13px]" aria-label="Invoice payments">
+                    <thead>
+                      <tr className="border-b border-white/[0.06] text-left text-[11px] uppercase tracking-wider text-neutral-500">
+                        <th scope="col" className="px-5 py-2.5 font-medium">Received</th>
+                        <th scope="col" className="px-5 py-2.5 font-medium">Method</th>
+                        <th scope="col" className="px-5 py-2.5 font-medium text-right">Amount</th>
+                        <th scope="col" className="px-5 py-2.5 font-medium text-right">Withheld</th>
+                        <th scope="col" className="px-5 py-2.5 font-medium">Status</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {payments.map(p => (
+                        <tr key={p.id} className="border-b border-white/[0.04] last:border-0">
+                          <td className="px-5 py-3 text-neutral-400 whitespace-nowrap">{formatDate(p.receivedAt)}</td>
+                          <td className="px-5 py-3 text-neutral-300 font-medium">{p.method}</td>
+                          <td className="px-5 py-3 text-right text-emerald-400 tabular-nums whitespace-nowrap font-medium">{inr(p.amount.amount)}</td>
+                          <td className="px-5 py-3 text-right text-neutral-500 tabular-nums whitespace-nowrap">
+                            {p.withholdingAmount && p.withholdingAmount.amount > 0 ? inr(p.withholdingAmount.amount) : '—'}
+                          </td>
+                          <td className="px-5 py-3">
+                            <span className={`text-[11px] font-medium px-2 py-0.5 rounded ${p.status === 'CONFIRMED' ? 'text-emerald-300 bg-emerald-400/10'
+                                : p.status === 'PENDING' ? 'text-amber-300 bg-amber-400/10'
+                                  : p.status === 'REVERSED' ? 'text-red-300 bg-red-400/10'
+                                    : 'text-neutral-500 bg-white/[0.03]'
+                              }`}>{p.status}</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-
-        {/* Right Column: Actions Sidebar & Financial Totals */}
-        <div className="lg:col-span-4 space-y-6">
-          {/* Action Center Card */}
-          <div className="rounded-2xl border border-white/[0.08] bg-[#050505] p-5 space-y-3">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 block">Actions</span>
-            
-            {/* Quick Export / Download as PDF */}
-            <div className="space-y-2 pb-3 border-b border-white/[0.06]">
-              <button
-                onClick={handleDownloadPDF}
-                disabled={downloadingPdf}
-                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/[0.08] text-emerald-300 text-[13px] font-semibold hover:bg-emerald-500/[0.15] hover:border-emerald-500/50 disabled:opacity-50 transition-colors shadow-sm"
-              >
-                {downloadingPdf ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin text-emerald-400" aria-hidden /> Generating PDF...
-                  </>
-                ) : downloadedPdf ? (
-                  <>
-                    <Check className="w-4 h-4 text-emerald-400" aria-hidden /> Downloaded!
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-4 h-4 text-emerald-400" aria-hidden /> Download PDF
-                  </>
-                )}
-              </button>
-              <button
-                onClick={() => setPreviewOpen(true)}
-                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-white/[0.08] text-[12.5px] text-neutral-300 hover:bg-white/[0.04] transition-colors"
-              >
-                <Eye className="w-3.5 h-3.5" aria-hidden /> Preview PDF Document
-              </button>
-            </div>
-              
-            {canManage && (
-              <>
-                {invoice.status === 'DRAFT' && (
-                  <div className="space-y-2">
-                    <button
-                      onClick={() => void postAction('finalize')}
-                      disabled={busy || lines.length === 0}
-                      className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white text-black text-[13px] font-semibold hover:bg-neutral-200 disabled:opacity-50 transition-colors shadow-sm"
-                    >
-                      <Check className="w-4 h-4" aria-hidden /> Finalize & issue
-                    </button>
-                    <button
-                      onClick={() => setWizardOpen(true)}
-                      disabled={busy}
-                      className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-white/[0.1] text-[13px] text-neutral-300 hover:bg-white/[0.04] disabled:opacity-50 transition-colors"
-                    >
-                      <Pencil className="w-4 h-4" aria-hidden /> Edit draft
-                    </button>
-                  </div>
-                )}
-
-                {invoice.amountDue.amount > 0
-                  && (invoice.status === 'SENT' || invoice.status === 'PARTIALLY_PAID' || invoice.status === 'OVERDUE') && (
-                  <div className="space-y-2">
-                    <button
-                      onClick={() => router.push(`/dashboard/agency/payments?new=1&invoice=${invoice.id}`)}
-                      disabled={busy}
-                      className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white text-black text-[13px] font-semibold hover:bg-neutral-200 disabled:opacity-50 transition-colors shadow-sm"
-                    >
-                      <IndianRupee className="w-4 h-4" aria-hidden /> Record payment
-                    </button>
-                    <button
-                      onClick={() => void createPaymentLink()}
-                      disabled={busy || linkBusy}
-                      className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-white/[0.1] text-[13px] text-neutral-200 hover:bg-white/[0.05] disabled:opacity-50 transition-colors"
-                    >
-                      <CreditCard className="w-4 h-4" aria-hidden /> Collect online
-                    </button>
-                  </div>
-                )}
-
-                {invoice.status !== 'DRAFT' && invoice.status !== 'VOID' && (
-                  <button
-                    onClick={() => void postAction('send')}
-                    disabled={busy}
-                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-white/[0.08] text-[13px] text-neutral-300 hover:bg-white/[0.04] disabled:opacity-50 transition-colors"
-                  >
-                    <Send className="w-4 h-4" aria-hidden /> Record send
-                  </button>
-                )}
-
-                {canTransitionInvoiceStatus(invoice.status, 'VOID') && invoice.amountPaid.amount === 0 && (
-                  <button
-                    onClick={() => void postAction('void')}
-                    disabled={busy}
-                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-red-500/20 text-[13px] text-red-400 hover:bg-red-500/[0.08] disabled:opacity-50 transition-colors"
-                  >
-                    <X className="w-4 h-4" aria-hidden /> Void invoice
-                  </button>
-                )}
-              </>
             )}
           </div>
 
-          {/* Financial Breakdown Card */}
-          <div className="rounded-2xl border border-white/[0.08] bg-[#050505] p-5 space-y-3.5">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 block">Financial Summary</span>
-            <div className="space-y-2 text-[13px]">
-              <div className="flex justify-between text-neutral-400">
-                <span>Subtotal</span>
-                <span className="tabular-nums font-medium text-neutral-200">{inr(invoice.subtotal.amount)}</span>
+          {/* Right Column: Actions Sidebar & Financial Totals */}
+          <div className="lg:col-span-4 space-y-6">
+            {/* Action Center Card */}
+            <div className="rounded-2xl border border-white/[0.08] bg-[#050505] p-5 space-y-3">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 block">Actions</span>
+
+              {/* Quick Export / Download as PDF */}
+              <div className="space-y-2 pb-3 border-b border-white/[0.06]">
+                <button
+                  onClick={handleDownloadPDF}
+                  disabled={downloadingPdf}
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/[0.08] text-emerald-300 text-[13px] font-semibold hover:bg-emerald-500/[0.15] hover:border-emerald-500/50 disabled:opacity-50 transition-colors shadow-sm"
+                >
+                  {downloadingPdf ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-emerald-400" aria-hidden /> Generating PDF...
+                    </>
+                  ) : downloadedPdf ? (
+                    <>
+                      <Check className="w-4 h-4 text-emerald-400" aria-hidden /> Downloaded!
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4 text-emerald-400" aria-hidden /> Download PDF
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={() => setPreviewOpen(true)}
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-white/[0.08] text-[12.5px] text-neutral-300 hover:bg-white/[0.04] transition-colors"
+                >
+                  <Eye className="w-3.5 h-3.5" aria-hidden /> Preview PDF Document
+                </button>
               </div>
-              {invoice.discount.amount > 0 && (
-                <div className="flex justify-between text-emerald-400">
-                  <span>Discount</span>
-                  <span className="tabular-nums">−{inr(invoice.discount.amount)}</span>
-                </div>
+
+              {canManage && (
+                <>
+                  {invoice.status === 'DRAFT' && (
+                    <div className="space-y-2">
+                      <button
+                        onClick={() => void postAction('finalize')}
+                        disabled={busy || lines.length === 0}
+                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white text-black text-[13px] font-semibold hover:bg-neutral-200 disabled:opacity-50 transition-colors shadow-sm"
+                      >
+                        <Check className="w-4 h-4" aria-hidden /> Finalize & issue
+                      </button>
+                      <button
+                        onClick={() => setWizardOpen(true)}
+                        disabled={busy}
+                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-white/[0.1] text-[13px] text-neutral-300 hover:bg-white/[0.04] disabled:opacity-50 transition-colors"
+                      >
+                        <Pencil className="w-4 h-4" aria-hidden /> Edit draft
+                      </button>
+                    </div>
+                  )}
+
+                  {invoice.amountDue.amount > 0
+                    && (invoice.status === 'SENT' || invoice.status === 'PARTIALLY_PAID' || invoice.status === 'OVERDUE') && (
+                      <div className="space-y-2">
+                        <button
+                          onClick={() => router.push(`/dashboard/agency/payments?new=1&invoice=${invoice.id}`)}
+                          disabled={busy}
+                          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white text-black text-[13px] font-semibold hover:bg-neutral-200 disabled:opacity-50 transition-colors shadow-sm"
+                        >
+                          <IndianRupee className="w-4 h-4" aria-hidden /> Record payment
+                        </button>
+                        <button
+                          onClick={() => void createPaymentLink()}
+                          disabled={busy || linkBusy}
+                          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-white/[0.1] text-[13px] text-neutral-200 hover:bg-white/[0.05] disabled:opacity-50 transition-colors"
+                        >
+                          <CreditCard className="w-4 h-4" aria-hidden /> Collect online
+                        </button>
+                      </div>
+                    )}
+
+                  {invoice.status !== 'DRAFT' && invoice.status !== 'VOID' && (
+                    <button
+                      onClick={() => void postAction('send')}
+                      disabled={busy}
+                      className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-white/[0.08] text-[13px] text-neutral-300 hover:bg-white/[0.04] disabled:opacity-50 transition-colors"
+                    >
+                      <Send className="w-4 h-4" aria-hidden /> Record send
+                    </button>
+                  )}
+
+                  {canTransitionInvoiceStatus(invoice.status, 'VOID') && invoice.amountPaid.amount === 0 && (
+                    <button
+                      onClick={() => void postAction('void')}
+                      disabled={busy}
+                      className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-red-500/20 text-[13px] text-red-400 hover:bg-red-500/[0.08] disabled:opacity-50 transition-colors"
+                    >
+                      <X className="w-4 h-4" aria-hidden /> Void invoice
+                    </button>
+                  )}
+                </>
               )}
-              <div className="flex justify-between text-neutral-400">
-                <span>Taxable amount</span>
-                <span className="tabular-nums text-neutral-300">{inr(invoice.subtotal.amount - invoice.discount.amount)}</span>
-              </div>
-              {invoice.taxLines.map(t => (
-                <div key={t.name + t.rate} className="flex justify-between text-neutral-400">
-                  <span>{t.name} @ {t.rate}%</span>
-                  <span className="tabular-nums text-neutral-300">{inr(t.amount.amount)}</span>
+            </div>
+
+            {/* Financial Breakdown Card */}
+            <div className="rounded-2xl border border-white/[0.08] bg-[#050505] p-5 space-y-3.5">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 block">Financial Summary</span>
+              <div className="space-y-2 text-[13px]">
+                <div className="flex justify-between text-neutral-400">
+                  <span>Subtotal</span>
+                  <span className="tabular-nums font-medium text-neutral-200">{inr(invoice.subtotal.amount)}</span>
                 </div>
-              ))}
-              <div className="flex justify-between text-neutral-400">
-                <span>Tax total</span>
-                <span className="tabular-nums text-neutral-300">{inr(invoice.taxTotal.amount)}</span>
-              </div>
-              <div className="flex justify-between text-[15px] font-semibold text-white pt-2.5 border-t border-white/[0.08]">
-                <span>Total</span>
-                <span className="tabular-nums">{inr(invoice.total.amount)}</span>
-              </div>
-              {invoice.amountPaid.amount > 0 && (
-                <div className="flex justify-between text-emerald-400 font-medium">
-                  <span>Paid</span>
-                  <span className="tabular-nums">−{inr(invoice.amountPaid.amount)}</span>
+                {invoice.discount.amount > 0 && (
+                  <div className="flex justify-between text-emerald-400">
+                    <span>Discount</span>
+                    <span className="tabular-nums">−{inr(invoice.discount.amount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-neutral-400">
+                  <span>Taxable amount</span>
+                  <span className="tabular-nums text-neutral-300">{inr(invoice.subtotal.amount - invoice.discount.amount)}</span>
                 </div>
-              )}
-              <div className="flex justify-between items-baseline pt-2 border-t border-white/[0.08]">
-                <span className="text-[13px] font-medium text-neutral-300">Balance due</span>
-                <span className={`text-[17px] font-bold tabular-nums ${invoice.amountDue.amount > 0 ? 'text-white' : 'text-emerald-400'}`}>
-                  {inr(invoice.amountDue.amount)}
-                </span>
+                {invoice.taxLines.map(t => (
+                  <div key={t.name + t.rate} className="flex justify-between text-neutral-400">
+                    <span>{t.name} @ {t.rate}%</span>
+                    <span className="tabular-nums text-neutral-300">{inr(t.amount.amount)}</span>
+                  </div>
+                ))}
+                <div className="flex justify-between text-neutral-400">
+                  <span>Tax total</span>
+                  <span className="tabular-nums text-neutral-300">{inr(invoice.taxTotal.amount)}</span>
+                </div>
+                <div className="flex justify-between text-[15px] font-semibold text-white pt-2.5 border-t border-white/[0.08]">
+                  <span>Total</span>
+                  <span className="tabular-nums">{inr(invoice.total.amount)}</span>
+                </div>
+                {invoice.amountPaid.amount > 0 && (
+                  <div className="flex justify-between text-emerald-400 font-medium">
+                    <span>Paid</span>
+                    <span className="tabular-nums">−{inr(invoice.amountPaid.amount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between items-baseline pt-2 border-t border-white/[0.08]">
+                  <span className="text-[13px] font-medium text-neutral-300">Balance due</span>
+                  <span className={`text-[17px] font-bold tabular-nums ${invoice.amountDue.amount > 0 ? 'text-white' : 'text-emerald-400'}`}>
+                    {inr(invoice.amountDue.amount)}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {invoice.status === 'DRAFT' && (
-        <InvoiceWizard
-          isOpen={wizardOpen}
-          onClose={() => setWizardOpen(false)}
-          editingId={invoice.id}
-          onChanged={load}
-        />
-      )}
+        {invoice.status === 'DRAFT' && (
+          <InvoiceWizard
+            isOpen={wizardOpen}
+            onClose={() => setWizardOpen(false)}
+            editingId={invoice.id}
+            onChanged={load}
+          />
+        )}
       </div>
 
       {/* ── HIGH RESOLUTION INVOICE DOCUMENT (OFF-SCREEN FOR PDF CAPTURE / PRINT) ── */}

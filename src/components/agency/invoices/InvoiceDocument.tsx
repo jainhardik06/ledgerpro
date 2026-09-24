@@ -7,6 +7,7 @@ import type { PublicPaymentLink } from '@/lib/agency/types/payment-link';
 import type { PublicAgencySettings } from '@/lib/agency/types/agency-settings';
 import { displayStatusFor, draftLabel } from '@/lib/agency/types/invoice';
 import { amountToWords } from '@/lib/agency/utils/formatWords';
+import { getAgencyLogo } from '@/lib/agency/utils/logo';
 
 export interface InvoiceClientInfo {
   id?: string;
@@ -80,7 +81,7 @@ export function InvoiceDocument({
     || '';
 
   const agencyAddress = invoice.complianceSnapshot?.supplier?.address || '';
-  const agencyLogo = settings?.general.logoUrl;
+  const agencyLogo = getAgencyLogo(settings, null);
   const defaultSac = settings?.tax.defaultSacCode || '998311';
 
   // Client Profile
@@ -123,31 +124,37 @@ export function InvoiceDocument({
         {/* 2-Column Master Header Grid */}
         <div className="grid grid-cols-12 divide-x divide-neutral-800 text-[12px]">
           {/* Supplier / Agency (Left Column - 7 cols) */}
-          <div className="col-span-7 p-4 space-y-2">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h1 className="text-xl font-bold text-neutral-950 uppercase tracking-tight">
-                  {agencyName}
-                </h1>
-                {agencyAddress && (
-                  <div className="text-neutral-600 text-[11.5px] mt-0.5 leading-snug whitespace-pre-line">
-                    {agencyAddress}
-                  </div>
-                )}
-                {agencyState && (
-                  <div className="text-neutral-700 text-[11.5px]">
-                    State / Jurisdiction: <strong className="text-neutral-900">{agencyState}</strong>
-                  </div>
-                )}
-                {agencyGstin && (
-                  <div className="text-[12px] font-mono text-neutral-900 font-semibold mt-1">
-                    GSTIN: <span className="font-bold">{agencyGstin}</span>
-                  </div>
-                )}
-              </div>
+          <div className="col-span-7 p-4 space-y-2.5">
+            <div className="flex items-center gap-3">
               {agencyLogo && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={agencyLogo} alt={agencyName} className="h-10 max-w-[120px] object-contain shrink-0" />
+                <img
+                  src={agencyLogo}
+                  alt={agencyName}
+                  className="h-10 w-10 object-contain shrink-0"
+                  crossOrigin="anonymous"
+                />
+              )}
+              <h1 className="text-xl font-bold text-neutral-950 uppercase tracking-tight">
+                {agencyName}
+              </h1>
+            </div>
+
+            <div className="space-y-1">
+              {agencyAddress && (
+                <div className="text-neutral-600 text-[11.5px] leading-snug whitespace-pre-line">
+                  {agencyAddress}
+                </div>
+              )}
+              {agencyState && (
+                <div className="text-neutral-700 text-[11.5px]">
+                  State / Jurisdiction: <strong className="text-neutral-900">{agencyState}</strong>
+                </div>
+              )}
+              {agencyGstin && (
+                <div className="text-[12px] font-mono text-neutral-900 font-semibold mt-0.5">
+                  GSTIN: <span className="font-bold">{agencyGstin}</span>
+                </div>
               )}
             </div>
           </div>

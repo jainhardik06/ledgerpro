@@ -19,12 +19,15 @@ export async function GET(req: NextRequest) {
     }
     
     if (tenant) {
+      const t = tenant as Record<string, any>;
       return NextResponse.json({ 
         success: true, 
         tenant: {
           id: tenant._id?.toString() || tenant.id,
           name: tenant.name,
-          appMode: tenant.appMode || 'Standard'
+          appMode: tenant.appMode || 'Standard',
+          logoUrl: t.agencySettings?.general?.logoUrl || t.logoUrl || null,
+          agencySettings: t.agencySettings || null,
         }
       });
     }
