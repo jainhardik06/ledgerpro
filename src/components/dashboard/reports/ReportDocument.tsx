@@ -1,6 +1,7 @@
 "use client";
 
-import React from 'react';
+import React, { useId } from 'react';
+
 
 export interface ReportDocumentProps {
   metrics: {
@@ -119,10 +120,16 @@ export function ReportDocument({
   filterMetadata,
   tenantName = 'Money OS Workspace',
   userName = 'System Administrator',
-  reportRef = 'RPT-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+  reportRef,
   generatedAt = new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }),
   logoUrl,
 }: ReportDocumentProps) {
+  // useId() is the React-Compiler-approved source of stable, pure IDs.
+  // It produces a unique ID per component instance, deterministic within
+  // a render tree — no impure side effects, no re-render drift.
+  const generatedId = useId();
+  const stableReportRef = reportRef ?? ('RPT-' + generatedId.replace(/:/g, '').toUpperCase());
+
   // Aggregate stats
   const activeDaysCount = Math.max(1, cashFlowTimeline.length);
   const avgDailyExpense = metrics.expenses / activeDaysCount;
@@ -173,7 +180,7 @@ export function ReportDocument({
                   FINANCIAL INTELLIGENCE
                 </span>
                 <span className="text-[11px] font-mono text-neutral-500 font-semibold tracking-wider">
-                  REF: {reportRef}
+                  REF: {stableReportRef}
                 </span>
               </div>
               <h1 className="text-2xl font-black text-neutral-950 uppercase tracking-tight mt-1">
@@ -368,7 +375,7 @@ export function ReportDocument({
         <div className="border-t border-neutral-300 pt-3 flex items-center justify-between text-[10px] text-neutral-500 font-mono">
           <span>CONFIDENTIAL &bull; FOR INTERNAL &amp; STAKEHOLDER GOVERNANCE ONLY</span>
           <span>PAGE 1 OF 3</span>
-          <span>SYS-CHECKSUM: {reportRef}-P1</span>
+          <span>SYS-CHECKSUM: {stableReportRef}-P1</span>
         </div>
       </div>
 
@@ -390,7 +397,7 @@ export function ReportDocument({
               </h2>
             </div>
             <div className="text-right text-[11px] font-mono text-neutral-500">
-              {tenantName} &bull; {reportRef}
+              {tenantName} &bull; {stableReportRef}
             </div>
           </div>
 
@@ -535,7 +542,7 @@ export function ReportDocument({
         <div className="border-t border-neutral-300 pt-3 flex items-center justify-between text-[10px] text-neutral-500 font-mono">
           <span>CONFIDENTIAL &bull; FOR INTERNAL &amp; STAKEHOLDER GOVERNANCE ONLY</span>
           <span>PAGE 2 OF 3</span>
-          <span>SYS-CHECKSUM: {reportRef}-P2</span>
+          <span>SYS-CHECKSUM: {stableReportRef}-P2</span>
         </div>
       </div>
 
@@ -557,7 +564,7 @@ export function ReportDocument({
               </h2>
             </div>
             <div className="text-right text-[11px] font-mono text-neutral-500">
-              {tenantName} &bull; {reportRef}
+              {tenantName} &bull; {stableReportRef}
             </div>
           </div>
 
@@ -700,9 +707,9 @@ export function ReportDocument({
                   <span className="text-neutral-500 text-[10px] block">Date: {new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
                 </div>
                 <div className="border-t border-neutral-300 pt-1">
-                  <span className="text-neutral-400 text-[9px] uppercase block">Official Verification Hash</span>
+                  <span className="text-neutral-400 text-[9px] uppercase block">Document Reference</span>
                   <span className="font-mono text-[9.5px] text-neutral-600 truncate block">
-                    SHA256: {Math.random().toString(36).substring(2, 10).toUpperCase()}-VERIFIED-SECURE
+                    REF: {stableReportRef}
                   </span>
                 </div>
               </div>
@@ -714,7 +721,7 @@ export function ReportDocument({
         <div className="border-t border-neutral-300 pt-3 flex items-center justify-between text-[10px] text-neutral-500 font-mono">
           <span>CONFIDENTIAL &bull; FOR INTERNAL &amp; STAKEHOLDER GOVERNANCE ONLY</span>
           <span>PAGE 3 OF 3</span>
-          <span>SYS-CHECKSUM: {reportRef}-P3</span>
+          <span>SYS-CHECKSUM: {stableReportRef}-P3</span>
         </div>
       </div>
 

@@ -1,0 +1,26 @@
+# Gitleaks configuration for LedgerPro / MoneyOS
+title = "LedgerPro Gitleaks Configuration"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Ignore legacy detracked commits, sample templates, and ephemeral test run logs"
+paths = [
+  '''\.env\.example$''',
+  '''money-os-discovery/''',
+  '''tests/bruno/.*\.json$''',
+  '''tests/solo43\.json$''',
+  '''tests/bruno-47\.json$''',
+]
+commits = [
+  "241ba0cf22581baaf945ac102e6ad6f9131711cb",
+  "7e214806ae0c5613394a6411fdbbf51866d51c1e",
+  "fc53dd991a899b8f30423cc8a293a7728ce7cad2",
+  "7af99da184caeeeb95b68f64779127bceaa776f2",
+  "6c336fa2990201ef79eb5d14e753e9466a3b8ed5",
+  "77bc0fe41c13633b4029c32ee65adbf10cb2955f",
+  "89d38cdeececf725656ada10f2b18da039ad1528",
+  "d84533165e58cd04095d364ca58334c36d78038a",
+  "76d39c4d26b7e42e72677ca54133ce57563cf290",
+]

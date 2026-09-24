@@ -1306,6 +1306,39 @@ export async function getTransactions(tenantId: string, options: ListOptions = {
     .slice(skip, skip + limit);
 }
 
+export async function getTransactionById(id: string, tenantId: string): Promise<Transaction | null> {
+  const { db } = await connectDb();
+  if (db) {
+    try {
+      const t = await db.collection('transactions').findOne({ _id: safeObjectId(id), tenantId });
+      if (t) {
+        return {
+          id: t._id.toString(),
+          tenantId: t.tenantId,
+          userId: t.userId,
+          username: t.username,
+          accountId: t.accountId,
+          clientId: t.clientId,
+          projectId: t.projectId,
+          invoiceId: t.invoiceId,
+          paymentId: t.paymentId,
+          type: t.type as 'Credit' | 'Debit',
+          description: t.description,
+          amount: Number(t.amount),
+          date: t.date,
+          category: t.category,
+          notes: t.notes,
+          createdAt: t.createdAt,
+        };
+      }
+      return null;
+    } catch (e) {}
+  }
+  const data = initLocalDb();
+  const tx = data.transactions.find(t => t.id === id && t.tenantId === tenantId);
+  return tx ? { ...tx } : null;
+}
+
 export async function createTransaction(tx: Omit<Transaction, 'createdAt' | 'id' | '_id'>): Promise<Transaction> {
   const { db } = await connectDb();
   const newTx = { ...tx, amount: Number(tx.amount), createdAt: new Date() };

@@ -1,0 +1,94 @@
+name: Production CI & Quality Gate
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-gate:
+    name: Code Quality, Types, Tests & Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Linter (ESLint)
+        run: npm run lint
+
+      - name: Type Check (TypeScript)
+        run: npx tsc --noEmit
+
+      - name: Run Vitest Suite (Unit, Domain & Financial Invariants)
+        run: npm run test:unit
+
+      - name: Build Next.js Production Bundle
+        run: npm run build
+        env:
+          NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+          CI: "true"
+
+      - name: Run Bruno E2E API Suite
+        run: |
+          export AGENCY_MASTER_KEY=$(node -e "console.log(Buffer.alloc(32, 1).toString('base64'))")
+          npm run start &
+          for i in {1..45}; do
+            if curl -s http://localhost:3000/api/health; then
+              echo "Next.js server is up and healthy!"
+              break
+            fi
+            echo "Waiting for Next.js server to start ($i/45)..."
+            sleep 1
+          done
+          npm run test:api
+        env:
+          NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+          CI: "true"
+          RAZORPAY_WEBHOOK_SECRET: "whsec_local_e2e_test_only"
+
+  security-gate:
+    name: Security & Secret Audits
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Dependency Vulnerability Audit
+        run: npm audit --audit-level=high
+
+      - name: Gitleaks Secret Detection
+        run: npx gitleaks detect --config=.gitleaks.toml -v

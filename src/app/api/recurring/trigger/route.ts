@@ -4,11 +4,18 @@ import { getRecurringTransactions, createTransaction, updateRecurringTransaction
 
 function addInterval(dateStr: string, interval: 'Daily' | 'Weekly' | 'Monthly'): string {
   const d = new Date(dateStr);
+  if (isNaN(d.getTime())) {
+    const fallback = new Date();
+    fallback.setDate(fallback.getDate() + 1);
+    return fallback.toISOString().split('T')[0];
+  }
   if (interval === 'Daily') d.setDate(d.getDate() + 1);
   if (interval === 'Weekly') d.setDate(d.getDate() + 7);
   if (interval === 'Monthly') d.setMonth(d.getMonth() + 1);
   return d.toISOString().split('T')[0];
 }
+
+const MAX_RUNS_PER_RECORD = 50;
 
 export async function POST(req: NextRequest) {
   try {
@@ -23,9 +30,10 @@ export async function POST(req: NextRequest) {
 
     for (const rt of recurringTxs) {
       let currentNextRun = rt.nextRunDate;
+      let runs = 0;
 
       // While the nextRunDate is today or in the past, execute it.
-      while (currentNextRun <= today) {
+      while (currentNextRun <= today && runs < MAX_RUNS_PER_RECORD) {
         // Create the transaction
         await createTransaction({
           tenantId: rt.tenantId,
@@ -39,7 +47,10 @@ export async function POST(req: NextRequest) {
           category: rt.category
         });
 
-        currentNextRun = addInterval(currentNextRun, rt.interval);
+        const next = addInterval(currentNextRun, rt.interval);
+        if (next <= currentNextRun) break;
+        currentNextRun = next;
+        runs++;
         triggeredCount++;
       }
 

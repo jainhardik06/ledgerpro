@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
-import { deleteClient, createLog, updateClient } from '@/lib/db';
+import { deleteClient, createLog, updateClient, getProjects, getInvoices, getTransactions } from '@/lib/db';
 import { validateString } from '@/lib/validation';
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -11,6 +11,19 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     }
 
     const { id } = await params;
+
+    const [projects, invoices, transactions] = await Promise.all([
+      getProjects(session.tenantId, { limit: 1 }, { clientId: id }),
+      getInvoices(session.tenantId, { clientId: id }, { limit: 1 }),
+      getTransactions(session.tenantId, { limit: 1, clientId: id }),
+    ]);
+
+    if (projects.length > 0 || invoices.length > 0 || transactions.length > 0) {
+      return NextResponse.json(
+        { error: 'Cannot delete client with existing projects, invoices, or transactions. Archive the client instead.' },
+        { status: 409 }
+      );
+    }
 
     const success = await deleteClient(id, session.tenantId);
     if (success) {

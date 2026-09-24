@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
 import { getBudgets, createBudget, createLog } from '@/lib/db';
+import { validateAmount, validateString } from '@/lib/validation';
 import PostHogClient from '@/lib/posthog-server';
 
 export async function GET(req: NextRequest) {
@@ -25,12 +26,15 @@ export async function POST(req: NextRequest) {
 
     const { category, limitAmount, month } = await req.json();
 
-    if (!category || limitAmount === undefined || !month) {
-      return NextResponse.json({ error: 'Category, limitAmount, and month are required' }, { status: 400 });
-    }
+    const cleanCategory = validateString(category, 'Category', { min: 1, max: 80 });
+    if (cleanCategory instanceof NextResponse) return cleanCategory;
+    const cleanMonth = validateString(month, 'Month', { min: 4, max: 20 });
+    if (cleanMonth instanceof NextResponse) return cleanMonth;
+    const cleanLimitAmount = validateAmount(limitAmount, 'Budget limit');
+    if (cleanLimitAmount instanceof NextResponse) return cleanLimitAmount;
 
-    const newBudget = await createBudget(session.tenantId, category, Number(limitAmount), month);
-    await createLog(session.username, 'Set Budget', `Set ${category} budget to ₹${limitAmount} for ${month}`, session.tenantId);
+    const newBudget = await createBudget(session.tenantId, cleanCategory, cleanLimitAmount, cleanMonth);
+    await createLog(session.username, 'Set Budget', `Set ${cleanCategory} budget to ₹${cleanLimitAmount} for ${cleanMonth}`, session.tenantId);
 
     // Analytics
     const posthog = PostHogClient();
@@ -39,8 +43,8 @@ export async function POST(req: NextRequest) {
       event: 'BUDGET_CREATED',
       properties: { 
         budgetId: newBudget.id || newBudget._id?.toString(),
-        amount: Number(limitAmount),
-        period: month,
+        amount: cleanLimitAmount,
+        period: cleanMonth,
         workspaceId: session.tenantId
       }
     });

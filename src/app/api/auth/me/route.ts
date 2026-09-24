@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
-import { getUserByUsername } from '@/lib/db';
+import { getUserByUsername, getTenantById } from '@/lib/db';
 
 export async function GET() {
   try {
@@ -23,6 +23,15 @@ export async function GET() {
     const user = await getUserByUsername(session.username);
     if (!user) {
       return NextResponse.json({ authenticated: false }, { status: 401 });
+    }
+    if (user.status === 'LOCKED') {
+      return NextResponse.json({ authenticated: false, error: 'Account is locked' }, { status: 403 });
+    }
+    if (user.tenantId) {
+      const tenant = await getTenantById(user.tenantId);
+      if (tenant?.status === 'SUSPENDED') {
+        return NextResponse.json({ authenticated: false, error: 'Organization account is suspended' }, { status: 403 });
+      }
     }
     const persistedUserId = user.id || user._id?.toString();
     if (!persistedUserId) {

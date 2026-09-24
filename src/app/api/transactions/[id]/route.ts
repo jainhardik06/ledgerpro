@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
-import { updateTransaction, deleteTransaction, createLog } from '@/lib/db';
+import { getTransactionById, updateTransaction, deleteTransaction, createLog } from '@/lib/db';
 import { validateAmount, validateDateString, validateEnum, validateString } from '@/lib/validation';
 import PostHogClient from '@/lib/posthog-server';
 
@@ -78,6 +78,21 @@ export async function PUT(
       return NextResponse.json({ error: 'No valid transaction fields provided' }, { status: 400 });
     }
 
+    const existingTx = await getTransactionById(id, session.tenantId);
+    if (!existingTx) {
+      return NextResponse.json(
+        { error: 'Transaction not found or unauthorized' },
+        { status: 404 }
+      );
+    }
+
+    if (existingTx.paymentId || existingTx.invoiceId) {
+      return NextResponse.json(
+        { error: 'Transactions linked to invoices or payments are system-managed and cannot be modified directly. Use payment reversal.' },
+        { status: 409 }
+      );
+    }
+
     const success = await updateTransaction(id, session.tenantId, updates);
     if (!success) {
       return NextResponse.json(
@@ -121,6 +136,21 @@ export async function DELETE(
     }
 
     const { id } = await params;
+    const existingTx = await getTransactionById(id, session.tenantId);
+    if (!existingTx) {
+      return NextResponse.json(
+        { error: 'Transaction not found or unauthorized' },
+        { status: 404 }
+      );
+    }
+
+    if (existingTx.paymentId || existingTx.invoiceId) {
+      return NextResponse.json(
+        { error: 'Transactions linked to invoices or payments are system-managed and cannot be deleted directly. Use payment reversal.' },
+        { status: 409 }
+      );
+    }
+
     const success = await deleteTransaction(id, session.tenantId);
 
     if (!success) {
