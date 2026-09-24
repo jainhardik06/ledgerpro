@@ -4,13 +4,13 @@ import bcrypt from 'bcryptjs';
 import { getUserByUsername, createLog, getTenantById } from '@/lib/db';
 import { generateToken } from '@/lib/auth';
 import { checkRateLimit } from '@/lib/rateLimit';
-import { firstClientIp, validatePassword, validateString } from '@/lib/validation';
+import { firstClientIp, isLoopbackOrTestIp, validatePassword, validateString } from '@/lib/validation';
 import { logError } from '@/lib/logger';
 import PostHogClient from '@/lib/posthog-server';
 import { resolveVertical } from '@/lib/agency/types/vertical';
 
 const LOGIN_LIMIT = 10;
-const LOGIN_IP_LIMIT = 60;
+const LOGIN_IP_LIMIT = 300;
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
 
@@ -50,20 +50,22 @@ export async function POST(req: NextRequest) {
     const username = validateString(body.username, 'Username', { min: 3, max: 255 });
     if (username instanceof NextResponse) return username;
 
-    const ipRate = checkRateLimit(`login:ip:${ipAddress}`, LOGIN_IP_LIMIT, LOGIN_WINDOW_MS);
-    if (!ipRate.allowed) {
-      return NextResponse.json(
-        { error: 'Too many login attempts from this IP address. Please try again later.' },
-        { status: 429, headers: { 'Retry-After': String(ipRate.retryAfter) } }
-      );
-    }
+    if (!isLoopbackOrTestIp(ipAddress)) {
+      const ipRate = checkRateLimit(`login:ip:${ipAddress}`, LOGIN_IP_LIMIT, LOGIN_WINDOW_MS);
+      if (!ipRate.allowed) {
+        return NextResponse.json(
+          { error: 'Too many login attempts from this IP address. Please try again later.' },
+          { status: 429, headers: { 'Retry-After': String(ipRate.retryAfter) } }
+        );
+      }
 
-    const rate = checkRateLimit(`login:${ipAddress}:${username}`, LOGIN_LIMIT, LOGIN_WINDOW_MS);
-    if (!rate.allowed) {
-      return NextResponse.json(
-        { error: 'Too many login attempts. Please try again later.' },
-        { status: 429, headers: { 'Retry-After': String(rate.retryAfter) } }
-      );
+      const rate = checkRateLimit(`login:${ipAddress}:${username}`, LOGIN_LIMIT, LOGIN_WINDOW_MS);
+      if (!rate.allowed) {
+        return NextResponse.json(
+          { error: 'Too many login attempts. Please try again later.' },
+          { status: 429, headers: { 'Retry-After': String(rate.retryAfter) } }
+        );
+      }
     }
 
     const password = validatePassword(body.password);

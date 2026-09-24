@@ -11,12 +11,20 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { checkRateLimit, resetRateLimitsForTesting } from '@/lib/rateLimit';
+import { isLoopbackOrTestIp } from '@/lib/validation';
 import { getTransactionById, createTransaction, deleteTransaction, getTransactions } from '@/lib/db';
 import { NextRequest } from 'next/server';
 
 describe('Rate Limiter — Memory Protection & Bounding (Playbook §6/§29)', () => {
   beforeEach(() => {
     resetRateLimitsForTesting();
+  });
+
+  it('identifies loopback and test IPs correctly', () => {
+    expect(isLoopbackOrTestIp('127.0.0.1')).toBe(true);
+    expect(isLoopbackOrTestIp('::1')).toBe(true);
+    expect(isLoopbackOrTestIp('localhost')).toBe(true);
+    expect(isLoopbackOrTestIp('::ffff:127.0.0.1')).toBe(true);
   });
 
   it('allows requests within the limit', () => {

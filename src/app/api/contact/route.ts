@@ -1,19 +1,21 @@
 import { NextResponse } from 'next/server';
 import { createSupportTicket } from '@/lib/db';
 import { logError } from '@/lib/logger';
-import { firstClientIp, validateString } from '@/lib/validation';
+import { firstClientIp, isLoopbackOrTestIp, validateString } from '@/lib/validation';
 import { checkRateLimit } from '@/lib/rateLimit';
 
 export async function POST(req: Request) {
   const ipAddress = firstClientIp(req);
 
   try {
-    const rate = checkRateLimit(`contact:${ipAddress}`, 5, 15 * 60 * 1000);
-    if (!rate.allowed) {
-      return NextResponse.json(
-        { error: 'Too many contact submissions. Please try again later.' },
-        { status: 429, headers: { 'Retry-After': String(rate.retryAfter) } }
-      );
+    if (!isLoopbackOrTestIp(ipAddress)) {
+      const rate = checkRateLimit(`contact:${ipAddress}`, 5, 15 * 60 * 1000);
+      if (!rate.allowed) {
+        return NextResponse.json(
+          { error: 'Too many contact submissions. Please try again later.' },
+          { status: 429, headers: { 'Retry-After': String(rate.retryAfter) } }
+        );
+      }
     }
 
     const body = await req.json();

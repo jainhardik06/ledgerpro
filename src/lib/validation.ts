@@ -96,3 +96,19 @@ export function firstClientIp(req: Request): string {
   if (forwarded) return forwarded.split(',')[0]?.trim() || 'unknown';
   return req.headers.get('x-real-ip') || req.headers.get('remote-addr') || 'unknown';
 }
+
+export function isLoopbackOrTestIp(ip: string): boolean {
+  if (process.env.CI === 'true' || process.env.NODE_ENV === 'test') {
+    return true;
+  }
+  const isLoopback =
+    ip === '127.0.0.1' ||
+    ip === '::1' ||
+    ip === 'localhost' ||
+    ip === '::ffff:127.0.0.1' ||
+    ip.endsWith('127.0.0.1');
+
+  if (isLoopback) return true;
+  if (process.env.NODE_ENV !== 'production' && ip === 'unknown') return true;
+  return false;
+}
